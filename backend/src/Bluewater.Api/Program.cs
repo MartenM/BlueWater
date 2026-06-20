@@ -32,6 +32,8 @@ await app.UseBluewater();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

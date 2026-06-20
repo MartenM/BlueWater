@@ -1,5 +1,6 @@
 using System.Text;
 using Bluewater.Api.Authorization;
+using Bluewater.Api.Options;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
@@ -29,7 +30,12 @@ public static class WebApplicationBuilderExtensions
             .Bind(builder.Configuration.GetSection("Database"))
             .ValidateOnStart();
 
+        builder.Services.AddOptions<CorsOptions>()
+            .Bind(builder.Configuration.GetSection("Cors"))
+            .ValidateOnStart();
+
         builder.AddDatabase();
+        builder.AddCors();
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
@@ -104,6 +110,22 @@ public static class WebApplicationBuilderExtensions
 
         builder.Services.AddDbContext<BluewaterContext>(options => options.UseNpgsql(connectionString));
         builder.Services.AddScoped<BluewaterContextSeeder>();
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddCors(this WebApplicationBuilder builder)
+    {
+        var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() ?? new CorsOptions();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy => policy
+                .WithOrigins(corsOptions.AllowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+        });
 
         return builder;
     }
