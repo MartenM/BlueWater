@@ -1,0 +1,99 @@
+using System.Text;
+using Bluewater.Core.Services;
+using Bluewater.Core.Services.Abstractions;
+using Bluewater.Domain.Models;
+using Bluewater.Infra.Context;
+using Bluewater.Infra.Options;
+using Bluewater.Infra.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using TokenOptions = Bluewater.Infra.Options.TokenOptions;
+
+namespace Bluewater.Api.Extensions;
+
+public static class WebApplicationBuilderExtensions
+{
+    public static WebApplicationBuilder AddBluewater(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddOptions<TokenOptions>()
+            .Bind(builder.Configuration.GetSection("Jwt"))
+            .ValidateOnStart();
+
+        builder.Services.AddOptions<DatabaseOptions>()
+            .Bind(builder.Configuration.GetSection("Database"))
+            .ValidateOnStart();
+
+        builder.AddDatabase();
+
+        builder.Services.Configure<IdentityOptions>(options =>
+        {
+            // Default Lockout settings.
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.Password.RequiredLength = 4;    
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireDigit = false;
+            }
+        });
+        
+        builder.Services.AddIdentityCore<BlueUser>()
+            .AddRoles<BlueRole>()
+            .AddEntityFrameworkStores<BluewaterContext>()
+            .AddDefaultTokenProviders();
+        
+
+        var jwtOptions = builder.Configuration.GetSection("Jwt").Get<TokenOptions>() ?? new TokenOptions();
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+        builder.Services.AddAuthorization();
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<TokenService>();
+        builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddDatabase(this WebApplicationBuilder builder)
+    {
+        var dbOptions = builder.Configuration.GetSection("Database").Get<DatabaseOptions>() ?? new DatabaseOptions();
+        var connectionString = new NpgsqlConnectionStringBuilder
+        {
+            Host = dbOptions.Host,
+            Port = dbOptions.Port,
+            Database = dbOptions.Database,
+            Username = dbOptions.Username,
+            Password = dbOptions.Password
+        }.ConnectionString;
+
+        builder.Services.AddDbContext<BluewaterContext>(options => options.UseNpgsql(connectionString));
+        builder.Services.AddScoped<BluewaterContextSeeder>();
+
+        return builder;
+    }
+}
