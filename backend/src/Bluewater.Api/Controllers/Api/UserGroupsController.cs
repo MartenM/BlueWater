@@ -30,7 +30,7 @@ public class UserGroupsController : ControllerBase
     }
 
     /// <summary>Lists all groups.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet]
     public Task<List<UserGroupDto>> List()
     {
@@ -38,7 +38,7 @@ public class UserGroupsController : ControllerBase
     }
 
     /// <summary>Gets a single group by id.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet("{id:guid}")]
     public Task<UserGroupDto> Get(Guid id)
     {
@@ -46,7 +46,7 @@ public class UserGroupsController : ControllerBase
     }
 
     /// <summary>Creates a new group. The referenced UserGroupCategoryId must already exist.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPost]
     public Task<UserGroupDto> Create(UpsertUserGroupRequest request)
     {
@@ -54,7 +54,7 @@ public class UserGroupsController : ControllerBase
     }
 
     /// <summary>Updates a group's name/description/category.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPut("{id:guid}")]
     public Task<UserGroupDto> Update(Guid id, UpsertUserGroupRequest request)
     {
@@ -65,7 +65,7 @@ public class UserGroupsController : ControllerBase
     /// Deletes a group. Fails if any UserGroupInstance still references it (FK is Restrict)
     /// — delete those instances first.
     /// </summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}")]
     public Task Delete(Guid id)
     {
@@ -83,8 +83,8 @@ public class UserGroupsController : ControllerBase
         return _membershipService.GetGroupsForUserAsync(_currentUser.Id);
     }
 
-    /// <summary>Lists the groups a specific user belongs to across all seasons. Admin-facing lookup.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    /// <summary>Lists the groups a specific user belongs to across all seasons.</summary>
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet("users/{userId:guid}")]
     public Task<List<UserGroupMembershipDto>> ForUser(Guid userId)
     {

@@ -23,7 +23,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Lists all group instances, across all seasons.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet]
     public Task<List<UserGroupInstanceDto>> List()
     {
@@ -31,7 +31,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Gets a single instance, including its members and assigned permissions.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet("{id:guid}")]
     public Task<UserGroupInstanceDto> Get(Guid id)
     {
@@ -42,7 +42,7 @@ public class UserGroupInstancesController : ControllerBase
     /// Creates an instance for a (UserGroupId, SeasonId) pair. Both must already exist,
     /// and only one instance per group/season combination is allowed.
     /// </summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPost]
     public Task<UserGroupInstanceDto> Create(CreateUserGroupInstanceRequest request)
     {
@@ -50,7 +50,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Deletes an instance. Cascades to its members and permission assignments.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}")]
     public Task Delete(Guid id)
     {
@@ -58,7 +58,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Adds a user as a member of the instance. No-op if already a member.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPost("{id:guid}/users/{userId:guid}")]
     public Task AddMember(Guid id, Guid userId)
     {
@@ -66,7 +66,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Removes a user from the instance. No-op if not a member.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}/users/{userId:guid}")]
     public Task RemoveMember(Guid id, Guid userId)
     {
@@ -77,7 +77,7 @@ public class UserGroupInstancesController : ControllerBase
     /// Assigns a permission to the instance. Takes effect for members' JWTs on their
     /// next login/refresh once this is the current season. No-op if already assigned.
     /// </summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPost("{id:guid}/permissions")]
     public Task AssignPermission(Guid id, AssignPermissionRequest request)
     {
@@ -85,7 +85,7 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>Revokes a permission from the instance. No-op if not assigned.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}/permissions/{permission}")]
     public Task RevokePermission(Guid id, BluePermission permission)
     {

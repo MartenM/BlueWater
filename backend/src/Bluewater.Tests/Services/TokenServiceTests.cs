@@ -35,7 +35,7 @@ public class TokenServiceTests
     public void CreateAccessToken_IncludesPermissionClaims()
     {
         var user = new BlueUser { Id = Guid.NewGuid(), Email = "user@example.com" };
-        var permissions = new List<BluePermission> { BluePermission.ViewGroups, BluePermission.ModifyGroups };
+        var permissions = new List<BluePermission> { BluePermission.AdminViewGroups, BluePermission.AdminModifyGroups };
 
         var token = new JsonWebTokenHandler().ReadJsonWebToken(_sut.CreateAccessToken(user, permissions));
 

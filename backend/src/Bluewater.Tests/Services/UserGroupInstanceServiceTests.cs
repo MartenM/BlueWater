@@ -143,31 +143,31 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
     {
         var instance = await CreateInstanceAsync();
 
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.ViewGroups]);
+        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
     }
 
     [Fact]
     public async Task AssignPermissionAsync_IsIdempotent_WhenAlreadyAssigned()
     {
         var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.ViewGroups]);
+        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
     }
 
     [Fact]
     public async Task RevokePermissionAsync_RemovesExistingPermission()
     {
         var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
         var dto = await _sut.GetAsync(instance.Id);
         dto.Permissions.ShouldBeEmpty();
@@ -178,7 +178,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
     {
         var instance = await CreateInstanceAsync();
 
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
     }
 
     [Fact]
@@ -188,17 +188,17 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         // composite key (UserGroupInstanceId, Permission); re-assigning must revive that row
         // rather than insert a duplicate, or this would throw a primary key violation.
         var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
+        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.ViewGroups]);
+        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
 
         var rows = await Db.UserGroupInstancePermissions
             .IgnoreQueryFilters()
-            .Where(x => x.UserGroupInstanceId == instance.Id && x.Permission == BluePermission.ViewGroups)
+            .Where(x => x.UserGroupInstanceId == instance.Id && x.Permission == BluePermission.AdminViewGroups)
             .ToListAsync();
         rows.Count.ShouldBe(1);
         rows[0].DeletedAt.ShouldBeNull();

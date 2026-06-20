@@ -22,7 +22,7 @@ public class UserGroupCategoriesController : ControllerBase
     }
 
     /// <summary>Lists all categories.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet]
     public Task<List<UserGroupCategoryDto>> List()
     {
@@ -30,7 +30,7 @@ public class UserGroupCategoriesController : ControllerBase
     }
 
     /// <summary>Gets a single category by id.</summary>
-    [BlueAuthorize(BluePermission.ViewGroups)]
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet("{id:guid}")]
     public Task<UserGroupCategoryDto> Get(Guid id)
     {
@@ -38,7 +38,7 @@ public class UserGroupCategoriesController : ControllerBase
     }
 
     /// <summary>Creates a new category.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPost]
     public Task<UserGroupCategoryDto> Create(UpsertUserGroupCategoryRequest request)
     {
@@ -46,7 +46,7 @@ public class UserGroupCategoriesController : ControllerBase
     }
 
     /// <summary>Updates a category's name/description.</summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpPut("{id:guid}")]
     public Task<UserGroupCategoryDto> Update(Guid id, UpsertUserGroupCategoryRequest request)
     {
@@ -57,7 +57,7 @@ public class UserGroupCategoriesController : ControllerBase
     /// Deletes a category. Fails if any UserGroup still references it (FK is Restrict, not Cascade)
     /// — re-categorize or delete those groups first.
     /// </summary>
-    [BlueAuthorize(BluePermission.ModifyGroups)]
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}")]
     public Task Delete(Guid id)
     {
