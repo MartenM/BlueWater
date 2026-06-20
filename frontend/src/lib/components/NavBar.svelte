@@ -7,7 +7,7 @@
 <header>
 	<nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 		<a href={resolve('/')} class="flex items-center">
-			<img src="/images/gyas-groningen.svg" alt="Club logo" class="h-15 w-auto" />
+			<img src="/images/logo/crop/Logo_Gyas_Totaal.svg" alt="Club logo" class="h-15 w-auto" />
 		</a>
 		<ul class="flex items-center gap-1">
 			{#each navItems as item (item.label)}

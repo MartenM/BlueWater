@@ -7,7 +7,13 @@ export interface NavItem {
 // Hardcoded for now; shaped to match what the planned navigation API endpoint will return,
 // so swapping this for a fetched value later shouldn't require changing NavBar/NavMenuItem.
 export const navItems: NavItem[] = [
-	{ label: 'Actueel', href: '/' },
+	{
+		label: 'Actueel',
+		children: [
+			{ label: 'Nieuws', href: '/about' },
+			{ label: 'Agenda', href: '/about/board' },
+		]
+	},
 	{
 		label: 'Over',
 		children: [

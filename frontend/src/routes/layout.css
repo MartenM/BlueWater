@@ -10,8 +10,8 @@
  * See STYLEGUIDE.md.
  */
 @theme {
-	--color-primary: #ed8b00;
-	--color-primary-hover: #c97600;
+	--color-primary: #ED8B00;
+	--color-primary-hover: #ffb349;
 	--color-primary-content: #ffffff;
 	--font-sans: 'Inter Variable', system-ui, sans-serif;
 }
