@@ -5,10 +5,10 @@ namespace Bluewater.Api.Authorization;
 
 public class PermissionRequirement : IAuthorizationRequirement
 {
-    public BluePermission Permission { get; }
+    public IReadOnlyCollection<BluePermission> Permissions { get; }
 
-    public PermissionRequirement(BluePermission permission)
+    public PermissionRequirement(IReadOnlyCollection<BluePermission> permissions)
     {
-        Permission = permission;
+        Permissions = permissions;
     }
 }

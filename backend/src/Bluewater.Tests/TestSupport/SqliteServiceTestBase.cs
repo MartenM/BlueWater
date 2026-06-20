@@ -69,6 +69,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupService, UserGroupService>();
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
         _serviceProvider = services.BuildServiceProvider();
         _scope = _serviceProvider.CreateScope();

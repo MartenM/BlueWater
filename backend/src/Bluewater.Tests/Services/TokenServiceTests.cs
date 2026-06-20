@@ -40,7 +40,7 @@ public class TokenServiceTests
         var token = new JsonWebTokenHandler().ReadJsonWebToken(_sut.CreateAccessToken(user, permissions));
 
         token.GetPayloadValue<List<string>>(BlueClaimTypes.Permission)
-            .ShouldBe(["ViewGroups", "ModifyGroups"]);
+            .ShouldBe(["AdminViewGroups", "AdminModifyGroups"]);
     }
 
     [Fact]

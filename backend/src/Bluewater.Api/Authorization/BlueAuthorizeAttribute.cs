@@ -5,8 +5,8 @@ namespace Bluewater.Api.Authorization;
 
 public class BlueAuthorizeAttribute : AuthorizeAttribute
 {
-    public BlueAuthorizeAttribute(BluePermission permission)
+    public BlueAuthorizeAttribute(params BluePermission[] permissions)
     {
-        Policy = PermissionPolicyProvider.PolicyPrefix + permission;
+        Policy = PermissionPolicyProvider.PolicyPrefix + string.Join(',', permissions);
     }
 }

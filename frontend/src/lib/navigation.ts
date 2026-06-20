@@ -9,10 +9,10 @@ export interface NavItem {
 export const navItems: NavItem[] = [
 	{
 		label: 'Actueel',
-		href: '/about',
+		href: '/',
 		children: [
-			{ label: 'Nieuws', href: '/about' },
-			{ label: 'Agenda', href: '/about/board' }
+			{ label: 'Nieuws', href: '/news' },
+			{ label: 'Agenda', href: '/agenda' }
 		]
 	},
 	{
@@ -33,11 +33,11 @@ export const navItems: NavItem[] = [
 		]
 	},
 	{
-		label: 'Activiteiten',
-		href: '/activities/schedule',
+		label: 'Tools',
+		href: '/tools',
 		children: [
-			{ label: 'Training schema', href: '/activities/schedule' },
-			{ label: 'Vloot', href: '/activities/fleet' }
+			{ label: 'Outing Planner', href: '/tools/outing-planner' },
+			{ label: 'Botenboek', href: '/tools/fleet' }
 		]
 	},
 	{ label: 'Contact', href: '/contact' }
