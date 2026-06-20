@@ -2,6 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { navItems } from '$lib/navigation';
 	import NavMenuItem from './NavMenuItem.svelte';
+
+	let openLabel = $state<string | null>(null);
 </script>
 
 <header>
@@ -11,7 +13,11 @@
 		</a>
 		<ul class="flex items-center gap-1">
 			{#each navItems as item (item.label)}
-				<NavMenuItem {item} />
+				<NavMenuItem
+					{item}
+					open={openLabel === item.label}
+					onOpenChange={(open) => (openLabel = open ? item.label : null)}
+				/>
 			{/each}
 		</ul>
 	</nav>

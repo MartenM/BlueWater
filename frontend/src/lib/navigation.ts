@@ -9,13 +9,15 @@ export interface NavItem {
 export const navItems: NavItem[] = [
 	{
 		label: 'Actueel',
+		href: '/about',
 		children: [
 			{ label: 'Nieuws', href: '/about' },
-			{ label: 'Agenda', href: '/about/board' },
+			{ label: 'Agenda', href: '/about/board' }
 		]
 	},
 	{
 		label: 'Over',
+		href: '/about',
 		children: [
 			{ label: 'De Club', href: '/about' },
 			{ label: 'Board', href: '/about/board' },
@@ -24,6 +26,7 @@ export const navItems: NavItem[] = [
 	},
 	{
 		label: 'Lidmaatschap',
+		href: '/membership/join',
 		children: [
 			{ label: 'Join us', href: '/membership/join' },
 			{ label: 'Fees', href: '/membership/fees' }
@@ -31,6 +34,7 @@ export const navItems: NavItem[] = [
 	},
 	{
 		label: 'Activiteiten',
+		href: '/activities/schedule',
 		children: [
 			{ label: 'Training schema', href: '/activities/schedule' },
 			{ label: 'Vloot', href: '/activities/fleet' }
