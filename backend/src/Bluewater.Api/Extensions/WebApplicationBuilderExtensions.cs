@@ -1,11 +1,14 @@
 using System.Text;
+using Bluewater.Api.Authorization;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
+using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -70,11 +73,19 @@ public static class WebApplicationBuilderExtensions
                 };
             });
         builder.Services.AddAuthorization();
+        builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<TokenService>();
-        builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        builder.Services.AddScoped<CurrentUserService>();
+        builder.Services.AddScoped<ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
+        builder.Services.AddScoped<ICurrentUserAccessor>(sp => sp.GetRequiredService<CurrentUserService>());
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IUserGroupCategoryService, UserGroupCategoryService>();
+        builder.Services.AddScoped<IUserGroupService, UserGroupService>();
+        builder.Services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
+        builder.Services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
 
         return builder;
     }

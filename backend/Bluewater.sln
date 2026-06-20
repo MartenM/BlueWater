@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluewater.Domain", "src\Blu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluewater.Infra", "src\Bluewater.Infra\Bluewater.Infra.csproj", "{B59C3990-46D9-463A-A554-4D1B727CA328}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluewater.Tests", "src\Bluewater.Tests\Bluewater.Tests.csproj", "{0C8C6925-C3B6-4FD7-BE2F-DFFFFCBEE9B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{B59C3990-46D9-463A-A554-4D1B727CA328}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B59C3990-46D9-463A-A554-4D1B727CA328}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B59C3990-46D9-463A-A554-4D1B727CA328}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C8C6925-C3B6-4FD7-BE2F-DFFFFCBEE9B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C8C6925-C3B6-4FD7-BE2F-DFFFFCBEE9B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C8C6925-C3B6-4FD7-BE2F-DFFFFCBEE9B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C8C6925-C3B6-4FD7-BE2F-DFFFFCBEE9B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

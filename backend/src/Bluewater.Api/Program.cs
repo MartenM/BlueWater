@@ -18,6 +18,7 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<UnauthorizedAccessExceptionFilter>();
     options.Filters.Add<BlueValidationExceptionFilter>();
+    options.Filters.Add<BlueNotFoundExceptionFilter>();
 });
 
 builder.AddBluewater();

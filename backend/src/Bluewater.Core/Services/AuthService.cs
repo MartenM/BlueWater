@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Bluewater.Core.Dto;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Auth;
+using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Services;
 using Microsoft.AspNetCore.Identity;
@@ -42,7 +43,8 @@ public class AuthService : IAuthService
         if (!valid)
             throw new UnauthorizedAccessException("Invalid credentials");
 
-        var accessToken = _tokenService.CreateAccessToken(user);
+        var permissions = await GetCurrentPermissionsAsync(user.Id);
+        var accessToken = _tokenService.CreateAccessToken(user, permissions);
 
         var refreshToken = await CreateRefreshToken(user.Id);
 
@@ -77,7 +79,8 @@ public class AuthService : IAuthService
         var newRefreshToken = await CreateRefreshToken(user.Id);
         stored.ReplacedByTokenHash = Hash(newRefreshToken);
 
-        var accessToken = _tokenService.CreateAccessToken(user);
+        var permissions = await GetCurrentPermissionsAsync(user.Id);
+        var accessToken = _tokenService.CreateAccessToken(user, permissions);
 
         await _db.SaveChangesAsync();
 
@@ -104,6 +107,19 @@ public class AuthService : IAuthService
     // ---------------------------
     // Helpers
     // ---------------------------
+    private async Task<List<BluePermission>> GetCurrentPermissionsAsync(Guid userId)
+    {
+        var currentSeasonId = await _db.AppSettings
+            .Select(x => x.CurrentSeasonId)
+            .FirstAsync();
+
+        return await _db.UserGroupInstanceMembers
+            .Where(m => m.UserId == userId && m.UserGroupInstance.SeasonId == currentSeasonId)
+            .SelectMany(m => m.UserGroupInstance.Permissions.Select(p => p.Permission))
+            .Distinct()
+            .ToListAsync();
+    }
+
     private async Task<string> CreateRefreshToken(Guid userId)
     {
         var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));

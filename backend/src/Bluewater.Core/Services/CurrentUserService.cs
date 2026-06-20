@@ -1,13 +1,16 @@
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Bluewater.Core.Services;
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService : ICurrentUserService, ICurrentUserAccessor
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
+
+    Guid? ICurrentUserAccessor.UserId => Id == Guid.Empty ? null : Id;
 
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
