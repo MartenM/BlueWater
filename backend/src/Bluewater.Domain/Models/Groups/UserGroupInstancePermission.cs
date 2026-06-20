@@ -2,7 +2,7 @@ using Bluewater.Domain.Auditing;
 
 namespace Bluewater.Domain.Models.Groups;
 
-public class UserGroupInstancePermission : IAuditable
+public class UserGroupInstancePermission : IAuditableRelation
 {
     public Guid UserGroupInstanceId { get; set; }
     public UserGroupInstance UserGroupInstance { get; set; } = null!;

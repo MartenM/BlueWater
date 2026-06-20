@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
@@ -164,6 +165,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        ReviveSoftDeletedRelations();
         var softDeleted = ApplyAuditing();
         var result = base.SaveChanges(acceptAllChangesOnSuccess);
         DetachSoftDeleted(softDeleted);
@@ -172,10 +174,123 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
+        await ReviveSoftDeletedRelationsAsync(cancellationToken);
         var softDeleted = ApplyAuditing();
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         DetachSoftDeleted(softDeleted);
         return result;
+    }
+
+    /// <summary>
+    /// IAuditableRelation entities (composite-key join/relation rows) keep their soft-deleted row
+    /// under the same key. Re-adding under that key must revive the existing row instead of
+    /// inserting a duplicate, which would violate the primary key.
+    /// </summary>
+    private void ReviveSoftDeletedRelations()
+    {
+        foreach (var entry in PendingRelationAdds())
+        {
+            ReviveIfSoftDeletedMethod
+                .MakeGenericMethod(entry.Entity.GetType())
+                .Invoke(null, [this, entry]);
+        }
+    }
+
+    private async Task ReviveSoftDeletedRelationsAsync(CancellationToken cancellationToken)
+    {
+        foreach (var entry in PendingRelationAdds())
+        {
+            var task = (Task)ReviveIfSoftDeletedAsyncMethod
+                .MakeGenericMethod(entry.Entity.GetType())
+                .Invoke(null, [this, entry, cancellationToken])!;
+            await task;
+        }
+    }
+
+    private List<EntityEntry<IAuditableRelation>> PendingRelationAdds() =>
+        ChangeTracker.Entries<IAuditableRelation>()
+            .Where(e => e.State == EntityState.Added)
+            .ToList();
+
+    private static readonly MethodInfo ReviveIfSoftDeletedMethod =
+        typeof(BluewaterContext).GetMethod(nameof(ReviveIfSoftDeleted), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    private static readonly MethodInfo ReviveIfSoftDeletedAsyncMethod =
+        typeof(BluewaterContext).GetMethod(nameof(ReviveIfSoftDeletedAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+    private static void ReviveIfSoftDeleted<TEntity>(BluewaterContext context, EntityEntry entry)
+        where TEntity : class, IAuditableRelation
+    {
+        var predicate = BuildKeyPredicate<TEntity>(context, entry);
+
+        // Probe without tracking: the about-to-be-inserted entity is itself tracked as Added under
+        // this same key, so a tracked query would resolve identity against it instead of the real
+        // (soft-deleted) persisted row.
+        var probe = context.Set<TEntity>().IgnoreQueryFilters().AsNoTracking().FirstOrDefault(predicate);
+        if (probe == null || probe.DeletedAt == null)
+        {
+            return; // genuinely new row, or already-active under this key - a real conflict, let the PK violation surface
+        }
+
+        var newValues = entry.Entity;
+        entry.State = EntityState.Detached; // free the key so the real row can be loaded and tracked instead
+
+        var existing = context.Set<TEntity>().IgnoreQueryFilters().First(predicate);
+        Revive(context, existing, newValues);
+    }
+
+    private static async Task ReviveIfSoftDeletedAsync<TEntity>(BluewaterContext context, EntityEntry entry, CancellationToken cancellationToken)
+        where TEntity : class, IAuditableRelation
+    {
+        var predicate = BuildKeyPredicate<TEntity>(context, entry);
+
+        var probe = await context.Set<TEntity>().IgnoreQueryFilters().AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
+        if (probe == null || probe.DeletedAt == null)
+        {
+            return;
+        }
+
+        var newValues = entry.Entity;
+        entry.State = EntityState.Detached;
+
+        var existing = await context.Set<TEntity>().IgnoreQueryFilters().FirstAsync(predicate, cancellationToken);
+        Revive(context, existing, newValues);
+    }
+
+    private static void Revive<TEntity>(BluewaterContext context, TEntity existing, object newValues)
+        where TEntity : class, IAuditableRelation
+    {
+        // CurrentValues.SetValues copies every matching scalar property by name, including
+        // CreatedAt/CreatedByUserId off the brand-new (never-stamped) instance; preserve the
+        // original creation audit values across the copy.
+        var createdAt = existing.CreatedAt;
+        var createdByUserId = existing.CreatedByUserId;
+
+        context.Entry(existing).CurrentValues.SetValues(newValues);
+
+        existing.CreatedAt = createdAt;
+        existing.CreatedByUserId = createdByUserId;
+        existing.DeletedAt = null;
+        existing.DeletedByUserId = null;
+    }
+
+    private static Expression<Func<TEntity, bool>> BuildKeyPredicate<TEntity>(BluewaterContext context, EntityEntry entry)
+        where TEntity : class
+    {
+        var keyProperties = context.Model.FindEntityType(typeof(TEntity))!.FindPrimaryKey()!.Properties;
+        var parameter = Expression.Parameter(typeof(TEntity), "x");
+
+        Expression? body = null;
+        foreach (var keyProperty in keyProperties)
+        {
+            var currentValue = entry.Property(keyProperty.Name).CurrentValue;
+            var left = Expression.Property(parameter, keyProperty.PropertyInfo!);
+            var right = Expression.Constant(currentValue, keyProperty.ClrType);
+            var equals = Expression.Equal(left, right);
+            body = body == null ? equals : Expression.AndAlso(body, equals);
+        }
+
+        return Expression.Lambda<Func<TEntity, bool>>(body!, parameter);
     }
 
     private List<EntityEntry<IAuditable>> ApplyAuditing()
