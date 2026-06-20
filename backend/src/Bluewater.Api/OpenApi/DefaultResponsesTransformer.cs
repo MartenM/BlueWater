@@ -15,11 +15,10 @@ public class DefaultResponsesTransformer : IOpenApiOperationTransformer
 
         var problemDetailsSchema = await context.GetOrCreateSchemaAsync(typeof(ProblemDetails), null, cancellationToken);
         context.Document?.AddComponent("ProblemDetails", problemDetailsSchema);
-
         
         operation.Responses ??= new OpenApiResponses();
         // Add a "4XX" response to the operation with the newly created schema
-        operation.Responses["4xx"] = new OpenApiResponse
+        operation.Responses["400"] = new OpenApiResponse
         {
             Description = "Bad Request",
             Content = new Dictionary<string, OpenApiMediaType>
@@ -31,7 +30,17 @@ public class DefaultResponsesTransformer : IOpenApiOperationTransformer
             }
         };
         
-        operation.Responses["5xx"] = new OpenApiResponse
+        operation.Responses["401"] = new OpenApiResponse
+        {
+            Description = "Unauthorized"
+        };
+        
+        operation.Responses["403"] = new OpenApiResponse
+        {
+            Description = "Forbidden"
+        };
+        
+        operation.Responses["500"] = new OpenApiResponse
         {
             Description = "Internal Error",
             Content = new Dictionary<string, OpenApiMediaType>
