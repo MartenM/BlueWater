@@ -181,6 +181,52 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await _sut.RevokePermissionAsync(instance.Id, BluePermission.ViewGroups);
     }
 
+    [Fact]
+    public async Task AssignPermissionAsync_ReassignsSuccessfully_AfterPreviousRevoke()
+    {
+        // The soft-deleted UserGroupInstancePermission row stays in the table under the same
+        // composite key (UserGroupInstanceId, Permission); re-assigning must revive that row
+        // rather than insert a duplicate, or this would throw a primary key violation.
+        var instance = await CreateInstanceAsync();
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+        await _sut.RevokePermissionAsync(instance.Id, BluePermission.ViewGroups);
+
+        await _sut.AssignPermissionAsync(instance.Id, BluePermission.ViewGroups);
+
+        var dto = await _sut.GetAsync(instance.Id);
+        dto.Permissions.ShouldBe([BluePermission.ViewGroups]);
+
+        var rows = await Db.UserGroupInstancePermissions
+            .IgnoreQueryFilters()
+            .Where(x => x.UserGroupInstanceId == instance.Id && x.Permission == BluePermission.ViewGroups)
+            .ToListAsync();
+        rows.Count.ShouldBe(1);
+        rows[0].DeletedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AddMemberAsync_ReaddsSuccessfully_AfterPreviousRemove()
+    {
+        // Same composite-key-reuse concern as permissions: re-adding a member after removal
+        // must revive the soft-deleted UserGroupInstanceMember row, not insert a duplicate.
+        var instance = await CreateInstanceAsync();
+        var user = await CreateUserAsync();
+        await _sut.AddMemberAsync(instance.Id, user.Id);
+        await _sut.RemoveMemberAsync(instance.Id, user.Id);
+
+        await _sut.AddMemberAsync(instance.Id, user.Id);
+
+        var dto = await _sut.GetAsync(instance.Id);
+        dto.MemberUserIds.ShouldBe([user.Id]);
+
+        var rows = await Db.UserGroupInstanceMembers
+            .IgnoreQueryFilters()
+            .Where(x => x.UserGroupInstanceId == instance.Id && x.UserId == user.Id)
+            .ToListAsync();
+        rows.Count.ShouldBe(1);
+        rows[0].DeletedAt.ShouldBeNull();
+    }
+
     private async Task<UserGroupInstance> CreateInstanceAsync()
     {
         var season = await CreateCurrentSeasonAsync();

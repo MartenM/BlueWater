@@ -82,18 +82,29 @@ public class UserGroupInstanceService : IUserGroupInstanceService
             throw new BlueValidationException($"User '{userId}' does not exist.");
         }
 
-        var alreadyMember = await _db.UserGroupInstanceMembers
-            .AnyAsync(x => x.UserGroupInstanceId == instanceId && x.UserId == userId);
-        if (alreadyMember)
+        var existing = await _db.UserGroupInstanceMembers
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.UserGroupInstanceId == instanceId && x.UserId == userId);
+
+        if (existing == null)
+        {
+            _db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember
+            {
+                UserGroupInstanceId = instanceId,
+                UserId = userId
+            });
+        }
+        else if (existing.DeletedAt != null)
+        {
+            // Row already exists (soft-deleted) under this composite key; revive it
+            // instead of inserting a duplicate, which would violate the primary key.
+            existing.DeletedAt = null;
+            existing.DeletedByUserId = null;
+        }
+        else
         {
             return;
         }
-
-        _db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember
-        {
-            UserGroupInstanceId = instanceId,
-            UserId = userId
-        });
 
         await _db.SaveChangesAsync();
     }
@@ -116,18 +127,29 @@ public class UserGroupInstanceService : IUserGroupInstanceService
     {
         await Find(instanceId);
 
-        var alreadyAssigned = await _db.UserGroupInstancePermissions
-            .AnyAsync(x => x.UserGroupInstanceId == instanceId && x.Permission == permission);
-        if (alreadyAssigned)
+        var existing = await _db.UserGroupInstancePermissions
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.UserGroupInstanceId == instanceId && x.Permission == permission);
+
+        if (existing == null)
+        {
+            _db.UserGroupInstancePermissions.Add(new UserGroupInstancePermission
+            {
+                UserGroupInstanceId = instanceId,
+                Permission = permission
+            });
+        }
+        else if (existing.DeletedAt != null)
+        {
+            // Row already exists (soft-deleted) under this composite key; revive it
+            // instead of inserting a duplicate, which would violate the primary key.
+            existing.DeletedAt = null;
+            existing.DeletedByUserId = null;
+        }
+        else
         {
             return;
         }
-
-        _db.UserGroupInstancePermissions.Add(new UserGroupInstancePermission
-        {
-            UserGroupInstanceId = instanceId,
-            Permission = permission
-        });
 
         await _db.SaveChangesAsync();
     }
@@ -154,6 +176,7 @@ public class UserGroupInstanceService : IUserGroupInstanceService
 
     private IQueryable<UserGroupInstance> WithDetails() =>
         _db.UserGroupInstances
+            .AsNoTracking()
             .Include(x => x.UserGroup)
             .Include(x => x.Season)
             .Include(x => x.Permissions)

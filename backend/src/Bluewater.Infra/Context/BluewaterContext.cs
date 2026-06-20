@@ -6,6 +6,7 @@ using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Bluewater.Infra.Context;
 
@@ -163,20 +164,25 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        ApplyAuditing();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        var softDeleted = ApplyAuditing();
+        var result = base.SaveChanges(acceptAllChangesOnSuccess);
+        DetachSoftDeleted(softDeleted);
+        return result;
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        ApplyAuditing();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var softDeleted = ApplyAuditing();
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        DetachSoftDeleted(softDeleted);
+        return result;
     }
 
-    private void ApplyAuditing()
+    private List<EntityEntry<IAuditable>> ApplyAuditing()
     {
         var userId = _currentUserAccessor?.UserId ?? Guid.Empty;
         var now = DateTime.UtcNow;
+        var softDeleted = new List<EntityEntry<IAuditable>>();
 
         foreach (var entry in ChangeTracker.Entries<IAuditable>())
         {
@@ -194,8 +200,25 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                     entry.State = EntityState.Modified;
                     entry.Entity.DeletedAt = now;
                     entry.Entity.DeletedByUserId = userId;
+                    softDeleted.Add(entry);
                     break;
             }
+        }
+
+        return softDeleted;
+    }
+
+    /// <summary>
+    /// Soft-deleted rows stay in the table under their original key, so leaving them tracked
+    /// risks EF's navigation fixup re-attaching them to a collection navigation (e.g. via
+    /// Include) on a later query in this same context, bypassing the DeletedAt query filter.
+    /// Detaching forces any later read to go through a fresh, filtered query instead.
+    /// </summary>
+    private static void DetachSoftDeleted(List<EntityEntry<IAuditable>> softDeleted)
+    {
+        foreach (var entry in softDeleted)
+        {
+            entry.State = EntityState.Detached;
         }
     }
 }
