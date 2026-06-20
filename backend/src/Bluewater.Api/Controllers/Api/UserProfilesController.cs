@@ -35,4 +35,12 @@ public class UserProfilesController : ControllerBase
     {
         return _service.GetAsync(id);
     }
+
+    /// <summary>Uploads a 75x100 profile picture for a user.</summary>
+    [BlueAuthorize(BluePermission.AdminModifyUsers)]
+    [HttpPost("{id:guid}/picture")]
+    public Task SetPicture(Guid id, [FromForm] IFormFile file)
+    {
+        return _service.SetProfilePictureAsync(id, file.OpenReadStream(), file.FileName, file.ContentType);
+    }
 }

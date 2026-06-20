@@ -34,6 +34,10 @@ public static class WebApplicationBuilderExtensions
             .Bind(builder.Configuration.GetSection("Cors"))
             .ValidateOnStart();
 
+        builder.Services.AddOptions<LocalFileStorageOptions>()
+            .Bind(builder.Configuration.GetSection("FileStorage:Local"))
+            .ValidateOnStart();
+
         builder.AddDatabase();
         builder.AddCors();
 
@@ -93,6 +97,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         builder.Services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+        builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return builder;
     }

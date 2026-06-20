@@ -3,6 +3,7 @@ using System;
 using Bluewater.Infra.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewater.Infra.Migrations
 {
     [DbContext(typeof(BluewaterContext))]
-    partial class BluewaterContextModelSnapshot : ModelSnapshot
+    [Migration("20260620194239_AddStoredFiles")]
+    partial class AddStoredFiles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,9 +186,6 @@ namespace Bluewater.Infra.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ProfilePictureFileId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -215,8 +215,6 @@ namespace Bluewater.Infra.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("ProfilePictureFileId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -561,11 +559,6 @@ namespace Bluewater.Infra.Migrations
 
             modelBuilder.Entity("Bluewater.Domain.Models.BlueUser", b =>
                 {
-                    b.HasOne("Bluewater.Domain.Models.Files.StoredFile", "ProfilePicture")
-                        .WithMany()
-                        .HasForeignKey("ProfilePictureFileId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.OwnsOne("Bluewater.Domain.Models.BlueAddress", "Address", b1 =>
                         {
                             b1.Property<Guid>("BlueUserId")
@@ -621,8 +614,6 @@ namespace Bluewater.Infra.Migrations
 
                     b.Navigation("EmergencyAddress")
                         .IsRequired();
-
-                    b.Navigation("ProfilePicture");
                 });
 
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroup", b =>

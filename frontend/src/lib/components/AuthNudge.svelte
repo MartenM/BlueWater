@@ -34,7 +34,14 @@
 			class="m-auto w-full max-w-sm rounded-md border border-gray-200 bg-white p-6 shadow-lg backdrop:bg-black/40"
 		>
 			<h2 class="text-lg font-medium text-black">{session.user.email}</h2>
-			<div class="mt-4 flex justify-end">
+			<div class="mt-4 flex justify-end gap-2">
+				<a
+					href={resolve('/profile')}
+					onclick={() => dialog?.close()}
+					class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-black hover:bg-gray-100"
+				>
+					Mijn profiel
+				</a>
 				<button
 					type="button"
 					onclick={handleLogout}

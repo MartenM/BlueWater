@@ -2,6 +2,7 @@ using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
 using Bluewater.Infra.Context;
+using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
@@ -23,9 +24,11 @@ public abstract class SqliteServiceTestBase : IDisposable
     private readonly ServiceProvider _serviceProvider;
     private readonly IServiceScope _scope;
     private readonly TestCurrentUserAccessor _currentUserAccessor = new();
+    private readonly string _fileStorageRootPath;
 
     protected BluewaterContext Db { get; }
     protected UserManager<BlueUser> UserManager { get; }
+    protected string FileStorageRootPath => _fileStorageRootPath;
 
     /// <summary>
     /// The acting user stamped onto audit fields (CreatedByUserId/UpdatedByUserId/DeletedByUserId)
@@ -70,6 +73,10 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+
+        _fileStorageRootPath = Path.Combine(Path.GetTempPath(), "bluewater-tests", Guid.NewGuid().ToString());
+        services.Configure<LocalFileStorageOptions>(o => o.RootPath = _fileStorageRootPath);
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         _serviceProvider = services.BuildServiceProvider();
         _scope = _serviceProvider.CreateScope();
@@ -121,6 +128,11 @@ public abstract class SqliteServiceTestBase : IDisposable
         _scope.Dispose();
         _serviceProvider.Dispose();
         _connection.Dispose();
+
+        if (Directory.Exists(_fileStorageRootPath))
+        {
+            Directory.Delete(_fileStorageRootPath, recursive: true);
+        }
     }
 
     private class TestCurrentUserAccessor : ICurrentUserAccessor

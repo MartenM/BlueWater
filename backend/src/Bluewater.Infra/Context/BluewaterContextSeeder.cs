@@ -33,6 +33,9 @@ public class BluewaterContextSeeder
             Email = "admin@example.com",
             UserName = "admin",
             EmailConfirmed = true,
+            Firstname = "Admin",
+            SurnamePrefix = "der",
+            Surname = "Localhost",
         }, "admin");
         VerifyResult(res);
 

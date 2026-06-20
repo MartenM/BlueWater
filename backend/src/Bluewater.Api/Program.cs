@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Bluewater.Api.Extensions;
 using Bluewater.Api.Filters;
 using Bluewater.Api.OpenApi;
@@ -12,6 +13,7 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddOperationTransformer<DefaultResponsesTransformer>();
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddSchemaTransformer<EnumSchemaTransformer>();
 });
 
 builder.Services.AddControllers(options =>
@@ -19,7 +21,13 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<UnauthorizedAccessExceptionFilter>();
     options.Filters.Add<BlueValidationExceptionFilter>();
     options.Filters.Add<BlueNotFoundExceptionFilter>();
-});
+    options.Filters.Add<FileNotFoundExceptionFilter>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(
+        new JsonStringEnumConverter());
+});;
 
 builder.AddBluewater();
 

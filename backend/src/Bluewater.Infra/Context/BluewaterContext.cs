@@ -3,6 +3,7 @@ using System.Reflection;
 using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Auth;
+using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<UserGroupInstance> UserGroupInstances => Set<UserGroupInstance>();
     public DbSet<UserGroupInstanceMember> UserGroupInstanceMembers => Set<UserGroupInstanceMember>();
     public DbSet<UserGroupInstancePermission> UserGroupInstancePermissions => Set<UserGroupInstancePermission>();
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -46,6 +48,11 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             
             e.HasIndex(x => x.Email)
                 .IsUnique();
+
+            e.HasOne(x => x.ProfilePicture)
+                .WithMany()
+                .HasForeignKey(x => x.ProfilePictureFileId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
         
         builder.Entity<RefreshToken>(e =>
@@ -142,6 +149,11 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany(x => x.Permissions)
                 .HasForeignKey(x => x.UserGroupInstanceId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<StoredFile>(e =>
+        {
+            e.HasKey(x => x.Id);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

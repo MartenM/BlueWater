@@ -1,6 +1,7 @@
 using Bluewater.Core.Dto;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Domain.Models.Groups;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -38,5 +39,11 @@ public class AuthController : ControllerBase
     public Task Logout()
     {
         return _authService.LogoutAsync(_currentUser.Id);
+    }
+
+    [HttpGet("permissions")]
+    public Task<List<BluePermission>> AllPermissions()
+    {
+        return Task.FromResult(Enum.GetValues<BluePermission>().ToList());
     }
 }
