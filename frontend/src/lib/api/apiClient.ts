@@ -261,7 +261,7 @@ export class Client {
     /**
      * @return OK
      */
-    permissionsAll(): Promise<number[]> {
+    permissionsAll(): Promise<BluePermission[]> {
         let url_ = this.baseUrl + "/api/Auth/permissions";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -277,7 +277,7 @@ export class Client {
         });
     }
 
-    protected processPermissionsAll(response: Response): Promise<number[]> {
+    protected processPermissionsAll(response: Response): Promise<BluePermission[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -321,188 +321,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<number[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    filesPOST(body: Body): Promise<StoredFile> {
-        let url_ = this.baseUrl + "/api/Files";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = Object.keys(body as any).map((key) => {
-            return encodeURIComponent(key) + '=' + encodeURIComponent((body as any)[key]);
-        }).join('&')
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFilesPOST(_response);
-        });
-    }
-
-    protected processFilesPOST(response: Response): Promise<StoredFile> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = StoredFile.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<StoredFile>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    filesGET(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Files/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFilesGET(_response);
-        });
-    }
-
-    protected processFilesGET(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    filesDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Files/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFilesDELETE(_response);
-        });
-    }
-
-    protected processFilesDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<BluePermission[]>(null as any);
     }
 
     /**
@@ -1256,7 +1075,7 @@ export class Client {
     /**
      * @return OK
      */
-    permissionsDELETE(id: string, permission: number): Promise<void> {
+    permissionsDELETE(id: string, permission: BluePermission): Promise<void> {
         let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/permissions/{permission}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1888,7 +1707,7 @@ export class Client {
     /**
      * @return OK
      */
-    picture(id: string, body: Body2): Promise<void> {
+    picture(id: string, body: Body): Promise<void> {
         let url_ = this.baseUrl + "/api/UserProfiles/{id}/picture";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1951,7 +1770,7 @@ export class Client {
 }
 
 export class AssignPermissionRequest implements IAssignPermissionRequest {
-    permission!: number;
+    permission!: BluePermission;
 
     [key: string]: any;
 
@@ -1993,7 +1812,7 @@ export class AssignPermissionRequest implements IAssignPermissionRequest {
 }
 
 export interface IAssignPermissionRequest {
-    permission: number;
+    permission: BluePermission;
 
     [key: string]: any;
 }
@@ -2048,6 +1867,15 @@ export interface IAuthResponse {
     refreshToken: string;
 
     [key: string]: any;
+}
+
+export enum BluePermission {
+    AdminViewGroups = "AdminViewGroups",
+    AdminModifyGroups = "AdminModifyGroups",
+    AdminViewSettings = "AdminViewSettings",
+    AdminModifySettings = "AdminModifySettings",
+    ViewProfiles = "ViewProfiles",
+    AdminModifyUsers = "AdminModifyUsers",
 }
 
 export class CreateUserGroupInstanceRequest implements ICreateUserGroupInstanceRequest {
@@ -2262,78 +2090,6 @@ export class RefreshRequest implements IRefreshRequest {
 
 export interface IRefreshRequest {
     refreshToken: string;
-
-    [key: string]: any;
-}
-
-export class StoredFile implements IStoredFile {
-    id?: string;
-    originalFileName?: string;
-    extension?: string;
-    contentType?: string;
-    sizeBytes?: number;
-    uploadedAt?: Date;
-    uploadedByUserId?: string;
-
-    [key: string]: any;
-
-    constructor(data?: IStoredFile) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.originalFileName = _data["originalFileName"];
-            this.extension = _data["extension"];
-            this.contentType = _data["contentType"];
-            this.sizeBytes = _data["sizeBytes"];
-            this.uploadedAt = _data["uploadedAt"] ? new Date(_data["uploadedAt"].toString()) : undefined as any;
-            this.uploadedByUserId = _data["uploadedByUserId"];
-        }
-    }
-
-    static fromJS(data: any): StoredFile {
-        data = typeof data === 'object' ? data : {};
-        let result = new StoredFile();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["originalFileName"] = this.originalFileName;
-        data["extension"] = this.extension;
-        data["contentType"] = this.contentType;
-        data["sizeBytes"] = this.sizeBytes;
-        data["uploadedAt"] = this.uploadedAt ? this.uploadedAt.toISOString() : undefined as any;
-        data["uploadedByUserId"] = this.uploadedByUserId;
-        return data;
-    }
-}
-
-export interface IStoredFile {
-    id?: string;
-    originalFileName?: string;
-    extension?: string;
-    contentType?: string;
-    sizeBytes?: number;
-    uploadedAt?: Date;
-    uploadedByUserId?: string;
 
     [key: string]: any;
 }
@@ -2572,7 +2328,7 @@ export class UserGroupInstanceDto implements IUserGroupInstanceDto {
     userGroupName!: string;
     seasonId!: string;
     seasonName!: string;
-    permissions!: number[];
+    permissions!: BluePermission[];
     memberUserIds!: string[];
 
     [key: string]: any;
@@ -2652,7 +2408,7 @@ export interface IUserGroupInstanceDto {
     userGroupName: string;
     seasonId: string;
     seasonName: string;
-    permissions: number[];
+    permissions: BluePermission[];
     memberUserIds: string[];
 
     [key: string]: any;
@@ -2947,86 +2703,6 @@ export class Body implements IBody {
 }
 
 export interface IBody {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
-}
-
-export class Body2 implements IBody2 {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
-
-    constructor(data?: IBody2) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.contentType = _data["ContentType"];
-            this.contentDisposition = _data["ContentDisposition"];
-            if (_data["Headers"]) {
-                this.headers = {} as any;
-                for (let key in _data["Headers"]) {
-                    if (_data["Headers"].hasOwnProperty(key))
-                        (this.headers as any)![key] = _data["Headers"][key] !== undefined ? _data["Headers"][key] : [];
-                }
-            }
-            this.length = _data["Length"];
-            this.name = _data["Name"];
-            this.fileName = _data["FileName"];
-        }
-    }
-
-    static fromJS(data: any): Body2 {
-        data = typeof data === 'object' ? data : {};
-        let result = new Body2();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["ContentType"] = this.contentType;
-        data["ContentDisposition"] = this.contentDisposition;
-        if (this.headers) {
-            data["Headers"] = {};
-            for (let key in this.headers) {
-                if (this.headers.hasOwnProperty(key))
-                    (data["Headers"] as any)[key] = (this.headers as any)[key];
-            }
-        }
-        data["Length"] = this.length;
-        data["Name"] = this.name;
-        data["FileName"] = this.fileName;
-        return data;
-    }
-}
-
-export interface IBody2 {
     contentType?: string;
     contentDisposition?: string;
     headers?: { [key: string]: string[]; };

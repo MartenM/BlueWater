@@ -52,6 +52,16 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddDataProtection();
         services.AddSingleton<ICurrentUserAccessor>(_currentUserAccessor);
         services.AddDbContext<BluewaterContext>(options => options.UseSqlite(_connection));
+        services.Configure<IdentityOptions>(options =>
+        {
+            // Mirrors the Development password relaxation in WebApplicationBuilderExtensions.AddBluewater(),
+            // which BluewaterContextSeeder relies on to create the admin user with the "admin" password.
+            options.Password.RequiredLength = 4;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireDigit = false;
+        });
         services.AddIdentityCore<BlueUser>()
             .AddRoles<BlueRole>()
             .AddEntityFrameworkStores<BluewaterContext>()
@@ -73,6 +83,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<BluewaterContextSeeder>();
 
         _fileStorageRootPath = Path.Combine(Path.GetTempPath(), "bluewater-tests", Guid.NewGuid().ToString());
         services.Configure<LocalFileStorageOptions>(o => o.RootPath = _fileStorageRootPath);

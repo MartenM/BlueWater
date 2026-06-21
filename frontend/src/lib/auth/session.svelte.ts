@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { BluePermission } from '$lib/api/apiClient';
 import { decodeJwt } from './jwt';
 
 export interface AuthTokens {
@@ -9,13 +10,13 @@ export interface AuthTokens {
 interface AccessTokenClaims {
 	sub: string;
 	email: string;
-	permission?: string | string[];
+	permission?: BluePermission | BluePermission[];
 }
 
 export interface SessionUser {
 	id: string;
 	email: string;
-	permissions: string[];
+	permissions: BluePermission[];
 }
 
 const STORAGE_KEY = 'bluewater.auth';
@@ -60,6 +61,9 @@ export const session = {
 	},
 	get user() {
 		return user;
+	},
+	hasPermission(permission: BluePermission): boolean {
+		return user?.permissions.includes(permission) ?? false;
 	},
 	setTokens(next: AuthTokens) {
 		persist(next);

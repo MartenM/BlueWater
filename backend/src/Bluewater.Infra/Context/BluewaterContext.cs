@@ -143,6 +143,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
 
         builder.Entity<UserGroupInstancePermission>(e =>
         {
+            e.Property(x => x.Permission).HasConversion<string>();
+
             e.HasKey(x => new { x.UserGroupInstanceId, x.Permission });
 
             e.HasOne(x => x.UserGroupInstance)

@@ -410,8 +410,8 @@ namespace Bluewater.Infra.Migrations
                     b.Property<Guid>("UserGroupInstanceId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Permission")
-                        .HasColumnType("integer");
+                    b.Property<string>("Permission")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
