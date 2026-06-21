@@ -10,4 +10,6 @@ public enum BluePermission
     AdminModifyUsers = 6,
     NewsView = 7,
     NewsModify = 8,
+    NewsIconCreate = 9,
+    NewsIconDelete = 10,
 }

@@ -1,6 +1,7 @@
 using Bluewater.Core.Dto.Profile;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Core.Services.Imaging;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +12,6 @@ public class UserProfileService : IUserProfileService
 {
     private const int ProfilePictureWidth = 75;
     private const int ProfilePictureHeight = 100;
-
-    private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     private readonly BluewaterContext _db;
     private readonly IUserGroupMembershipService _membershipService;
@@ -71,7 +70,7 @@ public class UserProfileService : IUserProfileService
     /// </summary>
     private static (int Width, int Height) ReadImageDimensions(byte[] bytes)
     {
-        if (TryReadPngDimensions(bytes, out var pngSize))
+        if (PngDimensionReader.TryReadDimensions(bytes, out var pngSize))
         {
             return pngSize;
         }
@@ -82,20 +81,6 @@ public class UserProfileService : IUserProfileService
         }
 
         throw new BlueValidationException("File is not a supported image format. Only PNG and JPEG are accepted.");
-    }
-
-    private static bool TryReadPngDimensions(byte[] bytes, out (int Width, int Height) size)
-    {
-        size = default;
-
-        if (bytes.Length < 24 || !bytes.AsSpan(0, 8).SequenceEqual(PngSignature))
-        {
-            return false;
-        }
-
-        // IHDR is always the first chunk: 4-byte length, 4-byte "IHDR" type, then 4-byte width + 4-byte height, big-endian.
-        size = (ReadUInt32BigEndian(bytes, 16), ReadUInt32BigEndian(bytes, 20));
-        return true;
     }
 
     private static bool TryReadJpegDimensions(byte[] bytes, out (int Width, int Height) size)
@@ -137,9 +122,6 @@ public class UserProfileService : IUserProfileService
 
         return false;
     }
-
-    private static int ReadUInt32BigEndian(byte[] bytes, int offset) =>
-        (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
 
     private static int ReadUInt16BigEndian(byte[] bytes, int offset) =>
         (bytes[offset] << 8) | bytes[offset + 1];

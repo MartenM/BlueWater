@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
 	import { requireAuth } from '$lib/auth/requireAuth';
-	import { ProfileView } from '$lib';
+	import { ProfileView, BlueAlert, AlertLevel } from '$lib';
 	import type { UserProfileDto } from '$lib/api/apiClient';
 
 	let profile = $state<UserProfileDto | null>(null);
@@ -20,7 +20,9 @@
 </script>
 
 {#if error}
-	<p class="mx-auto max-w-5xl px-4 py-10 text-sm text-red-600">Profiel kon niet worden geladen.</p>
+	<div class="mx-auto max-w-5xl px-4 py-10">
+		<BlueAlert level={AlertLevel.Danger}>Profiel kon niet worden geladen.</BlueAlert>
+	</div>
 {:else if profile}
 	<ProfileView {profile} />
 {/if}

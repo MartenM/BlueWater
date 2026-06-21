@@ -93,6 +93,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<INewsService, NewsService>();
+        services.AddScoped<INewsIconService, NewsIconService>();
         services.AddScoped<BluewaterContextSeeder>();
 
         _fileStorageRootPath = Path.Combine(Path.GetTempPath(), "bluewater-tests", Guid.NewGuid().ToString());

@@ -34,6 +34,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<UserGroupInstancePermission> UserGroupInstancePermissions => Set<UserGroupInstancePermission>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
+    public DbSet<NewsIcon> NewsIcons => Set<NewsIcon>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -163,6 +164,21 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
         builder.Entity<NewsPost>(e =>
         {
             e.HasKey(x => x.Id);
+
+            e.HasOne<NewsIcon>()
+                .WithMany()
+                .HasForeignKey(x => x.IconId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<NewsIcon>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne<StoredFile>()
+                .WithMany()
+                .HasForeignKey(x => x.FileId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

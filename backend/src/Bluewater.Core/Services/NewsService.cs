@@ -50,13 +50,16 @@ public class NewsService : INewsService
 
     public async Task<NewsPostDto> CreateAsync(UpsertNewsPostRequest request)
     {
+        await ValidateIconAsync(request.IconId);
+
         var post = new NewsPost
         {
             Id = Guid.NewGuid(),
             Title = request.Title,
             ShortText = request.ShortText,
             AdditionalText = request.AdditionalText,
-            MembersOnly = request.MembersOnly
+            MembersOnly = request.MembersOnly,
+            IconId = request.IconId
         };
 
         _db.NewsPosts.Add(post);
@@ -68,15 +71,30 @@ public class NewsService : INewsService
     public async Task<NewsPostDto> UpdateAsync(Guid id, UpsertNewsPostRequest request)
     {
         var post = await Find(id);
+        await ValidateIconAsync(request.IconId);
 
         post.Title = request.Title;
         post.ShortText = request.ShortText;
         post.AdditionalText = request.AdditionalText;
         post.MembersOnly = request.MembersOnly;
+        post.IconId = request.IconId;
 
         await _db.SaveChangesAsync();
 
         return ToDto(post);
+    }
+
+    /// <summary>
+    /// A news icon can only be assigned while it's active - once soft-deleted (NewsIconDelete),
+    /// it drops out of this query filter and can no longer be (re)assigned to a post, even
+    /// though posts that already reference it keep rendering it.
+    /// </summary>
+    private async Task ValidateIconAsync(Guid? iconId)
+    {
+        if (iconId is { } id && !await _db.NewsIcons.AnyAsync(x => x.Id == id))
+        {
+            throw new BlueValidationException($"NewsIcon '{id}' does not exist or is no longer available.");
+        }
     }
 
     public async Task DeleteAsync(Guid id)
@@ -101,10 +119,10 @@ public class NewsService : INewsService
     }
 
     private static readonly Expression<Func<NewsPost, NewsPostDto>> ProjectToDto =
-        x => new NewsPostDto(x.Id, x.Title, x.ShortText, x.AdditionalText, x.MembersOnly,
+        x => new NewsPostDto(x.Id, x.Title, x.ShortText, x.AdditionalText, x.MembersOnly, x.IconId,
             x.CreatedAt, x.CreatedByUserId, x.UpdatedAt, x.UpdatedByUserId);
 
     private static NewsPostDto ToDto(NewsPost post) =>
-        new(post.Id, post.Title, post.ShortText, post.AdditionalText, post.MembersOnly,
+        new(post.Id, post.Title, post.ShortText, post.AdditionalText, post.MembersOnly, post.IconId,
             post.CreatedAt, post.CreatedByUserId, post.UpdatedAt, post.UpdatedByUserId);
 }

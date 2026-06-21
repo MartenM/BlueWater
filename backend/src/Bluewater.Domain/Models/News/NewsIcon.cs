@@ -2,14 +2,11 @@ using Bluewater.Domain.Auditing;
 
 namespace Bluewater.Domain.Models.News;
 
-public class NewsPost : IAuditable
+public class NewsIcon : IAuditable
 {
     public Guid Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string ShortText { get; set; } = string.Empty;
-    public string? AdditionalText { get; set; }
-    public bool MembersOnly { get; set; }
-    public Guid? IconId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Guid FileId { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }

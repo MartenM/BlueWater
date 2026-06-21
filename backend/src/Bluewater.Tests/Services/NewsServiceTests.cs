@@ -1,6 +1,7 @@
 using Bluewater.Core.Dto.News;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
 using Bluewater.Tests.TestSupport;
@@ -105,7 +106,7 @@ public class NewsServiceTests : SqliteServiceTestBase
     {
         var user = await CreateUserAsync();
         CurrentUserId = user.Id;
-        var request = new UpsertNewsPostRequest("Title", "Short", "Additional", true);
+        var request = new UpsertNewsPostRequest("Title", "Short", "Additional", true, null);
 
         var result = await _sut.CreateAsync(request);
 
@@ -118,13 +119,44 @@ public class NewsServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task CreateAsync_PersistsIconId_WhenIconExists()
+    {
+        var icon = await AddIconAsync();
+        var request = new UpsertNewsPostRequest("Title", "Short", null, false, icon.Id);
+
+        var result = await _sut.CreateAsync(request);
+
+        result.IconId.ShouldBe(icon.Id);
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_WhenIconDoesNotExist()
+    {
+        var request = new UpsertNewsPostRequest("Title", "Short", null, false, Guid.NewGuid());
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.CreateAsync(request));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_WhenIconIsSoftDeleted()
+    {
+        var icon = await AddIconAsync();
+        Db.NewsIcons.Remove(icon);
+        await Db.SaveChangesAsync();
+
+        var request = new UpsertNewsPostRequest("Title", "Short", null, false, icon.Id);
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.CreateAsync(request));
+    }
+
+    [Fact]
     public async Task UpdateAsync_UpdatesExistingPost_AndStampsAuditFields()
     {
         var post = await AddPostAsync("Original");
         var user = await CreateUserAsync();
         CurrentUserId = user.Id;
 
-        var result = await _sut.UpdateAsync(post.Id, new UpsertNewsPostRequest("Renamed", "New short", null, true));
+        var result = await _sut.UpdateAsync(post.Id, new UpsertNewsPostRequest("Renamed", "New short", null, true, null));
 
         result.Title.ShouldBe("Renamed");
         result.ShortText.ShouldBe("New short");
@@ -137,7 +169,19 @@ public class NewsServiceTests : SqliteServiceTestBase
     public async Task UpdateAsync_Throws_WhenPostDoesNotExist()
     {
         await Should.ThrowAsync<BlueNotFoundException>(
-            () => _sut.UpdateAsync(Guid.NewGuid(), new UpsertNewsPostRequest("Title", "Short", null, false)));
+            () => _sut.UpdateAsync(Guid.NewGuid(), new UpsertNewsPostRequest("Title", "Short", null, false, null)));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Throws_WhenIconIsSoftDeleted()
+    {
+        var post = await AddPostAsync("Title");
+        var icon = await AddIconAsync();
+        Db.NewsIcons.Remove(icon);
+        await Db.SaveChangesAsync();
+
+        await Should.ThrowAsync<BlueValidationException>(
+            () => _sut.UpdateAsync(post.Id, new UpsertNewsPostRequest("Title", "Short", null, false, icon.Id)));
     }
 
     [Fact]
@@ -176,5 +220,30 @@ public class NewsServiceTests : SqliteServiceTestBase
         }
 
         return post;
+    }
+
+    private async Task<NewsIcon> AddIconAsync(string name = "Icon")
+    {
+        var file = new StoredFile
+        {
+            Id = Guid.NewGuid(),
+            OriginalFileName = "icon.png",
+            Extension = "png",
+            ContentType = "image/png",
+            SizeBytes = 1,
+            UploadedAt = DateTime.UtcNow
+        };
+        Db.StoredFiles.Add(file);
+
+        var icon = new NewsIcon
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            FileId = file.Id
+        };
+        Db.NewsIcons.Add(icon);
+        await Db.SaveChangesAsync();
+
+        return icon;
     }
 }

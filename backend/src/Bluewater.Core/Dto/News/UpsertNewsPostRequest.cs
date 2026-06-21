@@ -4,4 +4,5 @@ public record UpsertNewsPostRequest(
     string Title,
     string ShortText,
     string? AdditionalText,
-    bool MembersOnly);
+    bool MembersOnly,
+    Guid? IconId);
