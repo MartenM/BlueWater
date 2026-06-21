@@ -5,6 +5,7 @@ using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.News;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<UserGroupInstanceMember> UserGroupInstanceMembers => Set<UserGroupInstanceMember>();
     public DbSet<UserGroupInstancePermission> UserGroupInstancePermissions => Set<UserGroupInstancePermission>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+    public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -154,6 +156,11 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
         });
 
         builder.Entity<StoredFile>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<NewsPost>(e =>
         {
             e.HasKey(x => x.Id);
         });

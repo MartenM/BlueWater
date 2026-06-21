@@ -8,4 +8,6 @@ public enum BluePermission
     AdminModifySettings = 4,
     ViewProfiles = 5,
     AdminModifyUsers = 6,
+    NewsView = 7,
+    NewsModify = 8,
 }

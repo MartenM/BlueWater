@@ -1,6 +1,7 @@
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
+using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
@@ -24,6 +25,7 @@ public abstract class SqliteServiceTestBase : IDisposable
     private readonly ServiceProvider _serviceProvider;
     private readonly IServiceScope _scope;
     private readonly TestCurrentUserAccessor _currentUserAccessor = new();
+    private readonly TestCurrentUserService _currentUserService = new();
     private readonly string _fileStorageRootPath;
 
     protected BluewaterContext Db { get; }
@@ -41,6 +43,12 @@ public abstract class SqliteServiceTestBase : IDisposable
         set => _currentUserAccessor.UserId = value;
     }
 
+    /// <summary>
+    /// Permissions granted to the acting user for service-level permission checks
+    /// (e.g. INewsService's members-only visibility filtering). Empty by default.
+    /// </summary>
+    protected HashSet<BluePermission> CurrentUserPermissions => _currentUserService.Permissions;
+
     protected SqliteServiceTestBase()
     {
         // The in-memory database only lives as long as this connection stays open.
@@ -51,6 +59,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddLogging();
         services.AddDataProtection();
         services.AddSingleton<ICurrentUserAccessor>(_currentUserAccessor);
+        services.AddSingleton<ICurrentUserService>(_currentUserService);
         services.AddDbContext<BluewaterContext>(options => options.UseSqlite(_connection));
         services.Configure<IdentityOptions>(options =>
         {
@@ -83,6 +92,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<INewsService, NewsService>();
         services.AddScoped<BluewaterContextSeeder>();
 
         _fileStorageRootPath = Path.Combine(Path.GetTempPath(), "bluewater-tests", Guid.NewGuid().ToString());
@@ -149,5 +159,14 @@ public abstract class SqliteServiceTestBase : IDisposable
     private class TestCurrentUserAccessor : ICurrentUserAccessor
     {
         public Guid? UserId { get; set; }
+    }
+
+    private class TestCurrentUserService : ICurrentUserService
+    {
+        public Guid Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public HashSet<BluePermission> Permissions { get; } = [];
+
+        public bool HasPermission(BluePermission permission) => Permissions.Contains(permission);
     }
 }
