@@ -126,7 +126,7 @@ public class BluewaterContextSeeder
             {
                 Id = Guid.NewGuid(),
                 Title = "Open dag: kom roeien bij Gyas",
-                ShortText = "Nieuw in Groningen of altijd al willen roeien? Op onze open dag laten we je kennismaken met de boot, de loods en de club.",
+                ShortText = "Nieuw in Groningen of altijd al willen roeien? Op onze open dag laten we je kennismaken met de boot, de loods en de club. Ervaren roeiers en bestuursleden staan de hele dag klaar om je rond te leiden, vragen te beantwoorden en je een eerste keer mee het water op te nemen.\n\nOok als je nog niet zeker weet of roeien iets voor je is, is dit de perfecte gelegenheid om de sfeer te proeven. We sluiten de dag af met een gezamenlijke borrel in de loods, waar je kennis kunt maken met andere (aspirant-)leden.",
                 AdditionalText = "Iedereen is welkom, ervaring is niet nodig. Loop binnen tussen 10:00 en 16:00 uur, dan staat er een boot voor je klaar en is er koffie en thee in de loods.",
                 MembersOnly = false,
                 IconId = gyasIcon.Id
@@ -135,7 +135,7 @@ public class BluewaterContextSeeder
             {
                 Id = Guid.NewGuid(),
                 Title = "Vlag uit voor de Varsity",
-                ShortText = "Onze eerste acht heeft de Varsity gewonnen! Een prachtige prestatie na een seizoen vol hard trainen.",
+                ShortText = "Onze eerste acht heeft de Varsity gewonnen! Een prachtige prestatie na een seizoen vol hard trainen, vroege ochtenden op het water en wedstrijden in binnen- en buitenland. De ploeg heeft het hele jaar toegewerkt naar dit moment en dat heeft zich dubbel en dwars uitbetaald.\n\nNamens het bestuur en alle leden: heel veel felicitaties aan de roeiers, de stuurman en de coaches die hier dag in dag uit aan hebben bijgedragen. De vlag hangt vanaf vandaag trots bij de loods.",
                 AdditionalText = "De wedstrijd werd verroeid op de Bosbaan, waar onze ploeg een ruime voorsprong nam in de laatste 500 meter. Felicitaties aan iedereen die heeft bijgedragen aan dit resultaat.",
                 MembersOnly = false,
                 IconId = flagIcon.Id
@@ -144,7 +144,7 @@ public class BluewaterContextSeeder
             {
                 Id = Guid.NewGuid(),
                 Title = "Nieuwe samenwerking met Bowa",
-                ShortText = "Gyas en Bowa slaan de handen ineen voor onderhoud aan de botenloods en materiaal.",
+                ShortText = "Gyas en Bowa slaan de handen ineen voor onderhoud aan de botenloods en materiaal. Bowa brengt jarenlange ervaring mee op het gebied van onderhoud en renovatie, en gaat ons helpen om de loods en onze vloot in topconditie te houden.\n\nDe samenwerking is voor meerdere seizoenen aangegaan en omvat onder andere periodiek onderhoud aan de boten, kleine reparaties en advies bij toekomstige verbouwingen aan de loods.",
                 AdditionalText = "Dankzij deze samenwerking kunnen we onze boten en loods het komende seizoen op niveau houden. Meer details volgen tijdens de eerstvolgende ledenvergadering.",
                 MembersOnly = false,
                 IconId = bowaIcon.Id
@@ -153,7 +153,7 @@ public class BluewaterContextSeeder
             {
                 Id = Guid.NewGuid(),
                 Title = "Agenda algemene ledenvergadering",
-                ShortText = "De agenda voor de komende ALV staat online. Leden kunnen deze inzien in het ledenportaal.",
+                ShortText = "De agenda voor de komende ALV staat online. Leden kunnen deze inzien in het ledenportaal en worden van harte uitgenodigd om aanwezig te zijn en hun stem te laten horen over de plannen voor het komende seizoen.\n\nMocht je zelf een onderwerp willen agenderen, dan kan dat tot een week voor de vergadering via het bestuur. Inloop is vanaf 19:30 uur met koffie en thee, de vergadering start om 20:00 uur.",
                 AdditionalText = "Onderwerpen op de agenda zijn onder andere de begroting voor het nieuwe seizoen en de verkiezing van twee nieuwe bestuursleden.",
                 MembersOnly = true,
                 IconId = gyasIcon.Id

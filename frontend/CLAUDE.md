@@ -18,8 +18,8 @@ The project is in its initial scaffold state (default SvelteKit template pages) 
 - `pnpm lint` — prettier --check + eslint (run before considering a change done)
 - `pnpm format` — prettier --write
 - `pnpm generate:api` — regenerate `src/lib/api/apiClient.ts` from the backend's live OpenAPI spec via nswag (requires the backend running locally at the URL in `nswag.json`)
-
-No test runner is configured yet.
+- `pnpm test:e2e` — run Playwright E2E tests (`e2e/*.spec.ts`); auto-starts the dev server per `playwright.config.ts`. Run targeted spec files (`pnpm exec playwright test e2e/foo.spec.ts`) while iterating on a feature rather than the full suite; the full suite is run periodically.
+- `pnpm test:e2e:ui` — same, with Playwright's interactive UI mode
 
 Package manager is pnpm (`engine-strict=true` in `.npmrc`); don't use npm/yarn.
 
