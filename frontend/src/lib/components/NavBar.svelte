@@ -17,7 +17,13 @@
 				<NavMenuItem
 					{item}
 					open={openLabel === item.label}
-					onOpenChange={(open) => (openLabel = open ? item.label : null)}
+					onOpenChange={(open) => {
+						if (open) {
+							openLabel = item.label;
+						} else if (openLabel === item.label) {
+							openLabel = null;
+						}
+					}}
 				/>
 			{/each}
 		</ul>

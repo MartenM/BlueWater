@@ -56,7 +56,7 @@
 		</a>
 		{#if open}
 			<ul
-				class="absolute left-0 z-10 mt-1 min-w-48 rounded-md border border-gray-200 bg-white py-1 shadow-sm"
+				class="absolute left-0 z-20 mt-1 min-w-48 rounded-md border border-gray-200 bg-white py-1 shadow-sm"
 			>
 				{#each item.children as child (child.label)}
 					<li>
