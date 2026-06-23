@@ -26,6 +26,10 @@ public static class WebApplicationBuilderExtensions
             .Bind(builder.Configuration.GetSection("Jwt"))
             .ValidateOnStart();
 
+        builder.Services.AddOptions<CookieAuthOptions>()
+            .Bind(builder.Configuration.GetSection("Cookie"))
+            .ValidateOnStart();
+
         builder.Services.AddOptions<DatabaseOptions>()
             .Bind(builder.Configuration.GetSection("Database"))
             .ValidateOnStart();
@@ -65,6 +69,7 @@ public static class WebApplicationBuilderExtensions
         
 
         var jwtOptions = builder.Configuration.GetSection("Jwt").Get<TokenOptions>() ?? new TokenOptions();
+        var cookieOptions = builder.Configuration.GetSection("Cookie").Get<CookieAuthOptions>() ?? new CookieAuthOptions();
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -81,6 +86,19 @@ public static class WebApplicationBuilderExtensions
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.Zero
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (string.IsNullOrEmpty(context.Token) &&
+                            context.Request.Cookies.TryGetValue(cookieOptions.AccessTokenCookieName, out var cookieToken) &&
+                            !string.IsNullOrEmpty(cookieToken))
+                        {
+                            context.Token = cookieToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
         builder.Services.AddAuthorization();
         builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
@@ -92,6 +110,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
         builder.Services.AddScoped<ICurrentUserAccessor>(sp => sp.GetRequiredService<CurrentUserService>());
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<ICookieAuthService, CookieAuthService>();
         builder.Services.AddScoped<IUserGroupCategoryService, UserGroupCategoryService>();
         builder.Services.AddScoped<IUserGroupService, UserGroupService>();
         builder.Services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();

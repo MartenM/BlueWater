@@ -86,6 +86,7 @@ public abstract class SqliteServiceTestBase : IDisposable
             o.ExpireTime = TimeSpan.FromMinutes(15);
         });
         services.AddScoped<TokenService>();
+        services.AddSingleton<ICookieAuthService, TestCookieAuthService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserGroupCategoryService, UserGroupCategoryService>();
         services.AddScoped<IUserGroupService, UserGroupService>();
@@ -169,5 +170,12 @@ public abstract class SqliteServiceTestBase : IDisposable
         public HashSet<BluePermission> Permissions { get; } = [];
 
         public bool HasPermission(BluePermission permission) => Permissions.Contains(permission);
+    }
+
+    private class TestCookieAuthService : ICookieAuthService
+    {
+        public void SetAuthCookies(Bluewater.Core.Dto.AuthResponse response) { }
+        public void ClearAuthCookies() { }
+        public string? GetRefreshTokenFromCookie() => null;
     }
 }

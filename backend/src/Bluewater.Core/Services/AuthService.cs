@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Bluewater.Core.Dto;
+using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Groups;
@@ -17,15 +18,18 @@ public class AuthService : IAuthService
     private readonly UserManager<BlueUser> _userManager;
     private readonly BluewaterContext _db;
     private readonly TokenService _tokenService;
+    private readonly ICookieAuthService _cookieAuthService;
 
     public AuthService(
         UserManager<BlueUser> userManager,
         BluewaterContext db,
-        TokenService tokenService)
+        TokenService tokenService,
+        ICookieAuthService cookieAuthService)
     {
         _userManager = userManager;
         _db = db;
         _tokenService = tokenService;
+        _cookieAuthService = cookieAuthService;
     }
 
     // ---------------------------
@@ -48,15 +52,24 @@ public class AuthService : IAuthService
 
         var refreshToken = await CreateRefreshToken(user.Id);
 
-        return new AuthResponse(accessToken, refreshToken);
+        var response = new AuthResponse(accessToken, refreshToken);
+        _cookieAuthService.SetAuthCookies(response);
+        return response;
     }
 
     // ---------------------------
     // REFRESH
     // ---------------------------
-    public async Task<AuthResponse> RefreshAsync(RefreshRequest request)
+    public async Task<AuthResponse> RefreshAsync(RefreshRequest? request)
     {
-        var tokenHash = Hash(request.RefreshToken);
+        var refreshToken = !string.IsNullOrWhiteSpace(request?.RefreshToken)
+            ? request!.RefreshToken
+            : _cookieAuthService.GetRefreshTokenFromCookie();
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            throw new UnauthorizedAccessException("No refresh token provided");
+
+        var tokenHash = Hash(refreshToken);
 
         var stored = await _db.RefreshTokens
             .FirstOrDefaultAsync(x => x.TokenHash == tokenHash);
@@ -84,7 +97,9 @@ public class AuthService : IAuthService
 
         await _db.SaveChangesAsync();
 
-        return new AuthResponse(accessToken, newRefreshToken);
+        var response = new AuthResponse(accessToken, newRefreshToken);
+        _cookieAuthService.SetAuthCookies(response);
+        return response;
     }
 
     // ---------------------------
@@ -102,6 +117,7 @@ public class AuthService : IAuthService
         }
 
         await _db.SaveChangesAsync();
+        _cookieAuthService.ClearAuthCookies();
     }
 
     // ---------------------------

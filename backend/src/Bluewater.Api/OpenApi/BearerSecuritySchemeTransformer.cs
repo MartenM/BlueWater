@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.OpenApi;
+﻿using Bluewater.Infra.Options;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
 namespace RealmRuler.WebApi.OpenApi;
 
-public class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
+public class BearerSecuritySchemeTransformer(IOptions<CookieAuthOptions> cookieOptions) : IOpenApiDocumentTransformer
 {
     public Task TransformAsync(
         OpenApiDocument document,
@@ -20,6 +22,12 @@ public class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
                 Scheme = "bearer",
                 In = ParameterLocation.Header,
                 BearerFormat = "JWT"
+            },
+            ["Cookie"] = new OpenApiSecurityScheme()
+            {
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Cookie,
+                Name = cookieOptions.Value.AccessTokenCookieName
             }
         };
 
@@ -31,6 +39,13 @@ public class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
             {
                 [
                     new OpenApiSecuritySchemeReference("Bearer", document)
+                ] = []
+            });
+
+            operation.Value.Security.Add(new OpenApiSecurityRequirement
+            {
+                [
+                    new OpenApiSecuritySchemeReference("Cookie", document)
                 ] = []
             });
         }

@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public Task<AuthResponse> Refresh(RefreshRequest request)
+    public Task<AuthResponse> Refresh(RefreshRequest? request)
     {
         return _authService.RefreshAsync(request);
     }
