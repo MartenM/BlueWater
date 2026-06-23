@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi(options =>
 {
     options.AddOperationTransformer<DefaultResponsesTransformer>();
+    options.AddOperationTransformer<FormFileOperationTransformer>();
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
     options.AddSchemaTransformer<EnumSchemaTransformer>();
 });
@@ -20,6 +21,7 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<UnauthorizedAccessExceptionFilter>();
     options.Filters.Add<BlueValidationExceptionFilter>();
+    options.Filters.Add<FluentValidationExceptionFilter>();
     options.Filters.Add<BlueNotFoundExceptionFilter>();
     options.Filters.Add<FileNotFoundExceptionFilter>();
 })

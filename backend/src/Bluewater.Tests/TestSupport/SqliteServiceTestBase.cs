@@ -1,11 +1,13 @@
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Core.Validators;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
 using Bluewater.Infra.Services.Abstractions;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +98,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<INewsService, NewsService>();
         services.AddScoped<INewsIconService, NewsIconService>();
         services.AddScoped<BluewaterContextSeeder>();
+        services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 
         _fileStorageRootPath = Path.Combine(Path.GetTempPath(), "bluewater-tests", Guid.NewGuid().ToString());
         services.Configure<LocalFileStorageOptions>(o => o.RootPath = _fileStorageRootPath);

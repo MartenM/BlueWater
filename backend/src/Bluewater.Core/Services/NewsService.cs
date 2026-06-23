@@ -6,6 +6,7 @@ using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
 using Bluewater.Infra.Context;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bluewater.Core.Services;
@@ -14,11 +15,13 @@ public class NewsService : INewsService
 {
     private readonly BluewaterContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IValidator<UpsertNewsPostRequest> _validator;
 
-    public NewsService(BluewaterContext db, ICurrentUserService currentUser)
+    public NewsService(BluewaterContext db, ICurrentUserService currentUser, IValidator<UpsertNewsPostRequest> validator)
     {
         _db = db;
         _currentUser = currentUser;
+        _validator = validator;
     }
 
     public async Task<PagedResult<NewsPostDto>> ListAsync(int page, int pageSize)
@@ -50,7 +53,7 @@ public class NewsService : INewsService
 
     public async Task<NewsPostDto> CreateAsync(UpsertNewsPostRequest request)
     {
-        await ValidateIconAsync(request.IconId);
+        await _validator.ValidateAndThrowAsync(request);
 
         var post = new NewsPost
         {
@@ -70,8 +73,8 @@ public class NewsService : INewsService
 
     public async Task<NewsPostDto> UpdateAsync(Guid id, UpsertNewsPostRequest request)
     {
+        await _validator.ValidateAndThrowAsync(request);
         var post = await Find(id);
-        await ValidateIconAsync(request.IconId);
 
         post.Title = request.Title;
         post.ShortText = request.ShortText;
@@ -82,19 +85,6 @@ public class NewsService : INewsService
         await _db.SaveChangesAsync();
 
         return ToDto(post);
-    }
-
-    /// <summary>
-    /// A news icon can only be assigned while it's active - once soft-deleted (NewsIconDelete),
-    /// it drops out of this query filter and can no longer be (re)assigned to a post, even
-    /// though posts that already reference it keep rendering it.
-    /// </summary>
-    private async Task ValidateIconAsync(Guid? iconId)
-    {
-        if (iconId is { } id && !await _db.NewsIcons.AnyAsync(x => x.Id == id))
-        {
-            throw new BlueValidationException($"NewsIcon '{id}' does not exist or is no longer available.");
-        }
     }
 
     public async Task DeleteAsync(Guid id)

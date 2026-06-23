@@ -3,11 +3,13 @@ using Bluewater.Api.Authorization;
 using Bluewater.Api.Options;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Core.Validators;
 using Bluewater.Domain.Models;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
 using Bluewater.Infra.Services.Abstractions;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -43,7 +45,7 @@ public static class WebApplicationBuilderExtensions
             .ValidateOnStart();
 
         builder.AddDatabase();
-        builder.AddCors();
+        builder.AddBlueCors();
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
@@ -119,6 +121,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<INewsService, NewsService>();
         builder.Services.AddScoped<INewsIconService, NewsIconService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        builder.Services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 
         return builder;
     }
@@ -141,7 +144,7 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
-    private static WebApplicationBuilder AddCors(this WebApplicationBuilder builder)
+    private static WebApplicationBuilder AddBlueCors(this WebApplicationBuilder builder)
     {
         var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() ?? new CorsOptions();
 

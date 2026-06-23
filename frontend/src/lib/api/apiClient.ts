@@ -141,9 +141,10 @@ export class Client {
     }
 
     /**
+     * @param body (optional) 
      * @return OK
      */
-    refresh(body: RefreshRequest): Promise<AuthResponse> {
+    refresh(body: RefreshRequest | null | undefined): Promise<AuthResponse> {
         let url_ = this.baseUrl + "/api/Auth/refresh";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -709,21 +710,28 @@ export class Client {
     }
 
     /**
+     * @param name (optional) 
+     * @param file (optional) 
      * @return OK
      */
-    newsIconsPOST(body: Body): Promise<NewsIconDto> {
+    newsIconsPOST(name: string | undefined, file: FileParameter | undefined): Promise<NewsIconDto> {
         let url_ = this.baseUrl + "/api/NewsIcons";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = Object.keys(body as any).map((key) => {
-            return encodeURIComponent(key) + '=' + encodeURIComponent((body as any)[key]);
-        }).join('&')
+        const content_ = new FormData();
+        if (name === null || name === undefined)
+            throw new globalThis.Error("The parameter 'name' cannot be null.");
+        else
+            content_.append("name", name.toString());
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
 
         let options_: RequestInit = {
             body: content_,
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
                 "Accept": "application/json"
             }
         };
@@ -2278,24 +2286,26 @@ export class Client {
     }
 
     /**
+     * @param file (optional) 
      * @return OK
      */
-    picture(id: string, body: Body2): Promise<void> {
+    picture(id: string, file: FileParameter | undefined): Promise<void> {
         let url_ = this.baseUrl + "/api/UserProfiles/{id}/picture";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = Object.keys(body as any).map((key) => {
-            return encodeURIComponent(key) + '=' + encodeURIComponent((body as any)[key]);
-        }).join('&')
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
 
         let options_: RequestInit = {
             body: content_,
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
             }
         };
 
@@ -3493,209 +3503,9 @@ export interface IValidationProblemDetails {
     [key: string]: any;
 }
 
-export class Anonymous implements IAnonymous {
-    name?: string;
-
-    [key: string]: any;
-
-    constructor(data?: IAnonymous) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-        }
-    }
-
-    static fromJS(data: any): Anonymous {
-        data = typeof data === 'object' ? data : {};
-        let result = new Anonymous();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        return data;
-    }
-}
-
-export interface IAnonymous {
-    name?: string;
-
-    [key: string]: any;
-}
-
-export class Body extends Anonymous implements IBody {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
-
-    constructor(data?: IBody) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.contentType = _data["ContentType"];
-            this.contentDisposition = _data["ContentDisposition"];
-            if (_data["Headers"]) {
-                this.headers = {} as any;
-                for (let key in _data["Headers"]) {
-                    if (_data["Headers"].hasOwnProperty(key))
-                        (this.headers as any)![key] = _data["Headers"][key] !== undefined ? _data["Headers"][key] : [];
-                }
-            }
-            this.length = _data["Length"];
-            this.name = _data["Name"];
-            this.fileName = _data["FileName"];
-        }
-    }
-
-    static override fromJS(data: any): Body {
-        data = typeof data === 'object' ? data : {};
-        let result = new Body();
-        result.init(data);
-        return result;
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["ContentType"] = this.contentType;
-        data["ContentDisposition"] = this.contentDisposition;
-        if (this.headers) {
-            data["Headers"] = {};
-            for (let key in this.headers) {
-                if (this.headers.hasOwnProperty(key))
-                    (data["Headers"] as any)[key] = (this.headers as any)[key];
-            }
-        }
-        data["Length"] = this.length;
-        data["Name"] = this.name;
-        data["FileName"] = this.fileName;
-        super.toJSON(data);
-        return data;
-    }
-}
-
-export interface IBody extends IAnonymous {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
-}
-
-export class Body2 implements IBody2 {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
-
-    constructor(data?: IBody2) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.contentType = _data["ContentType"];
-            this.contentDisposition = _data["ContentDisposition"];
-            if (_data["Headers"]) {
-                this.headers = {} as any;
-                for (let key in _data["Headers"]) {
-                    if (_data["Headers"].hasOwnProperty(key))
-                        (this.headers as any)![key] = _data["Headers"][key] !== undefined ? _data["Headers"][key] : [];
-                }
-            }
-            this.length = _data["Length"];
-            this.name = _data["Name"];
-            this.fileName = _data["FileName"];
-        }
-    }
-
-    static fromJS(data: any): Body2 {
-        data = typeof data === 'object' ? data : {};
-        let result = new Body2();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["ContentType"] = this.contentType;
-        data["ContentDisposition"] = this.contentDisposition;
-        if (this.headers) {
-            data["Headers"] = {};
-            for (let key in this.headers) {
-                if (this.headers.hasOwnProperty(key))
-                    (data["Headers"] as any)[key] = (this.headers as any)[key];
-            }
-        }
-        data["Length"] = this.length;
-        data["Name"] = this.name;
-        data["FileName"] = this.fileName;
-        return data;
-    }
-}
-
-export interface IBody2 {
-    contentType?: string;
-    contentDisposition?: string;
-    headers?: { [key: string]: string[]; };
-    length?: number;
-    name?: string;
-    fileName?: string;
-
-    [key: string]: any;
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }
 
 export interface FileResponse {

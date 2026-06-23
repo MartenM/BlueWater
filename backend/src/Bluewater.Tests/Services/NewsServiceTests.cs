@@ -5,6 +5,7 @@ using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
 using Bluewater.Tests.TestSupport;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bluewater.Tests.Services;
@@ -134,7 +135,7 @@ public class NewsServiceTests : SqliteServiceTestBase
     {
         var request = new UpsertNewsPostRequest("Title", "Short", null, false, Guid.NewGuid());
 
-        await Should.ThrowAsync<BlueValidationException>(() => _sut.CreateAsync(request));
+        await Should.ThrowAsync<ValidationException>(() => _sut.CreateAsync(request));
     }
 
     [Fact]
@@ -146,7 +147,31 @@ public class NewsServiceTests : SqliteServiceTestBase
 
         var request = new UpsertNewsPostRequest("Title", "Short", null, false, icon.Id);
 
-        await Should.ThrowAsync<BlueValidationException>(() => _sut.CreateAsync(request));
+        await Should.ThrowAsync<ValidationException>(() => _sut.CreateAsync(request));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_WhenTitleIsEmpty()
+    {
+        var request = new UpsertNewsPostRequest("", "Short", null, false, null);
+
+        await Should.ThrowAsync<ValidationException>(() => _sut.CreateAsync(request));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_WhenShortTextIsEmpty()
+    {
+        var request = new UpsertNewsPostRequest("Title", "", null, false, null);
+
+        await Should.ThrowAsync<ValidationException>(() => _sut.CreateAsync(request));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Throws_WhenTitleExceedsMaxLength()
+    {
+        var request = new UpsertNewsPostRequest(new string('a', 201), "Short", null, false, null);
+
+        await Should.ThrowAsync<ValidationException>(() => _sut.CreateAsync(request));
     }
 
     [Fact]
@@ -166,6 +191,15 @@ public class NewsServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task UpdateAsync_Throws_WhenTitleIsEmpty()
+    {
+        var post = await AddPostAsync("Title");
+
+        await Should.ThrowAsync<ValidationException>(
+            () => _sut.UpdateAsync(post.Id, new UpsertNewsPostRequest("", "Short", null, false, null)));
+    }
+
+    [Fact]
     public async Task UpdateAsync_Throws_WhenPostDoesNotExist()
     {
         await Should.ThrowAsync<BlueNotFoundException>(
@@ -180,7 +214,7 @@ public class NewsServiceTests : SqliteServiceTestBase
         Db.NewsIcons.Remove(icon);
         await Db.SaveChangesAsync();
 
-        await Should.ThrowAsync<BlueValidationException>(
+        await Should.ThrowAsync<ValidationException>(
             () => _sut.UpdateAsync(post.Id, new UpsertNewsPostRequest("Title", "Short", null, false, icon.Id)));
     }
 

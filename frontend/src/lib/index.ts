@@ -8,6 +8,7 @@ export { default as FeaturedPane } from './components/FeaturedPane.svelte';
 export { default as NewsList } from './components/NewsList.svelte';
 export { default as NewsItemShort } from './components/NewsItemShort.svelte';
 export { default as NewsForm } from './components/NewsForm.svelte';
+export { default as IconPicker } from './components/IconPicker.svelte';
 export { default as Pagination } from './components/Pagination.svelte';
 export { default as BlueAlert } from './components/BlueAlert.svelte';
 export * from './navigation';

@@ -3,6 +3,7 @@
 	import { AlertLevel } from '$lib/alert';
 	import type { NewsPostDto } from '$lib/api/apiClient';
 	import BlueAlert from './BlueAlert.svelte';
+	import IconPicker from './IconPicker.svelte';
 
 	let {
 		post,
@@ -18,6 +19,7 @@
 	let shortText = $state(post?.shortText ?? '');
 	let additionalText = $state(post?.additionalText ?? '');
 	let membersOnly = $state(post?.membersOnly ?? false);
+	let iconId = $state<string | undefined>(post?.iconId);
 	let error = $state<string | null>(null);
 	let submitting = $state(false);
 
@@ -32,7 +34,7 @@
 					shortText,
 					additionalText: additionalText || undefined,
 					membersOnly,
-					iconId: post?.iconId
+					iconId
 				})
 			);
 		} catch (e) {
@@ -84,6 +86,8 @@
 		/>
 		<span class="text-sm font-medium text-gray-700">Alleen zichtbaar voor leden</span>
 	</label>
+
+	<IconPicker bind:iconId />
 
 	{#if error}
 		<BlueAlert level={AlertLevel.Danger}>{error}</BlueAlert>
