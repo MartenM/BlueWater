@@ -1,11 +1,5 @@
-import { browser } from '$app/environment';
 import { BluePermission } from '$lib/api/apiClient';
 import { decodeJwt } from './jwt';
-
-export interface AuthTokens {
-	accessToken: string;
-	refreshToken: string;
-}
 
 interface AccessTokenClaims {
 	sub: string;
@@ -19,56 +13,32 @@ export interface SessionUser {
 	permissions: BluePermission[];
 }
 
-const STORAGE_KEY = 'bluewater.auth';
-
-function readStoredTokens(): AuthTokens | null {
-	if (!browser) return null;
-	const raw = localStorage.getItem(STORAGE_KEY);
-	return raw ? JSON.parse(raw) : null;
-}
-
-let tokens = $state<AuthTokens | null>(readStoredTokens());
-
-const user = $derived.by<SessionUser | null>(() => {
-	if (!tokens) return null;
-	const claims = decodeJwt<AccessTokenClaims>(tokens.accessToken);
+export function claimsToSessionUser(accessToken: string): SessionUser {
+	const claims = decodeJwt<AccessTokenClaims>(accessToken);
 	const permission = claims.permission ?? [];
 	return {
 		id: claims.sub,
 		email: claims.email,
 		permissions: Array.isArray(permission) ? permission : [permission]
 	};
-});
-
-function persist(next: AuthTokens | null) {
-	tokens = next;
-	if (!browser) return;
-	if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-	else localStorage.removeItem(STORAGE_KEY);
 }
 
-if (browser) {
-	window.addEventListener('storage', (event) => {
-		if (event.key === STORAGE_KEY) {
-			tokens = event.newValue ? JSON.parse(event.newValue) : null;
-		}
-	});
-}
+let user = $state<SessionUser | null>(null);
 
 export const session = {
-	get tokens() {
-		return tokens;
-	},
 	get user() {
 		return user;
 	},
 	hasPermission(permission: BluePermission): boolean {
 		return user?.permissions.includes(permission) ?? false;
 	},
-	setTokens(next: AuthTokens) {
-		persist(next);
+	setUser(next: SessionUser | null) {
+		user = next;
+	},
+	setUserFromAccessToken(accessToken: string) {
+		user = claimsToSessionUser(accessToken);
 	},
 	clear() {
-		persist(null);
+		user = null;
 	}
 };

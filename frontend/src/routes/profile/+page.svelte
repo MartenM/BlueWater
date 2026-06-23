@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
-	import { requireAuth } from '$lib/auth/requireAuth';
 	import { ProfileView, BlueAlert, AlertLevel } from '$lib';
 	import type { UserProfileDto } from '$lib/api/apiClient';
 
 	let profile = $state<UserProfileDto | null>(null);
 	let error = $state(false);
-
-	$effect(requireAuth);
 
 	onMount(async () => {
 		try {

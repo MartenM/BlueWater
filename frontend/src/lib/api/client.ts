@@ -1,41 +1,36 @@
 import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import { Client, RefreshRequest } from './apiClient';
-import { session, type AuthTokens } from '$lib/auth/session.svelte';
-import { isExpiringSoon } from '$lib/auth/jwt';
+import { session } from '$lib/auth/session.svelte';
 
-const refreshClient = new Client(PUBLIC_API_BASE_URL, { fetch });
+let refreshing: Promise<boolean> | null = null;
 
-let refreshing: Promise<AuthTokens | null> | null = null;
+function credentialedFetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
+	return fetch(url, { ...init, credentials: 'include' });
+}
 
-async function refreshTokens(refreshToken: string): Promise<AuthTokens | null> {
+async function refreshSession(): Promise<boolean> {
 	try {
-		const result = await refreshClient.refresh(new RefreshRequest({ refreshToken }));
-		const next: AuthTokens = { accessToken: result.accessToken, refreshToken: result.refreshToken };
-		session.setTokens(next);
-		return next;
+		const refreshClient = new Client(PUBLIC_API_BASE_URL, { fetch: credentialedFetch });
+		const result = await refreshClient.refresh(new RefreshRequest({ refreshToken: '' }));
+		session.setUserFromAccessToken(result.accessToken);
+		return true;
 	} catch {
 		session.clear();
-		return null;
+		return false;
 	}
 }
 
-async function ensureFreshAccessToken(): Promise<string | null> {
-	const current = session.tokens;
-	if (!current) return null;
-	if (!isExpiringSoon(current.accessToken)) return current.accessToken;
+async function authFetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
+	const response = await credentialedFetch(url, init);
+	if (response.status !== 401) return response;
 
-	refreshing ??= refreshTokens(current.refreshToken).finally(() => {
+	refreshing ??= refreshSession().finally(() => {
 		refreshing = null;
 	});
 	const refreshed = await refreshing;
-	return refreshed?.accessToken ?? null;
-}
+	if (!refreshed) return response;
 
-async function authFetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
-	const accessToken = await ensureFreshAccessToken();
-	const headers = new Headers(init?.headers);
-	if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-	return fetch(url, { ...init, headers });
+	return credentialedFetch(url, init);
 }
 
 export const apiClient = new Client(PUBLIC_API_BASE_URL, { fetch: authFetch });

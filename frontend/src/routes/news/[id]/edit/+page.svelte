@@ -3,9 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { session } from '$lib/auth/session.svelte';
 	import { NewsForm } from '$lib';
-	import { BluePermission } from '$lib/api/apiClient';
 	import type { NewsPostDto, UpsertNewsPostRequest } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
@@ -13,12 +11,6 @@
 
 	let post = $state<NewsPostDto | null>(null);
 	let error = $state(false);
-
-	$effect(() => {
-		if (!session.hasPermission(BluePermission.NewsModify)) {
-			goto(resolve('/news'));
-		}
-	});
 
 	onMount(async () => {
 		try {

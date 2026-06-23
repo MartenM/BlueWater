@@ -10,11 +10,6 @@ export function decodeJwt<T = Record<string, unknown>>(token: string): T {
 	return JSON.parse(base64UrlDecode(payload));
 }
 
-export function decodeJwtHeader<T = Record<string, unknown>>(token: string): T {
-	const header = token.split('.')[0];
-	return JSON.parse(base64UrlDecode(header));
-}
-
 export function getExpiryMs(token: string): number {
 	return decodeJwt<{ exp: number }>(token).exp * 1000;
 }

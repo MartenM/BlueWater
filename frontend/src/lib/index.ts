@@ -17,4 +17,3 @@ export * from './alert';
 export { apiClient } from './api/client';
 export * from './auth/auth';
 export { session } from './auth/session.svelte';
-export { requireAuth } from './auth/requireAuth';

@@ -1,9 +1,14 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.png';
-	import { Footer, NavBar } from '$lib';
+	import { Footer, NavBar, session } from '$lib';
+	import type { LayoutProps } from './$types';
 
-	let { children } = $props();
+	let { data, children }: LayoutProps = $props();
+
+	$effect(() => {
+		session.setUser(data.user);
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

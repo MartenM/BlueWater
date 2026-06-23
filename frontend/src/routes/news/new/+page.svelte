@@ -2,16 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { session } from '$lib/auth/session.svelte';
 	import { NewsForm } from '$lib';
-	import { BluePermission } from '$lib/api/apiClient';
 	import type { UpsertNewsPostRequest } from '$lib/api/apiClient';
-
-	$effect(() => {
-		if (!session.hasPermission(BluePermission.NewsModify)) {
-			goto(resolve('/news'));
-		}
-	});
 
 	async function handleCreate(request: UpsertNewsPostRequest) {
 		const result = await apiClient.newsPOST(request);

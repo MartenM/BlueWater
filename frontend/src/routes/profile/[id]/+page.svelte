@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
-	import { requireAuth } from '$lib/auth/requireAuth';
 	import { ProfileView } from '$lib';
 	import type { UserProfileDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
@@ -10,8 +9,6 @@
 
 	let profile = $state<UserProfileDto | null>(null);
 	let error = $state(false);
-
-	$effect(requireAuth);
 
 	onMount(async () => {
 		try {
