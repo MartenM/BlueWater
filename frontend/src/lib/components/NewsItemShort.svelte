@@ -3,9 +3,9 @@
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import { renderMarkdown } from '$lib/markdown';
-	import type { NewsPostDto } from '$lib/api/apiClient';
+	import type { INewsPostDto } from '$lib/api/apiClient';
 
-	let { item }: { item: NewsPostDto } = $props();
+	let { item }: { item: INewsPostDto } = $props();
 
 	const dateFormatter = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' });
 

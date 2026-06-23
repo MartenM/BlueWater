@@ -1,25 +1,29 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
+	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page as pageState } from '$app/state';
 	import { apiClient } from '$lib/api/client';
 	import { HasPermission, NewsItemShort, Pagination } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
-	import type { NewsPostDto } from '$lib/api/apiClient';
+	import type { PageProps } from './$types';
 
 	const NEWS_PAGE_SIZE = 5;
 
-	let items = $state<NewsPostDto[]>([]);
-	let totalCount = $state(0);
-	let error = $state(false);
+	let { data }: PageProps = $props();
 
-	const currentPage = $derived(Number(pageState.url.searchParams.get('page') ?? '1') || 1);
+	let currentPage = $state(untrack(() => data.page));
+	let items = $state(untrack(() => data.items));
+	let totalCount = $state(untrack(() => data.totalCount));
+	let error = $state(untrack(() => data.error));
+
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / NEWS_PAGE_SIZE)));
 
-	$effect(() => {
-		const requestedPage = currentPage;
+	function handlePageChange(next: number) {
+		currentPage = next;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- query-only pagination state, not a static route resolve() can check
+		pushState(`?page=${next}`, {});
 		apiClient
-			.newsGET(requestedPage, NEWS_PAGE_SIZE)
+			.newsGET(next, NEWS_PAGE_SIZE)
 			.then((result) => {
 				items = result.items;
 				totalCount = result.totalCount;
@@ -28,10 +32,6 @@
 			.catch(() => {
 				error = true;
 			});
-	});
-
-	function handlePageChange(next: number) {
-		goto(resolve(`/news?page=${next}`), { keepFocus: true, noScroll: true });
 	}
 </script>
 

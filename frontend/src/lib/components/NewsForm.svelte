@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { ApiException, UpsertNewsPostRequest } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
 	import type { NewsPostDto } from '$lib/api/apiClient';
@@ -15,11 +16,11 @@
 		onSubmit: (request: UpsertNewsPostRequest) => Promise<void>;
 	} = $props();
 
-	let title = $state(post?.title ?? '');
-	let shortText = $state(post?.shortText ?? '');
-	let additionalText = $state(post?.additionalText ?? '');
-	let membersOnly = $state(post?.membersOnly ?? false);
-	let iconId = $state<string | undefined>(post?.iconId);
+	let title = $state(untrack(() => post?.title) ?? '');
+	let shortText = $state(untrack(() => post?.shortText) ?? '');
+	let additionalText = $state(untrack(() => post?.additionalText) ?? '');
+	let membersOnly = $state(untrack(() => post?.membersOnly) ?? false);
+	let iconId = $state<string | undefined>(untrack(() => post?.iconId));
 	let error = $state<string | null>(null);
 	let submitting = $state(false);
 

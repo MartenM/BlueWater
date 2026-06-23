@@ -77,6 +77,11 @@ export async function resolveUserFromCookies(
 	}
 }
 
+export function accessTokenAuthHeader(cookies: Cookies): Record<string, string> {
+	const token = cookies.get(ACCESS_TOKEN_COOKIE);
+	return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export function requireUser(user: SessionUser | null, pathname: string): SessionUser {
 	if (!user) {
 		redirect(303, `/login?redirectTo=${encodeURIComponent(pathname)}`);
