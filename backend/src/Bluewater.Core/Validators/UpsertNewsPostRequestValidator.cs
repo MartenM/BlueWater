@@ -9,8 +9,12 @@ public class UpsertNewsPostRequestValidator : AbstractValidator<UpsertNewsPostRe
 {
     public UpsertNewsPostRequestValidator(BluewaterContext db)
     {
-        RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.ShortText).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.Title).NotEmpty()
+            .MinimumLength(3)
+            .MaximumLength(200);
+        RuleFor(x => x.ShortText).NotEmpty()
+            .MinimumLength(3)
+            .MaximumLength(500);
         RuleFor(x => x.AdditionalText).MaximumLength(10000);
 
         // A news icon can only be assigned while it's active - once soft-deleted (NewsIconDelete),
