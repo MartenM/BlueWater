@@ -25,7 +25,7 @@ test('agenda creation shows field-level validation errors from the API', async (
 	await page
 		.getByLabel('Omschrijving')
 		.fill('Een omschrijving voor de e2e test van het formulier.');
-	await page.getByLabel('Datum').fill(futureDateInputValue(2));
+	await page.getByLabel('Datum', { exact: true }).fill(futureDateInputValue(2));
 	await page.getByLabel('Einddatum').fill(futureDateInputValue(1));
 	await page.getByRole('button', { name: 'Plaatsen' }).click();
 
@@ -44,7 +44,7 @@ test('agenda creation succeeds with valid input', async ({ page }) => {
 	await page
 		.getByLabel('Omschrijving')
 		.fill('Een omschrijving voor de e2e test van het formulier.');
-	await page.getByLabel('Datum').fill(futureDateInputValue(1));
+	await page.getByLabel('Datum', { exact: true }).fill(futureDateInputValue(1));
 	await page.getByRole('button', { name: 'Plaatsen' }).click();
 
 	await expect(page).toHaveURL(/\/agenda\/[0-9a-f-]+$/);
@@ -62,7 +62,7 @@ test('agenda item can be edited and deleted', async ({ page }) => {
 	await page
 		.getByLabel('Omschrijving')
 		.fill('Een omschrijving voor de e2e test van het formulier.');
-	await page.getByLabel('Datum').fill(futureDateInputValue(1));
+	await page.getByLabel('Datum', { exact: true }).fill(futureDateInputValue(1));
 	await page.getByRole('button', { name: 'Plaatsen' }).click();
 	await expect(page).toHaveURL(/\/agenda\/[0-9a-f-]+$/);
 
