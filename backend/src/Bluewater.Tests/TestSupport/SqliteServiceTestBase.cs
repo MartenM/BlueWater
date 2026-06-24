@@ -97,6 +97,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserProfileService, UserProfileService>();
         services.AddScoped<INewsService, NewsService>();
         services.AddScoped<INewsIconService, NewsIconService>();
+        services.AddScoped<IAgendaService, AgendaService>();
         services.AddScoped<BluewaterContextSeeder>();
         services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 

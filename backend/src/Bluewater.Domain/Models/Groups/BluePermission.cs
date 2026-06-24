@@ -12,4 +12,5 @@ public enum BluePermission
     NewsModify = 8,
     NewsIconCreate = 9,
     NewsIconDelete = 10,
+    AgendaModify = 11,
 }

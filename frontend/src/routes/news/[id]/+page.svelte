@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
@@ -7,10 +7,9 @@
 	import { HasPermission, BlueAlert } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
-	import type { NewsPostDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
-	let { params }: PageProps = $props();
+	let { data }: PageProps = $props();
 
 	const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
 		day: 'numeric',
@@ -18,26 +17,19 @@
 		year: 'numeric'
 	});
 
-	let post = $state<NewsPostDto | null>(null);
-	let error = $state(false);
+	let post = $state(untrack(() => data.post));
+	let error = $state(untrack(() => data.error));
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
 	let iconUrl = $state<string | null>(null);
 
 	onMount(async () => {
+		if (!post?.iconId) return;
 		try {
-			post = await apiClient.newsGET2(params.id);
+			const icon = await apiClient.content(post.iconId);
+			iconUrl = URL.createObjectURL(icon.data);
 		} catch {
-			error = true;
-			return;
-		}
-		if (post.iconId) {
-			try {
-				const icon = await apiClient.content(post.iconId);
-				iconUrl = URL.createObjectURL(icon.data);
-			} catch {
-				// Icon failed to load; the post still renders without it.
-			}
+			// Icon failed to load; the post still renders without it.
 		}
 	});
 

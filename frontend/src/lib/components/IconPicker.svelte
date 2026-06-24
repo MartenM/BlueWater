@@ -2,9 +2,10 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
 	import { session } from '$lib/auth/session.svelte';
-	import { ApiException, BluePermission } from '$lib/api/apiClient';
+	import { BluePermission } from '$lib/api/apiClient';
 	import type { NewsIconDto } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
+	import { FormState } from '$lib/forms/formState.svelte';
 	import BlueAlert from './BlueAlert.svelte';
 
 	let { iconId = $bindable() }: { iconId: string | undefined } = $props();
@@ -16,8 +17,7 @@
 
 	let uploadName = $state('');
 	let uploadFile = $state<File | null>(null);
-	let uploading = $state(false);
-	let uploadError = $state<string | null>(null);
+	const uploadForm = new FormState();
 
 	const canUpload = $derived(session.hasPermission(BluePermission.NewsIconCreate));
 
@@ -49,31 +49,20 @@
 		uploadFile = (event.currentTarget as HTMLInputElement).files?.[0] ?? null;
 	}
 
-	async function handleUpload(event: SubmitEvent) {
+	function handleUpload(event: SubmitEvent) {
 		event.preventDefault();
 		if (!uploadFile) return;
-		uploading = true;
-		uploadError = null;
-		try {
+		uploadForm.submit(async () => {
 			const icon = await apiClient.newsIconsPOST(uploadName, {
-				data: uploadFile,
-				fileName: uploadFile.name
+				data: uploadFile!,
+				fileName: uploadFile!.name
 			});
 			icons = [...icons, icon];
 			await loadThumbnail(icon);
 			iconId = icon.id;
 			uploadName = '';
 			uploadFile = null;
-		} catch (e) {
-			uploadError =
-				e instanceof ApiException && e.result?.errors
-					? Object.values(e.result.errors as Record<string, string[]>)
-							.flat()
-							.join(' ')
-					: 'Uploaden is mislukt. Probeer het later opnieuw.';
-		} finally {
-			uploading = false;
-		}
+		});
 	}
 </script>
 
@@ -139,14 +128,14 @@
 			</label>
 			<button
 				type="submit"
-				disabled={uploading || !uploadFile}
+				disabled={uploadForm.submitting || !uploadFile}
 				class="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-content hover:bg-primary-hover disabled:opacity-60"
 			>
 				Uploaden
 			</button>
 		</form>
-		{#if uploadError}
-			<BlueAlert level={AlertLevel.Danger}>{uploadError}</BlueAlert>
+		{#if uploadForm.formError}
+			<BlueAlert level={AlertLevel.Danger}>{uploadForm.formError}</BlueAlert>
 		{/if}
 	{/if}
 </div>

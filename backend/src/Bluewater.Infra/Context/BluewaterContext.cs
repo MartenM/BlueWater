@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
+using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
@@ -35,6 +36,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
     public DbSet<NewsIcon> NewsIcons => Set<NewsIcon>();
+    public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -179,6 +181,11 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany()
                 .HasForeignKey(x => x.FileId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<AgendaItem>(e =>
+        {
+            e.HasKey(x => x.Id);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { ApiException, UpsertNewsPostRequest } from '$lib/api/apiClient';
+	import { UpsertNewsPostRequest } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
+	import { FormState } from '$lib/forms/formState.svelte';
 	import type { NewsPostDto } from '$lib/api/apiClient';
 	import BlueAlert from './BlueAlert.svelte';
+	import FormField from './FormField.svelte';
 	import IconPicker from './IconPicker.svelte';
 
 	let {
@@ -21,15 +23,12 @@
 	let additionalText = $state(untrack(() => post?.additionalText) ?? '');
 	let membersOnly = $state(untrack(() => post?.membersOnly) ?? false);
 	let iconId = $state<string | undefined>(untrack(() => post?.iconId));
-	let error = $state<string | null>(null);
-	let submitting = $state(false);
+	const form = new FormState();
 
-	async function handleSubmit(event: SubmitEvent) {
+	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		error = null;
-		submitting = true;
-		try {
-			await onSubmit(
+		form.submit(() =>
+			onSubmit(
 				new UpsertNewsPostRequest({
 					title,
 					shortText,
@@ -37,47 +36,47 @@
 					membersOnly,
 					iconId
 				})
-			);
-		} catch (e) {
-			error =
-				e instanceof ApiException && e.result?.errors
-					? Object.values(e.result.errors as Record<string, string[]>)
-							.flat()
-							.join(' ')
-					: 'Er ging iets mis. Probeer het later opnieuw.';
-		} finally {
-			submitting = false;
-		}
+			)
+		);
 	}
 </script>
 
 <form class="flex flex-col gap-4" onsubmit={handleSubmit}>
-	<label class="flex flex-col gap-1">
-		<span class="text-sm font-medium text-gray-700">Titel</span>
-		<input
-			type="text"
-			required
-			bind:value={title}
-			class="rounded-md border-gray-300 focus:border-primary focus:ring-primary"
-		/>
-	</label>
+	<FormField label="Titel" errors={form.errorsFor('title')}>
+		{#snippet children(invalid)}
+			<input
+				type="text"
+				required
+				bind:value={title}
+				class="rounded-md focus:border-primary focus:ring-primary {invalid
+					? 'border-red-400'
+					: 'border-gray-300'}"
+			/>
+		{/snippet}
+	</FormField>
 
-	<label class="flex flex-col gap-1">
-		<span class="text-sm font-medium text-gray-700">Korte tekst</span>
-		<textarea
-			required
-			rows="4"
-			bind:value={shortText}
-			class="rounded-md border-gray-300 focus:border-primary focus:ring-primary"></textarea>
-	</label>
+	<FormField label="Korte tekst" errors={form.errorsFor('shortText')}>
+		{#snippet children(invalid)}
+			<textarea
+				required
+				rows="4"
+				bind:value={shortText}
+				class="rounded-md focus:border-primary focus:ring-primary {invalid
+					? 'border-red-400'
+					: 'border-gray-300'}"></textarea>
+		{/snippet}
+	</FormField>
 
-	<label class="flex flex-col gap-1">
-		<span class="text-sm font-medium text-gray-700">Aanvullende tekst</span>
-		<textarea
-			rows="8"
-			bind:value={additionalText}
-			class="rounded-md border-gray-300 focus:border-primary focus:ring-primary"></textarea>
-	</label>
+	<FormField label="Aanvullende tekst" errors={form.errorsFor('additionalText')}>
+		{#snippet children(invalid)}
+			<textarea
+				rows="8"
+				bind:value={additionalText}
+				class="rounded-md focus:border-primary focus:ring-primary {invalid
+					? 'border-red-400'
+					: 'border-gray-300'}"></textarea>
+		{/snippet}
+	</FormField>
 
 	<label class="flex items-center gap-2">
 		<input
@@ -89,14 +88,17 @@
 	</label>
 
 	<IconPicker bind:iconId />
+	{#each form.errorsFor('iconId') as message (message)}
+		<span class="text-sm text-red-600">{message}</span>
+	{/each}
 
-	{#if error}
-		<BlueAlert level={AlertLevel.Danger}>{error}</BlueAlert>
+	{#if form.formError}
+		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
 	{/if}
 
 	<button
 		type="submit"
-		disabled={submitting}
+		disabled={form.submitting}
 		class="mt-2 self-start rounded-md bg-primary px-4 py-2 font-medium text-primary-content hover:bg-primary-hover disabled:opacity-60"
 	>
 		{submitLabel}
