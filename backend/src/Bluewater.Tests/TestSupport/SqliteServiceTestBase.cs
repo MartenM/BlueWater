@@ -95,6 +95,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<INewsService, NewsService>();
         services.AddScoped<INewsIconService, NewsIconService>();
         services.AddScoped<IAgendaService, AgendaService>();

@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { AgendaForm } from '$lib';
+	import { AgendaForm, breadcrumbs } from '$lib';
 	import type { AgendaItemDto, UpsertAgendaItemRequest } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
@@ -24,6 +24,11 @@
 		await apiClient.agendaPUT(params.id, request);
 		goto(resolve('/agenda/[id]', { id: params.id }));
 	}
+
+	$effect(() => {
+		breadcrumbs.set([{ label: 'Agenda', href: '/agenda' }, { label: 'Agendapunt bewerken' }]);
+		return () => breadcrumbs.clear();
+	});
 </script>
 
 <div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">

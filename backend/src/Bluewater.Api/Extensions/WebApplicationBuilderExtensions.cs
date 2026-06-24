@@ -118,6 +118,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         builder.Services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();
         builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+        builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<INewsService, NewsService>();
         builder.Services.AddScoped<INewsIconService, NewsIconService>();
         builder.Services.AddScoped<IAgendaService, AgendaService>();

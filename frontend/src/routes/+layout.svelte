@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.png';
-	import { Footer, NavBar, session } from '$lib';
+	import { Breadcrumbs, Footer, NavBar, session } from '$lib';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -14,6 +14,7 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <div class="flex min-h-screen flex-col">
 	<NavBar />
+	<Breadcrumbs />
 	<main class="flex-1">
 		{@render children()}
 	</main>

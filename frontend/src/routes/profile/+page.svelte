@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
-	import { ProfileView, BlueAlert, AlertLevel } from '$lib';
+	import { ProfileView, BlueAlert, AlertLevel, breadcrumbs } from '$lib';
 	import type { UserProfileDto } from '$lib/api/apiClient';
 
 	let profile = $state<UserProfileDto | null>(null);
@@ -13,6 +13,11 @@
 		} catch {
 			error = true;
 		}
+	});
+
+	$effect(() => {
+		breadcrumbs.set([{ label: 'Mijn profiel' }]);
+		return () => breadcrumbs.clear();
 	});
 </script>
 

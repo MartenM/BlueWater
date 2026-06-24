@@ -9,7 +9,7 @@ public class BlueUser : IdentityUser<Guid>
     public string SurnamePrefix { get; set; } = string.Empty;
     public string Surname { get; set; } = string.Empty;
 
-    public string Fullname => $"{Firstname} {(string.IsNullOrEmpty(SurnamePrefix) ? $"{Surname}" : $"{SurnamePrefix} {Surname}" )} {Surname}";
+    public string Fullname => string.IsNullOrEmpty(SurnamePrefix) ? $"{Firstname} {Surname}" : $"{Firstname} {SurnamePrefix} {Surname}";
 
     public BlueAddress Address { get; set; } = new BlueAddress();
 

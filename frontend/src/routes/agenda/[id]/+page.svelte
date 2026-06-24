@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import { renderMarkdown } from '$lib/markdown';
-	import { HasPermission, BlueAlert } from '$lib';
+	import { HasPermission, BlueAlert, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
@@ -27,6 +27,12 @@
 		const [hours, minutes] = time.split(':');
 		return timeFormatter.format(new Date(0, 0, 0, Number(hours), Number(minutes)));
 	}
+
+	$effect(() => {
+		if (!item) return;
+		breadcrumbs.set([{ label: 'Agenda', href: '/agenda' }, { label: item.title }]);
+		return () => breadcrumbs.clear();
+	});
 
 	async function handleDelete() {
 		if (!item || !confirm('Weet je zeker dat je dit agendapunt wilt verwijderen?')) return;

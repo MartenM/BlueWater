@@ -2815,6 +2815,395 @@ export class Client {
         }
         return Promise.resolve<void>(null as any);
     }
+
+    /**
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @param search (optional) 
+     * @return OK
+     */
+    listUsers(page: number | undefined, pageSize: number | undefined, search: string | undefined): Promise<PagedResultOfUserDto> {
+        let url_ = this.baseUrl + "/api/Users?";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        if (search === null)
+            throw new globalThis.Error("The parameter 'search' cannot be null.");
+        else if (search !== undefined)
+            url_ += "search=" + encodeURIComponent("" + search) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processListUsers(_response);
+        });
+    }
+
+    protected processListUsers(response: Response): Promise<PagedResultOfUserDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultOfUserDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PagedResultOfUserDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    createUser(body: CreateUserRequest): Promise<CreateUserResponse> {
+        let url_ = this.baseUrl + "/api/Users";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCreateUser(_response);
+        });
+    }
+
+    protected processCreateUser(response: Response): Promise<CreateUserResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CreateUserResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CreateUserResponse>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getUser(id: string): Promise<UserDto> {
+        let url_ = this.baseUrl + "/api/Users/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetUser(_response);
+        });
+    }
+
+    protected processGetUser(response: Response): Promise<UserDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    updateUser(id: string, body: UpdateUserRequest): Promise<UserDto> {
+        let url_ = this.baseUrl + "/api/Users/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processUpdateUser(_response);
+        });
+    }
+
+    protected processUpdateUser(response: Response): Promise<UserDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    deleteUser(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/Users/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processDeleteUser(_response);
+        });
+    }
+
+    protected processDeleteUser(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @param file (optional) 
+     * @return OK
+     */
+    setUserPicture(id: string, file: FileParameter | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/Users/{id}/picture";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetUserPicture(_response);
+        });
+    }
+
+    protected processSetUserPicture(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
 }
 
 export class AgendaItemDto implements IAgendaItemDto {
@@ -3005,6 +3394,62 @@ export interface IAuthResponse {
     [key: string]: any;
 }
 
+export class BlueAddressDto implements IBlueAddressDto {
+    address!: string;
+    city!: string;
+    zip!: string;
+
+    [key: string]: any;
+
+    constructor(data?: IBlueAddressDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.address = _data["address"];
+            this.city = _data["city"];
+            this.zip = _data["zip"];
+        }
+    }
+
+    static fromJS(data: any): BlueAddressDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new BlueAddressDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["address"] = this.address;
+        data["city"] = this.city;
+        data["zip"] = this.zip;
+        return data;
+    }
+}
+
+export interface IBlueAddressDto {
+    address: string;
+    city: string;
+    zip: string;
+
+    [key: string]: any;
+}
+
 export enum BluePermission {
     AdminViewGroups = "AdminViewGroups",
     AdminModifyGroups = "AdminModifyGroups",
@@ -3017,6 +3462,14 @@ export enum BluePermission {
     NewsIconCreate = "NewsIconCreate",
     NewsIconDelete = "NewsIconDelete",
     AgendaModify = "AgendaModify",
+    AdminUsersView = "AdminUsersView",
+    AdminUsersModify = "AdminUsersModify",
+}
+
+export enum BlueUserSex {
+    Male = "Male",
+    Female = "Female",
+    Unknown = "Unknown",
 }
 
 export class CreateUserGroupInstanceRequest implements ICreateUserGroupInstanceRequest {
@@ -3067,6 +3520,153 @@ export class CreateUserGroupInstanceRequest implements ICreateUserGroupInstanceR
 export interface ICreateUserGroupInstanceRequest {
     userGroupId: string;
     seasonId: string;
+
+    [key: string]: any;
+}
+
+export class CreateUserRequest implements ICreateUserRequest {
+    userName!: string;
+    email!: string;
+    firstname!: string;
+    surnamePrefix!: string;
+    surname!: string;
+    phoneNumber!: string | undefined;
+    address!: BlueAddressDto;
+    emergencyAddress!: BlueAddressDto;
+    emergencyPhoneNumber!: string;
+    dateOfBirth!: Date;
+    gender!: BlueUserSex;
+
+    [key: string]: any;
+
+    constructor(data?: ICreateUserRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.address = new BlueAddressDto();
+            this.emergencyAddress = new BlueAddressDto();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.userName = _data["userName"];
+            this.email = _data["email"];
+            this.firstname = _data["firstname"];
+            this.surnamePrefix = _data["surnamePrefix"];
+            this.surname = _data["surname"];
+            this.phoneNumber = _data["phoneNumber"];
+            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
+            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
+            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
+            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
+            this.gender = _data["gender"];
+        }
+    }
+
+    static fromJS(data: any): CreateUserRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateUserRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["userName"] = this.userName;
+        data["email"] = this.email;
+        data["firstname"] = this.firstname;
+        data["surnamePrefix"] = this.surnamePrefix;
+        data["surname"] = this.surname;
+        data["phoneNumber"] = this.phoneNumber;
+        data["address"] = this.address ? this.address.toJSON() : undefined as any;
+        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
+        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
+        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
+        data["gender"] = this.gender;
+        return data;
+    }
+}
+
+export interface ICreateUserRequest {
+    userName: string;
+    email: string;
+    firstname: string;
+    surnamePrefix: string;
+    surname: string;
+    phoneNumber: string | undefined;
+    address: BlueAddressDto;
+    emergencyAddress: BlueAddressDto;
+    emergencyPhoneNumber: string;
+    dateOfBirth: Date;
+    gender: BlueUserSex;
+
+    [key: string]: any;
+}
+
+export class CreateUserResponse implements ICreateUserResponse {
+    user!: UserDto;
+    generatedPassword!: string;
+
+    [key: string]: any;
+
+    constructor(data?: ICreateUserResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.user = new UserDto();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : new UserDto();
+            this.generatedPassword = _data["generatedPassword"];
+        }
+    }
+
+    static fromJS(data: any): CreateUserResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateUserResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["user"] = this.user ? this.user.toJSON() : undefined as any;
+        data["generatedPassword"] = this.generatedPassword;
+        return data;
+    }
+}
+
+export interface ICreateUserResponse {
+    user: UserDto;
+    generatedPassword: string;
 
     [key: string]: any;
 }
@@ -3413,6 +4013,77 @@ export interface IPagedResultOfNewsPostDto {
     [key: string]: any;
 }
 
+export class PagedResultOfUserDto implements IPagedResultOfUserDto {
+    items!: UserDto[];
+    page!: number;
+    pageSize!: number;
+    totalCount!: number;
+
+    [key: string]: any;
+
+    constructor(data?: IPagedResultOfUserDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.items = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(UserDto.fromJS(item));
+            }
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfUserDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfUserDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+}
+
+export interface IPagedResultOfUserDto {
+    items: UserDto[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+
+    [key: string]: any;
+}
+
 export class ProblemDetails implements IProblemDetails {
     type?: string | undefined;
     title?: string | undefined;
@@ -3521,6 +4192,98 @@ export class RefreshRequest implements IRefreshRequest {
 
 export interface IRefreshRequest {
     refreshToken: string;
+
+    [key: string]: any;
+}
+
+export class UpdateUserRequest implements IUpdateUserRequest {
+    userName!: string;
+    email!: string;
+    firstname!: string;
+    surnamePrefix!: string;
+    surname!: string;
+    phoneNumber!: string | undefined;
+    address!: BlueAddressDto;
+    emergencyAddress!: BlueAddressDto;
+    emergencyPhoneNumber!: string;
+    dateOfBirth!: Date;
+    gender!: BlueUserSex;
+
+    [key: string]: any;
+
+    constructor(data?: IUpdateUserRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.address = new BlueAddressDto();
+            this.emergencyAddress = new BlueAddressDto();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.userName = _data["userName"];
+            this.email = _data["email"];
+            this.firstname = _data["firstname"];
+            this.surnamePrefix = _data["surnamePrefix"];
+            this.surname = _data["surname"];
+            this.phoneNumber = _data["phoneNumber"];
+            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
+            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
+            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
+            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
+            this.gender = _data["gender"];
+        }
+    }
+
+    static fromJS(data: any): UpdateUserRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateUserRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["userName"] = this.userName;
+        data["email"] = this.email;
+        data["firstname"] = this.firstname;
+        data["surnamePrefix"] = this.surnamePrefix;
+        data["surname"] = this.surname;
+        data["phoneNumber"] = this.phoneNumber;
+        data["address"] = this.address ? this.address.toJSON() : undefined as any;
+        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
+        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
+        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
+        data["gender"] = this.gender;
+        return data;
+    }
+}
+
+export interface IUpdateUserRequest {
+    userName: string;
+    email: string;
+    firstname: string;
+    surnamePrefix: string;
+    surname: string;
+    phoneNumber: string | undefined;
+    address: BlueAddressDto;
+    emergencyAddress: BlueAddressDto;
+    emergencyPhoneNumber: string;
+    dateOfBirth: Date;
+    gender: BlueUserSex;
 
     [key: string]: any;
 }
@@ -3761,6 +4524,110 @@ export interface IUpsertUserGroupRequest {
     name: string;
     description: string;
     userGroupCategoryId: string;
+
+    [key: string]: any;
+}
+
+export class UserDto implements IUserDto {
+    id!: string;
+    userName!: string;
+    email!: string;
+    firstname!: string;
+    surnamePrefix!: string;
+    surname!: string;
+    fullname!: string;
+    phoneNumber!: string | undefined;
+    address!: BlueAddressDto;
+    emergencyAddress!: BlueAddressDto;
+    emergencyPhoneNumber!: string;
+    dateOfBirth!: Date;
+    gender!: BlueUserSex;
+    profilePictureFileId!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IUserDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.address = new BlueAddressDto();
+            this.emergencyAddress = new BlueAddressDto();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.id = _data["id"];
+            this.userName = _data["userName"];
+            this.email = _data["email"];
+            this.firstname = _data["firstname"];
+            this.surnamePrefix = _data["surnamePrefix"];
+            this.surname = _data["surname"];
+            this.fullname = _data["fullname"];
+            this.phoneNumber = _data["phoneNumber"];
+            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
+            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
+            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
+            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
+            this.gender = _data["gender"];
+            this.profilePictureFileId = _data["profilePictureFileId"];
+        }
+    }
+
+    static fromJS(data: any): UserDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["id"] = this.id;
+        data["userName"] = this.userName;
+        data["email"] = this.email;
+        data["firstname"] = this.firstname;
+        data["surnamePrefix"] = this.surnamePrefix;
+        data["surname"] = this.surname;
+        data["fullname"] = this.fullname;
+        data["phoneNumber"] = this.phoneNumber;
+        data["address"] = this.address ? this.address.toJSON() : undefined as any;
+        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
+        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
+        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
+        data["gender"] = this.gender;
+        data["profilePictureFileId"] = this.profilePictureFileId;
+        return data;
+    }
+}
+
+export interface IUserDto {
+    id: string;
+    userName: string;
+    email: string;
+    firstname: string;
+    surnamePrefix: string;
+    surname: string;
+    fullname: string;
+    phoneNumber: string | undefined;
+    address: BlueAddressDto;
+    emergencyAddress: BlueAddressDto;
+    emergencyPhoneNumber: string;
+    dateOfBirth: Date;
+    gender: BlueUserSex;
+    profilePictureFileId: string | undefined;
 
     [key: string]: any;
 }

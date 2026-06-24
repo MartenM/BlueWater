@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
-	import { ProfileView } from '$lib';
+	import { ProfileView, breadcrumbs } from '$lib';
 	import type { UserProfileDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
@@ -16,6 +16,12 @@
 		} catch {
 			error = true;
 		}
+	});
+
+	$effect(() => {
+		if (!profile) return;
+		breadcrumbs.set([{ label: profile.fullname }]);
+		return () => breadcrumbs.clear();
 	});
 </script>
 

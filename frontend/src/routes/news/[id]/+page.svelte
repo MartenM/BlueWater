@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import { renderMarkdown } from '$lib/markdown';
-	import { HasPermission, BlueAlert } from '$lib';
+	import { HasPermission, BlueAlert, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
@@ -35,6 +35,12 @@
 
 	onDestroy(() => {
 		if (iconUrl) URL.revokeObjectURL(iconUrl);
+	});
+
+	$effect(() => {
+		if (!post) return;
+		breadcrumbs.set([{ label: 'Nieuws', href: '/news' }, { label: post.title }]);
+		return () => breadcrumbs.clear();
 	});
 
 	async function handleDelete() {
