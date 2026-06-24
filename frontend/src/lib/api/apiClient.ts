@@ -78,6 +78,471 @@ export class Client {
     }
 
     /**
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @return OK
+     */
+    agendaGET(page: number | undefined, pageSize: number | undefined): Promise<PagedResultOfAgendaItemDto> {
+        let url_ = this.baseUrl + "/api/Agenda?";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAgendaGET(_response);
+        });
+    }
+
+    protected processAgendaGET(response: Response): Promise<PagedResultOfAgendaItemDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultOfAgendaItemDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PagedResultOfAgendaItemDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    agendaPOST(body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
+        let url_ = this.baseUrl + "/api/Agenda";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAgendaPOST(_response);
+        });
+    }
+
+    protected processAgendaPOST(response: Response): Promise<AgendaItemDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AgendaItemDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AgendaItemDto>(null as any);
+    }
+
+    /**
+     * @param start (optional) 
+     * @param end (optional) 
+     * @return OK
+     */
+    range(start: Date | undefined, end: Date | undefined): Promise<AgendaItemDto[]> {
+        let url_ = this.baseUrl + "/api/Agenda/range?";
+        if (start === null)
+            throw new globalThis.Error("The parameter 'start' cannot be null.");
+        else if (start !== undefined)
+            url_ += "start=" + encodeURIComponent(start ? "" + start.toISOString() : "") + "&";
+        if (end === null)
+            throw new globalThis.Error("The parameter 'end' cannot be null.");
+        else if (end !== undefined)
+            url_ += "end=" + encodeURIComponent(end ? "" + end.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRange(_response);
+        });
+    }
+
+    protected processRange(response: Response): Promise<AgendaItemDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(AgendaItemDto.fromJS(item));
+            }
+            else {
+                result200 = null as any;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AgendaItemDto[]>(null as any);
+    }
+
+    /**
+     * @param count (optional) 
+     * @return OK
+     */
+    upcoming(count: number | undefined): Promise<AgendaItemDto[]> {
+        let url_ = this.baseUrl + "/api/Agenda/upcoming?";
+        if (count === null)
+            throw new globalThis.Error("The parameter 'count' cannot be null.");
+        else if (count !== undefined)
+            url_ += "count=" + encodeURIComponent("" + count) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processUpcoming(_response);
+        });
+    }
+
+    protected processUpcoming(response: Response): Promise<AgendaItemDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(AgendaItemDto.fromJS(item));
+            }
+            else {
+                result200 = null as any;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AgendaItemDto[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    agendaGET2(id: string): Promise<AgendaItemDto> {
+        let url_ = this.baseUrl + "/api/Agenda/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAgendaGET2(_response);
+        });
+    }
+
+    protected processAgendaGET2(response: Response): Promise<AgendaItemDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AgendaItemDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AgendaItemDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    agendaPUT(id: string, body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
+        let url_ = this.baseUrl + "/api/Agenda/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAgendaPUT(_response);
+        });
+    }
+
+    protected processAgendaPUT(response: Response): Promise<AgendaItemDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AgendaItemDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AgendaItemDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    agendaDELETE(id: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/Agenda/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAgendaDELETE(_response);
+        });
+    }
+
+    protected processAgendaDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * @return OK
      */
     login(body: LoginRequest): Promise<AuthResponse> {
@@ -2352,6 +2817,94 @@ export class Client {
     }
 }
 
+export class AgendaItemDto implements IAgendaItemDto {
+    id!: string;
+    date!: Date;
+    time!: string | undefined;
+    title!: string;
+    description!: string;
+    endDate!: Date | undefined;
+    endTime!: string | undefined;
+    createdAt!: Date;
+    createdByUserId!: string;
+    updatedAt!: Date | undefined;
+    updatedByUserId!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IAgendaItemDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.id = _data["id"];
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : undefined as any;
+            this.time = _data["time"];
+            this.title = _data["title"];
+            this.description = _data["description"];
+            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : undefined as any;
+            this.endTime = _data["endTime"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
+            this.createdByUserId = _data["createdByUserId"];
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
+            this.updatedByUserId = _data["updatedByUserId"];
+        }
+    }
+
+    static fromJS(data: any): AgendaItemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new AgendaItemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["id"] = this.id;
+        data["date"] = this.date ? formatDate(this.date) : undefined as any;
+        data["time"] = this.time;
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["endDate"] = this.endDate ? formatDate(this.endDate) : undefined as any;
+        data["endTime"] = this.endTime;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
+        data["createdByUserId"] = this.createdByUserId;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
+        data["updatedByUserId"] = this.updatedByUserId;
+        return data;
+    }
+}
+
+export interface IAgendaItemDto {
+    id: string;
+    date: Date;
+    time: string | undefined;
+    title: string;
+    description: string;
+    endDate: Date | undefined;
+    endTime: string | undefined;
+    createdAt: Date;
+    createdByUserId: string;
+    updatedAt: Date | undefined;
+    updatedByUserId: string | undefined;
+
+    [key: string]: any;
+}
+
 export class AssignPermissionRequest implements IAssignPermissionRequest {
     permission!: BluePermission;
 
@@ -2463,6 +3016,7 @@ export enum BluePermission {
     NewsModify = "NewsModify",
     NewsIconCreate = "NewsIconCreate",
     NewsIconDelete = "NewsIconDelete",
+    AgendaModify = "AgendaModify",
 }
 
 export class CreateUserGroupInstanceRequest implements ICreateUserGroupInstanceRequest {
@@ -2717,6 +3271,77 @@ export interface INewsPostDto {
     [key: string]: any;
 }
 
+export class PagedResultOfAgendaItemDto implements IPagedResultOfAgendaItemDto {
+    items!: AgendaItemDto[];
+    page!: number;
+    pageSize!: number;
+    totalCount!: number;
+
+    [key: string]: any;
+
+    constructor(data?: IPagedResultOfAgendaItemDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.items = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(AgendaItemDto.fromJS(item));
+            }
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): PagedResultOfAgendaItemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultOfAgendaItemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+}
+
+export interface IPagedResultOfAgendaItemDto {
+    items: AgendaItemDto[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+
+    [key: string]: any;
+}
+
 export class PagedResultOfNewsPostDto implements IPagedResultOfNewsPostDto {
     items!: NewsPostDto[];
     page!: number;
@@ -2896,6 +3521,74 @@ export class RefreshRequest implements IRefreshRequest {
 
 export interface IRefreshRequest {
     refreshToken: string;
+
+    [key: string]: any;
+}
+
+export class UpsertAgendaItemRequest implements IUpsertAgendaItemRequest {
+    date!: Date;
+    time!: string | undefined;
+    title!: string;
+    description!: string;
+    endDate!: Date | undefined;
+    endTime!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IUpsertAgendaItemRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : undefined as any;
+            this.time = _data["time"];
+            this.title = _data["title"];
+            this.description = _data["description"];
+            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : undefined as any;
+            this.endTime = _data["endTime"];
+        }
+    }
+
+    static fromJS(data: any): UpsertAgendaItemRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpsertAgendaItemRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["date"] = this.date ? formatDate(this.date) : undefined as any;
+        data["time"] = this.time;
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["endDate"] = this.endDate ? formatDate(this.endDate) : undefined as any;
+        data["endTime"] = this.endTime;
+        return data;
+    }
+}
+
+export interface IUpsertAgendaItemRequest {
+    date: Date;
+    time: string | undefined;
+    title: string;
+    description: string;
+    endDate: Date | undefined;
+    endTime: string | undefined;
 
     [key: string]: any;
 }
@@ -3501,6 +4194,12 @@ export interface IValidationProblemDetails {
     errors?: { [key: string]: string[]; };
 
     [key: string]: any;
+}
+
+function formatDate(d: Date) {
+    return d.getFullYear() + '-' + 
+        (d.getMonth() < 9 ? ('0' + (d.getMonth()+1)) : (d.getMonth()+1)) + '-' +
+        (d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate());
 }
 
 export interface FileParameter {

@@ -46,7 +46,7 @@ public class AgendaServiceTests : SqliteServiceTestBase
     {
         var item = await AddItemAsync("Inside", date: new DateOnly(2026, 7, 10));
 
-        var result = await _sut.ListRangeAsync(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
+        var result = await _sut.ListRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
 
         result.Select(x => x.Id).ShouldContain(item.Id);
     }
@@ -56,7 +56,7 @@ public class AgendaServiceTests : SqliteServiceTestBase
     {
         var item = await AddItemAsync("Spanning", date: new DateOnly(2026, 6, 28), endDate: new DateOnly(2026, 7, 3));
 
-        var result = await _sut.ListRangeAsync(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
+        var result = await _sut.ListRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
 
         result.Select(x => x.Id).ShouldContain(item.Id);
     }
@@ -66,7 +66,7 @@ public class AgendaServiceTests : SqliteServiceTestBase
     {
         await AddItemAsync("Before", date: new DateOnly(2026, 6, 1));
 
-        var result = await _sut.ListRangeAsync(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
+        var result = await _sut.ListRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
 
         result.ShouldBeEmpty();
     }
@@ -76,7 +76,7 @@ public class AgendaServiceTests : SqliteServiceTestBase
     {
         await AddItemAsync("After", date: new DateOnly(2026, 8, 1));
 
-        var result = await _sut.ListRangeAsync(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
+        var result = await _sut.ListRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
 
         result.ShouldBeEmpty();
     }
@@ -86,7 +86,7 @@ public class AgendaServiceTests : SqliteServiceTestBase
     {
         var item = await AddItemAsync("Edge", date: new DateOnly(2026, 7, 31));
 
-        var result = await _sut.ListRangeAsync(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 31));
+        var result = await _sut.ListRangeAsync(new DateTime(2026, 7, 1), new DateTime(2026, 7, 31));
 
         result.Select(x => x.Id).ShouldContain(item.Id);
     }

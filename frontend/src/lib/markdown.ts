@@ -11,3 +11,8 @@ export function renderMarkdown(source: string): string {
 		}
 	});
 }
+
+export function markdownToPlainText(source: string): string {
+	const html = marked.parse(source, { async: false, breaks: true });
+	return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, ' ').trim();
+}

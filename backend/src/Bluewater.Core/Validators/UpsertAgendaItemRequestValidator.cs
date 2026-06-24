@@ -8,6 +8,7 @@ public class UpsertAgendaItemRequestValidator : AbstractValidator<UpsertAgendaIt
     public UpsertAgendaItemRequestValidator()
     {
         RuleFor(x => x.Title).NotEmpty()
+            .MinimumLength(3)
             .MaximumLength(200);
         RuleFor(x => x.Description).NotEmpty()
             .MaximumLength(5000);

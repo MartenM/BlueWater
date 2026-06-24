@@ -1,4 +1,5 @@
 using Bluewater.Domain.Models;
+using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
 using Bluewater.Infra.Services.Abstractions;
@@ -157,6 +158,55 @@ public class BluewaterContextSeeder
                 AdditionalText = "Onderwerpen op de agenda zijn onder andere de begroting voor het nieuwe seizoen en de verkiezing van twee nieuwe bestuursleden.",
                 MembersOnly = true,
                 IconId = gyasIcon.Id
+            }
+        );
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        _context.AgendaItems.AddRange(
+            new AgendaItem()
+            {
+                Id = Guid.NewGuid(),
+                Date = today.AddDays(-30),
+                Time = new TimeOnly(19, 30),
+                Title = "Algemene ledenvergadering (najaar)",
+                Description = "De halfjaarlijkse ALV met onder andere de begroting en een terugblik op het afgelopen seizoen.",
+                EndTime = new TimeOnly(21, 30)
+            },
+            new AgendaItem()
+            {
+                Id = Guid.NewGuid(),
+                Date = today.AddDays(-10),
+                Time = new TimeOnly(9, 0),
+                Title = "Onderhoudsochtend botenloods",
+                Description = "Samen met Bowa de boten en de loods klaarmaken voor het nieuwe seizoen.",
+                EndTime = new TimeOnly(13, 0)
+            },
+            new AgendaItem()
+            {
+                Id = Guid.NewGuid(),
+                Date = today.AddDays(3),
+                Time = new TimeOnly(10, 0),
+                Title = "Open dag: kom roeien bij Gyas",
+                Description = "Kennismaken met de boot, de loods en de club. Ervaren roeiers en bestuursleden staan klaar om je rond te leiden.",
+                EndTime = new TimeOnly(16, 0)
+            },
+            new AgendaItem()
+            {
+                Id = Guid.NewGuid(),
+                Date = today.AddDays(7),
+                Title = "Clubkampioenschappen",
+                Description = "Het hele weekend wedstrijden tussen de eigen ploegen, afgesloten met een feestavond in de loods.",
+                EndDate = today.AddDays(8)
+            },
+            new AgendaItem()
+            {
+                Id = Guid.NewGuid(),
+                Date = today.AddDays(21),
+                Time = new TimeOnly(19, 30),
+                Title = "Algemene ledenvergadering (voorjaar)",
+                Description = "Verkiezing van twee nieuwe bestuursleden en een vooruitblik op het komende seizoen.",
+                EndTime = new TimeOnly(21, 30)
             }
         );
 

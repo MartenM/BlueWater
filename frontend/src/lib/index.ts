@@ -9,6 +9,8 @@ export { default as NewsList } from './components/NewsList.svelte';
 export { default as NewsItemShort } from './components/NewsItemShort.svelte';
 export { default as NewsForm } from './components/NewsForm.svelte';
 export { default as IconPicker } from './components/IconPicker.svelte';
+export { default as AgendaItemShort } from './components/AgendaItemShort.svelte';
+export { default as AgendaForm } from './components/AgendaForm.svelte';
 export { default as Pagination } from './components/common/Pagination.svelte';
 export { default as BlueAlert } from './components/BlueAlert.svelte';
 export { default as FormField } from './components/FormField.svelte';

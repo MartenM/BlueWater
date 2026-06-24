@@ -31,7 +31,7 @@ public class AgendaController : ControllerBase
 
     /// <summary>Lists agenda items whose span overlaps the given date range.</summary>
     [HttpGet("range")]
-    public Task<IReadOnlyList<AgendaItemDto>> Range(DateOnly start, DateOnly end)
+    public Task<IReadOnlyList<AgendaItemDto>> Range(DateTime start, DateTime end)
     {
         return _service.ListRangeAsync(start, end);
     }

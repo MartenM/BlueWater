@@ -39,10 +39,13 @@ public class AgendaService : IAgendaService
         return new PagedResult<AgendaItemDto>(items, page, pageSize, totalCount);
     }
 
-    public async Task<IReadOnlyList<AgendaItemDto>> ListRangeAsync(DateOnly start, DateOnly end)
+    public async Task<IReadOnlyList<AgendaItemDto>> ListRangeAsync(DateTime start, DateTime end)
     {
+        var startDate = DateOnly.FromDateTime(start);
+        var endDate = DateOnly.FromDateTime(end);
+
         return await _db.AgendaItems
-            .Where(x => x.Date <= end && (x.EndDate ?? x.Date) >= start)
+            .Where(x => x.Date <= endDate && (x.EndDate ?? x.Date) >= startDate)
             .OrderBy(x => x.Date).ThenBy(x => x.Time)
             .Select(ProjectToDto)
             .ToListAsync();
