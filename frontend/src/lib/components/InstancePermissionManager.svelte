@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { apiClient } from '$lib/api/client';
+	import { Button } from '$lib';
 	import { AssignPermissionRequest, BluePermission } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
 	import BlueAlert from './BlueAlert.svelte';
@@ -95,13 +96,9 @@
 					<option value={permission}>{permission}</option>
 				{/each}
 			</select>
-			<button
-				type="submit"
-				disabled={!selected || busy}
-				class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-			>
+			<Button type="submit" variant="secondary" size="sm" disabled={!selected || busy}>
 				Permissie toevoegen
-			</button>
+			</Button>
 		</form>
 	{/if}
 

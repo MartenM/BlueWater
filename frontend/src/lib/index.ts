@@ -18,6 +18,8 @@ export { default as GroupForm } from './components/GroupForm.svelte';
 export { default as InstanceMemberManager } from './components/InstanceMemberManager.svelte';
 export { default as InstancePermissionManager } from './components/InstancePermissionManager.svelte';
 export { default as Pagination } from './components/common/Pagination.svelte';
+export { default as Button } from './components/common/Button.svelte';
+export { default as Modal } from './components/common/Modal.svelte';
 export { default as BlueAlert } from './components/BlueAlert.svelte';
 export { default as FormField } from './components/FormField.svelte';
 export { default as Breadcrumbs } from './components/Breadcrumbs.svelte';

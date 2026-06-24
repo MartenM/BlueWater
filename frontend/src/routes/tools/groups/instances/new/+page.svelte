@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { BlueAlert, FormField, Spinner, breadcrumbs } from '$lib';
+	import { BlueAlert, Button, FormField, Spinner, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { CreateUserGroupInstanceRequest } from '$lib/api/apiClient';
 	import { FormState } from '$lib/forms/formState.svelte';
@@ -118,13 +118,11 @@
 				<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
 			{/if}
 
-			<button
-				type="submit"
-				disabled={form.submitting || availableSeasons.length === 0}
-				class="mt-2 self-start rounded-md bg-primary px-4 py-2 font-medium text-primary-content hover:bg-primary-hover disabled:opacity-60"
-			>
-				Aanmaken
-			</button>
+			<div class="mt-2 self-start">
+				<Button type="submit" disabled={form.submitting || availableSeasons.length === 0}>
+					Aanmaken
+				</Button>
+			</div>
 		</form>
 	{/if}
 </div>

@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { logout } from '$lib/auth/auth';
 	import { session } from '$lib/auth/session.svelte';
+	import { Button, Modal } from '$lib';
 
 	let dialog: HTMLDialogElement | undefined = $state();
 
@@ -10,12 +11,6 @@
 		dialog?.close();
 		await logout();
 		goto(resolve('/'));
-	}
-
-	function handleDialogClick(event: MouseEvent) {
-		if (event.target === dialog) {
-			dialog.close();
-		}
 	}
 </script>
 
@@ -28,29 +23,17 @@
 		>
 			{session.user.email}
 		</button>
-		<dialog
-			bind:this={dialog}
-			onclick={handleDialogClick}
-			class="m-auto w-full max-w-sm rounded-md border border-gray-200 bg-white p-6 shadow-lg backdrop:bg-black/40"
-		>
-			<h2 class="text-lg font-medium text-black">{session.user.email}</h2>
-			<div class="mt-4 flex justify-end gap-2">
-				<a
-					href={resolve('/profile')}
-					onclick={() => dialog?.close()}
-					class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-black hover:bg-gray-100"
-				>
-					Mijn profiel
-				</a>
-				<button
-					type="button"
-					onclick={handleLogout}
-					class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-black hover:bg-gray-100"
-				>
-					Uitloggen
-				</button>
+		<Modal bind:dialog>
+			<div class="p-6">
+				<h2 class="text-lg font-medium text-black">{session.user.email}</h2>
+				<div class="mt-4 flex justify-end gap-2">
+					<Button variant="secondary" href={resolve('/profile')} onclick={() => dialog?.close()}>
+						Mijn profiel
+					</Button>
+					<Button variant="secondary" onclick={handleLogout}>Uitloggen</Button>
+				</div>
 			</div>
-		</dialog>
+		</Modal>
 	{:else}
 		<a
 			href={resolve('/login')}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { apiClient } from '$lib/api/client';
+	import { Button } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import type { UserDto } from '$lib/api/apiClient';
 	import BlueAlert from './BlueAlert.svelte';
@@ -109,12 +110,7 @@
 				bind:value={search}
 				class="flex-1 rounded-md border-gray-300 text-sm focus:border-primary focus:ring-primary"
 			/>
-			<button
-				type="submit"
-				class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-			>
-				Zoeken
-			</button>
+			<Button type="submit" variant="secondary" size="sm">Zoeken</Button>
 		</form>
 
 		{#if searchResults.length > 0}

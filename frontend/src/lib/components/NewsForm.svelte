@@ -4,6 +4,7 @@
 	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { NewsPostDto } from '$lib/api/apiClient';
+	import { Button } from '$lib';
 	import BlueAlert from './BlueAlert.svelte';
 	import FormField from './FormField.svelte';
 	import IconPicker from './IconPicker.svelte';
@@ -96,11 +97,7 @@
 		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
 	{/if}
 
-	<button
-		type="submit"
-		disabled={form.submitting}
-		class="mt-2 self-start rounded-md bg-primary px-4 py-2 font-medium text-primary-content hover:bg-primary-hover disabled:opacity-60"
-	>
-		{submitLabel}
-	</button>
+	<div class="mt-2 self-start">
+		<Button type="submit" disabled={form.submitting}>{submitLabel}</Button>
+	</div>
 </form>
