@@ -9,4 +9,5 @@ public interface IUserGroupCategoryService
     Task<UserGroupCategoryDto> CreateAsync(UpsertUserGroupCategoryRequest request);
     Task<UserGroupCategoryDto> UpdateAsync(Guid id, UpsertUserGroupCategoryRequest request);
     Task DeleteAsync(Guid id);
+    Task<List<UserGroupCategoryOverviewDto>> GetOverviewAsync(Guid? seasonId);
 }

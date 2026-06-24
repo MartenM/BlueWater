@@ -36,13 +36,11 @@
 	});
 </script>
 
-<div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
-	<h1 class="text-2xl font-bold text-gray-900">Gebruiker bewerken</h1>
-	<div class="mt-6">
-		{#if error}
-			<p class="text-sm text-gray-600">Gebruiker kon niet worden geladen.</p>
-		{:else if user}
-			<UserForm {user} mode="edit" submitLabel="Opslaan" onSubmit={handleEdit} />
-		{/if}
-	</div>
+<h1 class="text-2xl font-bold text-gray-900">Gebruiker bewerken</h1>
+<div class="mt-6">
+	{#if error}
+		<p class="text-sm text-gray-600">Gebruiker kon niet worden geladen.</p>
+	{:else if user}
+		<UserForm {user} mode="edit" submitLabel="Opslaan" onSubmit={handleEdit} />
+	{/if}
 </div>

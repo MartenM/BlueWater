@@ -9,4 +9,5 @@ public interface IUserGroupService
     Task<UserGroupDto> CreateAsync(UpsertUserGroupRequest request);
     Task<UserGroupDto> UpdateAsync(Guid id, UpsertUserGroupRequest request);
     Task DeleteAsync(Guid id);
+    Task<List<UserGroupDto>> FindByNameAsync(string name);
 }

@@ -63,4 +63,16 @@ public class UserGroupCategoriesController : ControllerBase
     {
         return _service.DeleteAsync(id);
     }
+
+    /// <summary>
+    /// Category -&gt; Group hierarchy with member/permission counts. When seasonId is given,
+    /// only groups that have a UserGroupInstance in that season are included (with that
+    /// instance's counts); when omitted, all groups are included with null counts.
+    /// </summary>
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
+    [HttpGet("overview")]
+    public Task<List<UserGroupCategoryOverviewDto>> Overview([FromQuery] Guid? seasonId)
+    {
+        return _service.GetOverviewAsync(seasonId);
+    }
 }

@@ -105,4 +105,50 @@ public class UserGroupCategoryServiceTests : SqliteServiceTestBase
     {
         await Should.ThrowAsync<BlueNotFoundException>(() => _sut.DeleteAsync(Guid.NewGuid()));
     }
+
+    [Fact]
+    public async Task GetOverviewAsync_WithoutSeason_ReturnsAllGroups_WithNullCounts()
+    {
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "Active members", UserGroupCategoryId = category.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(null);
+
+        var categoryOverview = result.Single(x => x.Id == category.Id);
+        categoryOverview.GroupCount.ShouldBe(1);
+        var groupOverview = categoryOverview.Groups.Single();
+        groupOverview.Id.ShouldBe(group.Id);
+        groupOverview.InstanceId.ShouldBeNull();
+        groupOverview.MemberCount.ShouldBeNull();
+        groupOverview.PermissionCount.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetOverviewAsync_WithSeason_OnlyIncludesGroupsWithInstanceInThatSeason()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var groupWithInstance = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "A", UserGroupCategoryId = category.Id };
+        var groupWithoutInstance = new UserGroup { Id = Guid.NewGuid(), Name = "Board", Description = "B", UserGroupCategoryId = category.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.AddRange(groupWithInstance, groupWithoutInstance);
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = groupWithInstance.Id, SeasonId = season.Id };
+        Db.UserGroupInstances.Add(instance);
+        var user = await CreateUserAsync();
+        Db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember { UserGroupInstanceId = instance.Id, UserId = user.Id });
+        await Db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(season.Id);
+
+        var categoryOverview = result.Single(x => x.Id == category.Id);
+        categoryOverview.GroupCount.ShouldBe(1);
+        var groupOverview = categoryOverview.Groups.Single();
+        groupOverview.Id.ShouldBe(groupWithInstance.Id);
+        groupOverview.InstanceId.ShouldBe(instance.Id);
+        groupOverview.MemberCount.ShouldBe(1);
+        groupOverview.PermissionCount.ShouldBe(0);
+    }
 }

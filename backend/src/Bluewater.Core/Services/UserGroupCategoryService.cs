@@ -64,6 +64,55 @@ public class UserGroupCategoryService : IUserGroupCategoryService
         await _db.SaveChangesAsync();
     }
 
+    public async Task<List<UserGroupCategoryOverviewDto>> GetOverviewAsync(Guid? seasonId)
+    {
+        var categories = await _db.UserGroupCategories
+            .Select(c => new { c.Id, c.Name, c.Description })
+            .ToListAsync();
+
+        if (seasonId is null)
+        {
+            var allGroups = await _db.UserGroups
+                .Select(g => new { g.Id, g.Name, g.UserGroupCategoryId })
+                .ToListAsync();
+
+            return categories
+                .Select(c =>
+                {
+                    var groups = allGroups
+                        .Where(g => g.UserGroupCategoryId == c.Id)
+                        .Select(g => new UserGroupOverviewDto(g.Id, g.Name, null, null, null))
+                        .ToList();
+                    return new UserGroupCategoryOverviewDto(c.Id, c.Name, c.Description, groups.Count, groups);
+                })
+                .ToList();
+        }
+
+        var instances = await _db.UserGroupInstances
+            .Where(x => x.SeasonId == seasonId.Value)
+            .Select(x => new
+            {
+                x.Id,
+                x.UserGroupId,
+                x.UserGroup.Name,
+                x.UserGroup.UserGroupCategoryId,
+                MemberCount = x.Members.Count,
+                PermissionCount = x.Permissions.Count
+            })
+            .ToListAsync();
+
+        return categories
+            .Select(c =>
+            {
+                var groups = instances
+                    .Where(i => i.UserGroupCategoryId == c.Id)
+                    .Select(i => new UserGroupOverviewDto(i.UserGroupId, i.Name, i.Id, i.MemberCount, i.PermissionCount))
+                    .ToList();
+                return new UserGroupCategoryOverviewDto(c.Id, c.Name, c.Description, groups.Count, groups);
+            })
+            .ToList();
+    }
+
     private async Task<UserGroupCategory> Find(Guid id)
     {
         return await _db.UserGroupCategories.FirstOrDefaultAsync(x => x.Id == id)

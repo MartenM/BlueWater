@@ -108,6 +108,29 @@ public class UserGroupServiceTests : SqliteServiceTestBase
         await Should.ThrowAsync<BlueNotFoundException>(() => _sut.DeleteAsync(Guid.NewGuid()));
     }
 
+    [Fact]
+    public async Task FindByNameAsync_ReturnsCaseInsensitiveMatches_IncludingDuplicates()
+    {
+        var category = await CreateCategoryAsync();
+        Db.UserGroups.AddRange(
+            new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "A", UserGroupCategoryId = category.Id },
+            new UserGroup { Id = Guid.NewGuid(), Name = "members", Description = "B", UserGroupCategoryId = category.Id },
+            new UserGroup { Id = Guid.NewGuid(), Name = "Staff", Description = "C", UserGroupCategoryId = category.Id });
+        await Db.SaveChangesAsync();
+
+        var result = await _sut.FindByNameAsync("MEMBERS");
+
+        result.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task FindByNameAsync_ReturnsEmpty_WhenNoMatch()
+    {
+        var result = await _sut.FindByNameAsync("Nonexistent");
+
+        result.ShouldBeEmpty();
+    }
+
     private async Task<UserGroupCategory> CreateCategoryAsync(string name = "General")
     {
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = name, Description = $"{name} members" };

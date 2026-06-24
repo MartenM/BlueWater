@@ -73,6 +73,15 @@ public class UserGroupService : IUserGroupService
         await _db.SaveChangesAsync();
     }
 
+    public async Task<List<UserGroupDto>> FindByNameAsync(string name)
+    {
+        var normalized = name.Trim().ToLower();
+        return await _db.UserGroups
+            .Where(x => x.Name.ToLower() == normalized)
+            .Select(ProjectToDto)
+            .ToListAsync();
+    }
+
     private async Task<UserGroup> Find(Guid id)
     {
         return await _db.UserGroups.FirstOrDefaultAsync(x => x.Id == id)

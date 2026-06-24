@@ -73,6 +73,18 @@ public class UserGroupsController : ControllerBase
     }
 
     /// <summary>
+    /// Finds groups with an exact (case-insensitive) name match. Duplicates are allowed, so this
+    /// can return more than one match — used by the "create group" UI to hint at reusing an
+    /// existing group via a new instance instead of creating another one with the same name.
+    /// </summary>
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
+    [HttpGet("by-name")]
+    public Task<List<UserGroupDto>> ByName([FromQuery] string name)
+    {
+        return _service.FindByNameAsync(name);
+    }
+
+    /// <summary>
     /// Lists the calling user's own groups across all seasons. Just needs an authenticated
     /// user — no ViewGroups permission required, since it only exposes your own data.
     /// </summary>

@@ -32,8 +32,8 @@ public class UserGroupInstanceService : IUserGroupInstanceService
 
     public async Task<UserGroupInstanceDto> CreateAsync(CreateUserGroupInstanceRequest request)
     {
-        var groupExists = await _db.UserGroups.AnyAsync(x => x.Id == request.UserGroupId);
-        if (!groupExists)
+        var group = await _db.UserGroups.FirstOrDefaultAsync(x => x.Id == request.UserGroupId);
+        if (group is null)
         {
             throw new BlueValidationException($"UserGroup '{request.UserGroupId}' does not exist.");
         }
@@ -49,6 +49,15 @@ public class UserGroupInstanceService : IUserGroupInstanceService
         if (alreadyExists)
         {
             throw new BlueValidationException("A UserGroupInstance for this group and season already exists.");
+        }
+
+        var nameConflict = await _db.UserGroupInstances
+            .Where(x => x.SeasonId == request.SeasonId)
+            .AnyAsync(x => x.UserGroup.Name.ToLower() == group.Name.ToLower());
+        if (nameConflict)
+        {
+            throw new BlueValidationException(
+                $"A UserGroupInstance for a group named '{group.Name}' already exists in this season.");
         }
 
         var instance = new UserGroupInstance

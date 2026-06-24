@@ -61,6 +61,46 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task CreateAsync_Throws_WhenAnotherGroupWithSameNameHasInstanceInSeason()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var groupA = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "A", UserGroupCategoryId = category.Id };
+        var groupB = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "B", UserGroupCategoryId = category.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.AddRange(groupA, groupB);
+        await Db.SaveChangesAsync();
+        await _sut.CreateAsync(new CreateUserGroupInstanceRequest(groupA.Id, season.Id));
+
+        await Should.ThrowAsync<BlueValidationException>(
+            () => _sut.CreateAsync(new CreateUserGroupInstanceRequest(groupB.Id, season.Id)));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Succeeds_WhenSameNameGroupHasInstanceInDifferentSeason()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var otherSeason = new BlueSeason
+        {
+            Id = Guid.NewGuid(),
+            StartDate = new DateOnly(2024, 6, 1),
+            EndDate = new DateOnly(2025, 5, 31)
+        };
+        Db.Seasons.Add(otherSeason);
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var groupA = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "A", UserGroupCategoryId = category.Id };
+        var groupB = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "B", UserGroupCategoryId = category.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.AddRange(groupA, groupB);
+        await Db.SaveChangesAsync();
+        await _sut.CreateAsync(new CreateUserGroupInstanceRequest(groupA.Id, season.Id));
+
+        var result = await _sut.CreateAsync(new CreateUserGroupInstanceRequest(groupB.Id, otherSeason.Id));
+
+        result.UserGroupId.ShouldBe(groupB.Id);
+    }
+
+    [Fact]
     public async Task GetAsync_Throws_WhenInstanceDoesNotExist()
     {
         await Should.ThrowAsync<BlueNotFoundException>(() => _sut.GetAsync(Guid.NewGuid()));
