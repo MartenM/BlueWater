@@ -2,6 +2,7 @@
 export { default as NavBar } from './components/NavBar.svelte';
 export { default as Footer } from './components/Footer.svelte';
 export { default as ProfileView } from './components/ProfileView.svelte';
+export { default as ProfilePicture } from './components/ProfilePicture.svelte';
 export { default as HasPermission } from './components/HasPermission.svelte';
 export { default as Spinner } from './components/Spinner.svelte';
 export { default as Jumbotron } from './components/Jumbotron.svelte';

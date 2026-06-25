@@ -78,4 +78,15 @@ public class UsersController : ControllerBase
     {
         return _profileService.SetProfilePictureAsync(id, file.OpenReadStream(), file.FileName, file.ContentType);
     }
+
+    /// <summary>Streams a user's profile picture, e.g. for use as an &lt;img src&gt;.</summary>
+    [BlueAuthorize(BluePermission.AdminUsersView)]
+    [HttpGet("{id:guid}/picture")]
+    [Produces("application/octet-stream")]
+    [EndpointName("GetUserPicture")]
+    public async Task<FileResult> GetPicture(Guid id)
+    {
+        var (metadata, content) = await _profileService.GetProfilePictureAsync(id);
+        return File(content, metadata.ContentType, metadata.OriginalFileName);
+    }
 }

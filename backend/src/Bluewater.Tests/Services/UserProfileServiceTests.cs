@@ -121,6 +121,32 @@ public class UserProfileServiceTests : SqliteServiceTestBase
             _sut.SetProfilePictureAsync(user.Id, new MemoryStream("not an image"u8.ToArray()), "avatar.png", "image/png"));
     }
 
+    [Fact]
+    public async Task GetProfilePictureAsync_ReturnsTheStoredFile_AfterItHasBeenSet()
+    {
+        var user = await CreateUserAsync();
+        await _sut.SetProfilePictureAsync(user.Id, new MemoryStream(BuildPng(75, 100)), "avatar.png", "image/png");
+
+        var (metadata, content) = await _sut.GetProfilePictureAsync(user.Id);
+        content.Dispose();
+
+        metadata.OriginalFileName.ShouldBe("avatar.png");
+    }
+
+    [Fact]
+    public async Task GetProfilePictureAsync_Throws_WhenUserDoesNotExist()
+    {
+        await Should.ThrowAsync<BlueNotFoundException>(() => _sut.GetProfilePictureAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetProfilePictureAsync_Throws_WhenUserHasNoProfilePicture()
+    {
+        var user = await CreateUserAsync();
+
+        await Should.ThrowAsync<BlueNotFoundException>(() => _sut.GetProfilePictureAsync(user.Id));
+    }
+
     private static byte[] BuildPng(int width, int height)
     {
         var bytes = new byte[33];

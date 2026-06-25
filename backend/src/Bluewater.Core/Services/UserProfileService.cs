@@ -2,6 +2,7 @@ using Bluewater.Core.Dto.Profile;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Core.Services.Imaging;
+using Bluewater.Domain.Models.Files;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -61,6 +62,19 @@ public class UserProfileService : IUserProfileService
         {
             await _fileStorageService.DeleteAsync(previousFileId.Value, cancellationToken);
         }
+    }
+
+    public async Task<(StoredFile Metadata, Stream Content)> GetProfilePictureAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken)
+            ?? throw new BlueNotFoundException($"User '{userId}' was not found.");
+
+        if (user.ProfilePictureFileId is not Guid fileId)
+        {
+            throw new BlueNotFoundException($"User '{userId}' has no profile picture.");
+        }
+
+        return await _fileStorageService.RetrieveAsync(fileId, cancellationToken);
     }
 
     /// <summary>
