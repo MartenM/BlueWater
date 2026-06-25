@@ -5,6 +5,7 @@ using Bluewater.Domain.Models.Groups;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace Bluewater.Api.Controllers.Api;
 
 /// <summary>
@@ -101,5 +102,25 @@ public class UserGroupsController : ControllerBase
     public Task<List<UserGroupMembershipDto>> ForUser(Guid userId)
     {
         return _membershipService.GetGroupsForUserAsync(userId);
+    }
+
+    /// <summary>
+    /// Assigns a permission to the group. Optionally scoped to a specific role — when
+    /// scoped, only members with that role receive the permission in their JWT.
+    /// No-op if already assigned with the same role scope.
+    /// </summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpPost("{id:guid}/permissions")]
+    public Task AssignPermission(Guid id, AssignGroupPermissionRequest request)
+    {
+        return _service.AssignPermissionAsync(id, request.Permission, request.UserGroupCategoryRoleId);
+    }
+
+    /// <summary>Revokes a permission from the group. No-op if not assigned.</summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpDelete("{id:guid}/permissions/{permission}")]
+    public Task RevokePermission(Guid id, BluePermission permission, [FromQuery] Guid? roleId)
+    {
+        return _service.RevokePermissionAsync(id, permission, roleId);
     }
 }

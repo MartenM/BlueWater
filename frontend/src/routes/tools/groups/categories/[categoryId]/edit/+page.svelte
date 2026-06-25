@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { apiClient } from '$lib/api/client';
-	import { CategoryForm, BlueAlert, Spinner, breadcrumbs } from '$lib';
+	import { CategoryForm, CategoryRoleManager, BlueAlert, ConfirmDialog, Spinner, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import type { UpsertUserGroupCategoryRequest, UserGroupCategoryDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
@@ -14,6 +14,7 @@
 	let error = $state(false);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+	let deleteDialog = $state<HTMLDialogElement>();
 
 	onMount(async () => {
 		try {
@@ -30,7 +31,7 @@
 	}
 
 	async function handleDelete() {
-		if (!category || !confirm(`Categorie "${category.name}" verwijderen?`)) return;
+		if (!category) return;
 		deleting = true;
 		deleteError = null;
 		try {
@@ -64,10 +65,14 @@
 		<CategoryForm {category} submitLabel="Opslaan" onSubmit={handleEdit} />
 	</div>
 
+	<div class="mt-8">
+		<CategoryRoleManager categoryId={category.id} />
+	</div>
+
 	<div class="mt-8 border-t border-gray-200 pt-6">
 		<button
 			type="button"
-			onclick={handleDelete}
+			onclick={() => deleteDialog?.showModal()}
 			disabled={deleting}
 			class="text-sm font-medium text-red-600 hover:underline disabled:opacity-60"
 		>
@@ -79,4 +84,10 @@
 			</div>
 		{/if}
 	</div>
+
+	<ConfirmDialog
+		bind:dialog={deleteDialog}
+		message={`Categorie "${category.name}" verwijderen?`}
+		onConfirm={handleDelete}
+	/>
 {/if}

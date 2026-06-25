@@ -91,6 +91,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddSingleton<ICookieAuthService, TestCookieAuthService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserGroupCategoryService, UserGroupCategoryService>();
+        services.AddScoped<IUserGroupCategoryRoleService, UserGroupCategoryRoleService>();
         services.AddScoped<IUserGroupService, UserGroupService>();
         services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();

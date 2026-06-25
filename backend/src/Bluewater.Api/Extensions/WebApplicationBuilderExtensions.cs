@@ -114,6 +114,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<ICookieAuthService, CookieAuthService>();
         builder.Services.AddScoped<IUserGroupCategoryService, UserGroupCategoryService>();
+        builder.Services.AddScoped<IUserGroupCategoryRoleService, UserGroupCategoryRoleService>();
         builder.Services.AddScoped<IUserGroupService, UserGroupService>();
         builder.Services.AddScoped<IUserGroupInstanceService, UserGroupInstanceService>();
         builder.Services.AddScoped<IUserGroupMembershipService, UserGroupMembershipService>();

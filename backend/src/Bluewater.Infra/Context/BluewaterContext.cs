@@ -32,7 +32,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<UserGroupInstance> UserGroupInstances => Set<UserGroupInstance>();
     public DbSet<UserGroupInstanceMember> UserGroupInstanceMembers => Set<UserGroupInstanceMember>();
-    public DbSet<UserGroupInstancePermission> UserGroupInstancePermissions => Set<UserGroupInstancePermission>();
+    public DbSet<UserGroupCategoryRole> UserGroupCategoryRoles => Set<UserGroupCategoryRole>();
+    public DbSet<UserGroupPermission> UserGroupPermissions => Set<UserGroupPermission>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
     public DbSet<NewsIcon> NewsIcons => Set<NewsIcon>();
@@ -103,6 +104,16 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasKey(x => x.Id);
         });
 
+        builder.Entity<UserGroupCategoryRole>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.UserGroupCategory)
+                .WithMany(x => x.Roles)
+                .HasForeignKey(x => x.UserGroupCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         builder.Entity<UserGroup>(e =>
         {
             e.HasKey(x => x.Id);
@@ -144,18 +155,30 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.UserGroupCategoryRole)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupCategoryRoleId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
         });
 
-        builder.Entity<UserGroupInstancePermission>(e =>
+        builder.Entity<UserGroupPermission>(e =>
         {
+            e.HasKey(x => x.Id);
+
             e.Property(x => x.Permission).HasConversion<string>();
 
-            e.HasKey(x => new { x.UserGroupInstanceId, x.Permission });
-
-            e.HasOne(x => x.UserGroupInstance)
+            e.HasOne(x => x.UserGroup)
                 .WithMany(x => x.Permissions)
-                .HasForeignKey(x => x.UserGroupInstanceId)
+                .HasForeignKey(x => x.UserGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.UserGroupCategoryRole)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupCategoryRoleId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
 
         builder.Entity<StoredFile>(e =>

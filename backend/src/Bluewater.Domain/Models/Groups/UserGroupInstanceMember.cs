@@ -10,6 +10,9 @@ public class UserGroupInstanceMember : IAuditableRelation
     public Guid UserId { get; set; }
     public BlueUser User { get; set; } = null!;
 
+    public Guid? UserGroupCategoryRoleId { get; set; }
+    public UserGroupCategoryRole? UserGroupCategoryRole { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }

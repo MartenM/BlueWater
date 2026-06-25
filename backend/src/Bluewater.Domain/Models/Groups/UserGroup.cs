@@ -11,6 +11,8 @@ public class UserGroup : IAuditable
     public Guid UserGroupCategoryId { get; set; }
     public UserGroupCategory UserGroupCategory { get; set; } = null!;
 
+    public ICollection<UserGroupPermission> Permissions { get; set; } = new List<UserGroupPermission>();
+
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }

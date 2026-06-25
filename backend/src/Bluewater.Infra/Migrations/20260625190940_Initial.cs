@@ -13,6 +13,29 @@ namespace Bluewater.Infra.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AgendaItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Time = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AgendaItems", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -161,6 +184,58 @@ namespace Bluewater.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NewsIcons",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    FileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NewsIcons", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NewsIcons_StoredFiles_FileId",
+                        column: x => x.FileId,
+                        principalTable: "StoredFiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserGroupCategoryRoles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGroupCategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NamePlural = table.Column<string>(type: "text", nullable: false),
+                    NameMasculine = table.Column<string>(type: "text", nullable: true),
+                    NameFeminine = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserGroupCategoryRoles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserGroupCategoryRoles_UserGroupCategories_UserGroupCategor~",
+                        column: x => x.UserGroupCategoryId,
+                        principalTable: "UserGroupCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserGroups",
                 columns: table => new
                 {
@@ -294,6 +369,34 @@ namespace Bluewater.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NewsPosts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    ShortText = table.Column<string>(type: "text", nullable: false),
+                    AdditionalText = table.Column<string>(type: "text", nullable: true),
+                    MembersOnly = table.Column<bool>(type: "boolean", nullable: false),
+                    IconId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NewsPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NewsPosts_NewsIcons_IconId",
+                        column: x => x.IconId,
+                        principalTable: "NewsIcons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserGroupInstances",
                 columns: table => new
                 {
@@ -325,11 +428,44 @@ namespace Bluewater.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserGroupPermissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGroupId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Permission = table.Column<string>(type: "text", nullable: false),
+                    UserGroupCategoryRoleId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserGroupPermissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserGroupPermissions_UserGroupCategoryRoles_UserGroupCatego~",
+                        column: x => x.UserGroupCategoryRoleId,
+                        principalTable: "UserGroupCategoryRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserGroupPermissions_UserGroups_UserGroupId",
+                        column: x => x.UserGroupId,
+                        principalTable: "UserGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserGroupInstanceMembers",
                 columns: table => new
                 {
                     UserGroupInstanceId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGroupCategoryRoleId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -347,31 +483,13 @@ namespace Bluewater.Infra.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserGroupInstanceMembers_UserGroupInstances_UserGroupInstan~",
-                        column: x => x.UserGroupInstanceId,
-                        principalTable: "UserGroupInstances",
+                        name: "FK_UserGroupInstanceMembers_UserGroupCategoryRoles_UserGroupCa~",
+                        column: x => x.UserGroupCategoryRoleId,
+                        principalTable: "UserGroupCategoryRoles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserGroupInstancePermissions",
-                columns: table => new
-                {
-                    UserGroupInstanceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Permission = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserGroupInstancePermissions", x => new { x.UserGroupInstanceId, x.Permission });
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_UserGroupInstancePermissions_UserGroupInstances_UserGroupIn~",
+                        name: "FK_UserGroupInstanceMembers_UserGroupInstances_UserGroupInstan~",
                         column: x => x.UserGroupInstanceId,
                         principalTable: "UserGroupInstances",
                         principalColumn: "Id",
@@ -433,6 +551,16 @@ namespace Bluewater.Infra.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_NewsIcons_FileId",
+                table: "NewsIcons",
+                column: "FileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NewsPosts_IconId",
+                table: "NewsPosts",
+                column: "IconId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_TokenHash",
                 table: "RefreshTokens",
                 column: "TokenHash",
@@ -456,6 +584,16 @@ namespace Bluewater.Infra.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserGroupCategoryRoles_UserGroupCategoryId",
+                table: "UserGroupCategoryRoles",
+                column: "UserGroupCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserGroupInstanceMembers_UserGroupCategoryRoleId",
+                table: "UserGroupInstanceMembers",
+                column: "UserGroupCategoryRoleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserGroupInstanceMembers_UserId",
                 table: "UserGroupInstanceMembers",
                 column: "UserId");
@@ -472,6 +610,16 @@ namespace Bluewater.Infra.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserGroupPermissions_UserGroupCategoryRoleId",
+                table: "UserGroupPermissions",
+                column: "UserGroupCategoryRoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserGroupPermissions_UserGroupId",
+                table: "UserGroupPermissions",
+                column: "UserGroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserGroups_UserGroupCategoryId",
                 table: "UserGroups",
                 column: "UserGroupCategoryId");
@@ -480,6 +628,9 @@ namespace Bluewater.Infra.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AgendaItems");
+
             migrationBuilder.DropTable(
                 name: "AppSettings");
 
@@ -499,22 +650,31 @@ namespace Bluewater.Infra.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "NewsPosts");
+
+            migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "UserGroupInstanceMembers");
 
             migrationBuilder.DropTable(
-                name: "UserGroupInstancePermissions");
+                name: "UserGroupPermissions");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "NewsIcons");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "UserGroupInstances");
+
+            migrationBuilder.DropTable(
+                name: "UserGroupCategoryRoles");
 
             migrationBuilder.DropTable(
                 name: "StoredFiles");

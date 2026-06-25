@@ -1,5 +1,4 @@
 using Bluewater.Core.Dto.Groups;
-using Bluewater.Domain.Models.Groups;
 
 namespace Bluewater.Core.Services.Abstractions;
 
@@ -12,7 +11,5 @@ public interface IUserGroupInstanceService
 
     Task AddMemberAsync(Guid instanceId, Guid userId);
     Task RemoveMemberAsync(Guid instanceId, Guid userId);
-
-    Task AssignPermissionAsync(Guid instanceId, BluePermission permission);
-    Task RevokePermissionAsync(Guid instanceId, BluePermission permission);
+    Task AssignMemberRoleAsync(Guid instanceId, Guid userId, Guid? roleId);
 }

@@ -6,6 +6,7 @@
 	import {
 		HasPermission,
 		BlueAlert,
+		ConfirmDialog,
 		InstanceMemberManager,
 		InstancePermissionManager,
 		Spinner,
@@ -24,6 +25,7 @@
 	let error = $state(false);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+	let deleteDialog = $state<HTMLDialogElement>();
 
 	const canModify = $derived(session.hasPermission(BluePermission.AdminModifyGroups));
 
@@ -48,7 +50,7 @@
 	});
 
 	async function handleDelete() {
-		if (!instance || !confirm(`Instantie voor ${instance.seasonName} verwijderen?`)) return;
+		if (!instance) return;
 		deleting = true;
 		deleteError = null;
 		try {
@@ -74,7 +76,7 @@
 		<HasPermission permission={BluePermission.AdminModifyGroups}>
 			<button
 				type="button"
-				onclick={handleDelete}
+				onclick={() => deleteDialog?.showModal()}
 				disabled={deleting}
 				class="text-sm font-medium text-red-600 hover:underline disabled:opacity-60"
 			>
@@ -89,16 +91,22 @@
 		</div>
 	{/if}
 
+	<ConfirmDialog
+		bind:dialog={deleteDialog}
+		message={`Instantie voor ${instance.seasonName} verwijderen?`}
+		onConfirm={handleDelete}
+	/>
+
 	<div class="mt-6 grid grid-cols-2 gap-8">
 		<InstanceMemberManager
 			instanceId={instance.id}
-			memberUserIds={instance.memberUserIds}
+			categoryId={instance.userGroupCategoryId}
+			members={instance.members}
 			readonly={!canModify}
 		/>
 		<InstancePermissionManager
-			instanceId={instance.id}
+			userGroupId={instance.userGroupId}
 			permissions={instance.permissions}
-			readonly={!canModify}
 		/>
 	</div>
 {/if}

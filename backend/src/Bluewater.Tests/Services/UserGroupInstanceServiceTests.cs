@@ -27,7 +27,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
 
         result.UserGroupId.ShouldBe(group.Id);
         result.SeasonId.ShouldBe(season.Id);
-        result.MemberUserIds.ShouldBeEmpty();
+        result.Members.ShouldBeEmpty();
         result.Permissions.ShouldBeEmpty();
     }
 
@@ -125,7 +125,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await _sut.AddMemberAsync(instance.Id, user.Id);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.MemberUserIds.ShouldBe([user.Id]);
+        dto.Members.Select(m => m.UserId).ShouldBe([user.Id]);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await _sut.AddMemberAsync(instance.Id, user.Id);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.MemberUserIds.ShouldBe([user.Id]);
+        dto.Members.Count.ShouldBe(1);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await _sut.RemoveMemberAsync(instance.Id, user.Id);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.MemberUserIds.ShouldBeEmpty();
+        dto.Members.ShouldBeEmpty();
     }
 
     [Fact]
@@ -179,76 +179,8 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
-    public async Task AssignPermissionAsync_AddsPermission()
-    {
-        var instance = await CreateInstanceAsync();
-
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
-    }
-
-    [Fact]
-    public async Task AssignPermissionAsync_IsIdempotent_WhenAlreadyAssigned()
-    {
-        var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
-    }
-
-    [Fact]
-    public async Task RevokePermissionAsync_RemovesExistingPermission()
-    {
-        var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public async Task RevokePermissionAsync_DoesNotThrow_WhenNotAssigned()
-    {
-        var instance = await CreateInstanceAsync();
-
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-    }
-
-    [Fact]
-    public async Task AssignPermissionAsync_ReassignsSuccessfully_AfterPreviousRevoke()
-    {
-        // The soft-deleted UserGroupInstancePermission row stays in the table under the same
-        // composite key (UserGroupInstanceId, Permission); re-assigning must revive that row
-        // rather than insert a duplicate, or this would throw a primary key violation.
-        var instance = await CreateInstanceAsync();
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-        await _sut.RevokePermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        await _sut.AssignPermissionAsync(instance.Id, BluePermission.AdminViewGroups);
-
-        var dto = await _sut.GetAsync(instance.Id);
-        dto.Permissions.ShouldBe([BluePermission.AdminViewGroups]);
-
-        var rows = await Db.UserGroupInstancePermissions
-            .IgnoreQueryFilters()
-            .Where(x => x.UserGroupInstanceId == instance.Id && x.Permission == BluePermission.AdminViewGroups)
-            .ToListAsync();
-        rows.Count.ShouldBe(1);
-        rows[0].DeletedAt.ShouldBeNull();
-    }
-
-    [Fact]
     public async Task AddMemberAsync_ReaddsSuccessfully_AfterPreviousRemove()
     {
-        // Same composite-key-reuse concern as permissions: re-adding a member after removal
-        // must revive the soft-deleted UserGroupInstanceMember row, not insert a duplicate.
         var instance = await CreateInstanceAsync();
         var user = await CreateUserAsync();
         await _sut.AddMemberAsync(instance.Id, user.Id);
@@ -257,7 +189,7 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await _sut.AddMemberAsync(instance.Id, user.Id);
 
         var dto = await _sut.GetAsync(instance.Id);
-        dto.MemberUserIds.ShouldBe([user.Id]);
+        dto.Members.Select(m => m.UserId).ShouldBe([user.Id]);
 
         var rows = await Db.UserGroupInstanceMembers
             .IgnoreQueryFilters()
@@ -265,6 +197,60 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
             .ToListAsync();
         rows.Count.ShouldBe(1);
         rows[0].DeletedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AssignMemberRoleAsync_SetsRoleOnMember()
+    {
+        var (instance, role) = await CreateInstanceWithRoleAsync();
+        var user = await CreateUserAsync();
+        await _sut.AddMemberAsync(instance.Id, user.Id);
+
+        await _sut.AssignMemberRoleAsync(instance.Id, user.Id, role.Id);
+
+        var dto = await _sut.GetAsync(instance.Id);
+        dto.Members.Single(m => m.UserId == user.Id).UserGroupCategoryRoleId.ShouldBe(role.Id);
+    }
+
+    [Fact]
+    public async Task AssignMemberRoleAsync_ClearsRole_WhenNullPassed()
+    {
+        var (instance, role) = await CreateInstanceWithRoleAsync();
+        var user = await CreateUserAsync();
+        await _sut.AddMemberAsync(instance.Id, user.Id);
+        await _sut.AssignMemberRoleAsync(instance.Id, user.Id, role.Id);
+
+        await _sut.AssignMemberRoleAsync(instance.Id, user.Id, null);
+
+        var dto = await _sut.GetAsync(instance.Id);
+        dto.Members.Single(m => m.UserId == user.Id).UserGroupCategoryRoleId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AssignMemberRoleAsync_Throws_WhenMemberNotFound()
+    {
+        var (instance, role) = await CreateInstanceWithRoleAsync();
+
+        await Should.ThrowAsync<BlueNotFoundException>(
+            () => _sut.AssignMemberRoleAsync(instance.Id, Guid.NewGuid(), role.Id));
+    }
+
+    [Fact]
+    public async Task AssignMemberRoleAsync_Throws_WhenRoleDoesNotBelongToCategory()
+    {
+        var instance = await CreateInstanceAsync();
+        var user = await CreateUserAsync();
+        await _sut.AddMemberAsync(instance.Id, user.Id);
+
+        // role from a different category
+        var otherCategory = new UserGroupCategory { Id = Guid.NewGuid(), Name = "Other", Description = "" };
+        var otherRole = new UserGroupCategoryRole { Id = Guid.NewGuid(), UserGroupCategoryId = otherCategory.Id, NamePlural = "Others" };
+        Db.UserGroupCategories.Add(otherCategory);
+        Db.UserGroupCategoryRoles.Add(otherRole);
+        await Db.SaveChangesAsync();
+
+        await Should.ThrowAsync<BlueValidationException>(
+            () => _sut.AssignMemberRoleAsync(instance.Id, user.Id, otherRole.Id));
     }
 
     private async Task<UserGroupInstance> CreateInstanceAsync()
@@ -277,6 +263,22 @@ public class UserGroupInstanceServiceTests : SqliteServiceTestBase
         await Db.SaveChangesAsync();
 
         return instance;
+    }
+
+    private async Task<(UserGroupInstance Instance, UserGroupCategoryRole Role)> CreateInstanceWithRoleAsync()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "Rowing", Description = "" };
+        var role = new UserGroupCategoryRole { Id = Guid.NewGuid(), UserGroupCategoryId = category.Id, NamePlural = "Roeiers", NameMasculine = "Roeier", NameFeminine = "Roeister" };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "A1", Description = "", UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroupCategoryRoles.Add(role);
+        Db.UserGroups.Add(group);
+        Db.UserGroupInstances.Add(instance);
+        await Db.SaveChangesAsync();
+
+        return (instance, role);
     }
 
     private async Task<UserGroup> CreateGroupAsync()

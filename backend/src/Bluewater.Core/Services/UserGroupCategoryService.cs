@@ -73,7 +73,7 @@ public class UserGroupCategoryService : IUserGroupCategoryService
         if (seasonId is null)
         {
             var allGroups = await _db.UserGroups
-                .Select(g => new { g.Id, g.Name, g.UserGroupCategoryId })
+                .Select(g => new { g.Id, g.Name, g.UserGroupCategoryId, PermissionCount = g.Permissions.Count })
                 .ToListAsync();
 
             return categories
@@ -81,7 +81,7 @@ public class UserGroupCategoryService : IUserGroupCategoryService
                 {
                     var groups = allGroups
                         .Where(g => g.UserGroupCategoryId == c.Id)
-                        .Select(g => new UserGroupOverviewDto(g.Id, g.Name, null, null, null))
+                        .Select(g => new UserGroupOverviewDto(g.Id, g.Name, null, null, g.PermissionCount))
                         .ToList();
                     return new UserGroupCategoryOverviewDto(c.Id, c.Name, c.Description, groups.Count, groups);
                 })
@@ -97,7 +97,7 @@ public class UserGroupCategoryService : IUserGroupCategoryService
                 x.UserGroup.Name,
                 x.UserGroup.UserGroupCategoryId,
                 MemberCount = x.Members.Count,
-                PermissionCount = x.Permissions.Count
+                PermissionCount = x.UserGroup.Permissions.Count
             })
             .ToListAsync();
 

@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import { renderMarkdown } from '$lib/markdown';
-	import { HasPermission, BlueAlert, breadcrumbs } from '$lib';
+	import { HasPermission, BlueAlert, ConfirmDialog, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
@@ -22,6 +22,7 @@
 	let error = $state(untrack(() => data.error));
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+	let deleteDialog = $state<HTMLDialogElement>();
 
 	function formatTime(time: string): string {
 		const [hours, minutes] = time.split(':');
@@ -35,7 +36,7 @@
 	});
 
 	async function handleDelete() {
-		if (!item || !confirm('Weet je zeker dat je dit agendapunt wilt verwijderen?')) return;
+		if (!item) return;
 		deleting = true;
 		deleteError = null;
 		try {
@@ -86,7 +87,7 @@
 				</a>
 				<button
 					type="button"
-					onclick={handleDelete}
+					onclick={() => deleteDialog?.showModal()}
 					disabled={deleting}
 					class="text-sm font-medium text-red-600 hover:underline disabled:opacity-60"
 				>
@@ -98,6 +99,11 @@
 					<BlueAlert level={AlertLevel.Danger}>{deleteError}</BlueAlert>
 				</div>
 			{/if}
+			<ConfirmDialog
+				bind:dialog={deleteDialog}
+				message="Weet je zeker dat je dit agendapunt wilt verwijderen?"
+				onConfirm={handleDelete}
+			/>
 		</HasPermission>
 	{/if}
 </div>

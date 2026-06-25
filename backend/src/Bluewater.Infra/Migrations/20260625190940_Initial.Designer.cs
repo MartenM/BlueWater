@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewater.Infra.Migrations
 {
     [DbContext(typeof(BluewaterContext))]
-    [Migration("20260621104345_Initial")]
+    [Migration("20260625190940_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,55 @@ namespace Bluewater.Infra.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Agenda.AgendaItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly?>("Time")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AgendaItems");
+                });
 
             modelBuilder.Entity("Bluewater.Domain.Models.Auth.RefreshToken", b =>
                 {
@@ -335,6 +384,50 @@ namespace Bluewater.Infra.Migrations
                     b.ToTable("UserGroupCategories");
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupCategoryRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NameFeminine")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameMasculine")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NamePlural")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserGroupCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserGroupCategoryId");
+
+                    b.ToTable("UserGroupCategoryRoles");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstance", b =>
                 {
                     b.Property<Guid>("Id")
@@ -401,19 +494,106 @@ namespace Bluewater.Infra.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("UserGroupCategoryRoleId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("UserGroupInstanceId", "UserId");
+
+                    b.HasIndex("UserGroupCategoryRoleId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("UserGroupInstanceMembers");
                 });
 
-            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstancePermission", b =>
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupPermission", b =>
                 {
-                    b.Property<Guid>("UserGroupInstanceId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Permission")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserGroupCategoryRoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserGroupId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserGroupCategoryRoleId");
+
+                    b.HasIndex("UserGroupId");
+
+                    b.ToTable("UserGroupPermissions");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.News.NewsIcon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("NewsIcons");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.News.NewsPost", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdditionalText")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -428,15 +608,31 @@ namespace Bluewater.Infra.Migrations
                     b.Property<Guid?>("DeletedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("IconId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("MembersOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ShortText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("UserGroupInstanceId", "Permission");
+                    b.HasKey("Id");
 
-                    b.ToTable("UserGroupInstancePermissions");
+                    b.HasIndex("IconId");
+
+                    b.ToTable("NewsPosts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -639,6 +835,17 @@ namespace Bluewater.Infra.Migrations
                     b.Navigation("UserGroupCategory");
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupCategoryRole", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroupCategory", "UserGroupCategory")
+                        .WithMany("Roles")
+                        .HasForeignKey("UserGroupCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("UserGroupCategory");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstance", b =>
                 {
                     b.HasOne("Bluewater.Domain.Models.BlueSeason", "Season")
@@ -660,6 +867,11 @@ namespace Bluewater.Infra.Migrations
 
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstanceMember", b =>
                 {
+                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroupCategoryRole", "UserGroupCategoryRole")
+                        .WithMany()
+                        .HasForeignKey("UserGroupCategoryRoleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Bluewater.Domain.Models.Groups.UserGroupInstance", "UserGroupInstance")
                         .WithMany("Members")
                         .HasForeignKey("UserGroupInstanceId")
@@ -674,18 +886,44 @@ namespace Bluewater.Infra.Migrations
 
                     b.Navigation("User");
 
+                    b.Navigation("UserGroupCategoryRole");
+
                     b.Navigation("UserGroupInstance");
                 });
 
-            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstancePermission", b =>
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupPermission", b =>
                 {
-                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroupInstance", "UserGroupInstance")
+                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroupCategoryRole", "UserGroupCategoryRole")
+                        .WithMany()
+                        .HasForeignKey("UserGroupCategoryRoleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroup", "UserGroup")
                         .WithMany("Permissions")
-                        .HasForeignKey("UserGroupInstanceId")
+                        .HasForeignKey("UserGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserGroupInstance");
+                    b.Navigation("UserGroup");
+
+                    b.Navigation("UserGroupCategoryRole");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.News.NewsIcon", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Files.StoredFile", null)
+                        .WithMany()
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.News.NewsPost", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.News.NewsIcon", null)
+                        .WithMany()
+                        .HasForeignKey("IconId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -739,11 +977,19 @@ namespace Bluewater.Infra.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroup", b =>
+                {
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupCategory", b =>
+                {
+                    b.Navigation("Roles");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstance", b =>
                 {
                     b.Navigation("Members");
-
-                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }

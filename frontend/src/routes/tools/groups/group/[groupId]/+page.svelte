@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, BlueAlert, Spinner, breadcrumbs } from '$lib';
+	import { HasPermission, BlueAlert, ConfirmDialog, GroupPermissionManager, Spinner, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { UserGroupDto } from '$lib/api/apiClient';
@@ -19,6 +19,7 @@
 	let error = $state(false);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+	let deleteDialog = $state<HTMLDialogElement>();
 
 	onMount(async () => {
 		try {
@@ -32,7 +33,7 @@
 				.map((i) => ({
 					id: i.id,
 					seasonName: i.seasonName,
-					memberCount: i.memberUserIds.length,
+					memberCount: i.members.length,
 					permissionCount: i.permissions.length
 				}));
 		} catch {
@@ -49,7 +50,7 @@
 	});
 
 	async function handleDelete() {
-		if (!group || !confirm(`Groep "${group.name}" verwijderen?`)) return;
+		if (!group) return;
 		deleting = true;
 		deleteError = null;
 		try {
@@ -84,7 +85,7 @@
 				</a>
 				<button
 					type="button"
-					onclick={handleDelete}
+					onclick={() => deleteDialog?.showModal()}
 					disabled={deleting}
 					class="text-sm font-medium text-red-600 hover:underline disabled:opacity-60"
 				>
@@ -100,7 +101,23 @@
 		</div>
 	{/if}
 
-	<div class="mt-6 flex items-center justify-between">
+	<ConfirmDialog
+		bind:dialog={deleteDialog}
+		message={`Groep "${group.name}" verwijderen?`}
+		onConfirm={handleDelete}
+	/>
+
+	<div class="mt-8">
+		<HasPermission permission={BluePermission.AdminModifyGroups}>
+			<GroupPermissionManager
+				groupId={group.id}
+				categoryId={group.userGroupCategoryId}
+				permissions={group.permissions}
+			/>
+		</HasPermission>
+	</div>
+
+	<div class="mt-8 flex items-center justify-between">
 		<h2 class="text-sm font-semibold text-gray-700">Instanties per seizoen</h2>
 		<HasPermission permission={BluePermission.AdminModifyGroups}>
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() result with an appended query string, not a static route literal -->

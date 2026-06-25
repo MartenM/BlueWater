@@ -2,13 +2,18 @@ using Bluewater.Domain.Auditing;
 
 namespace Bluewater.Domain.Models.Groups;
 
-public class UserGroupCategory : IAuditable
+public class UserGroupCategoryRole : IAuditable
 {
     public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
 
-    public ICollection<UserGroupCategoryRole> Roles { get; set; } = new List<UserGroupCategoryRole>();
+    public Guid UserGroupCategoryId { get; set; }
+    public UserGroupCategory UserGroupCategory { get; set; } = null!;
+
+    public int SortOrder { get; set; }
+
+    public string NamePlural { get; set; } = string.Empty;
+    public string? NameMasculine { get; set; }
+    public string? NameFeminine { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }

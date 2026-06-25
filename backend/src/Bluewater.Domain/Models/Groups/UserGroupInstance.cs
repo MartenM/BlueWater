@@ -13,7 +13,6 @@ public class UserGroupInstance : IAuditable
     public BlueSeason Season { get; set; } = null!;
 
     public ICollection<UserGroupInstanceMember> Members { get; set; } = new List<UserGroupInstanceMember>();
-    public ICollection<UserGroupInstancePermission> Permissions { get; set; } = new List<UserGroupInstancePermission>();
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }

@@ -5,4 +5,5 @@ public record UserGroupDto(
     string Name,
     string Description,
     Guid UserGroupCategoryId,
-    string UserGroupCategoryName);
+    string UserGroupCategoryName,
+    IReadOnlyList<UserGroupPermissionDto> Permissions);

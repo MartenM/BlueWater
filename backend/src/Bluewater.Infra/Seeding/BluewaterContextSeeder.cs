@@ -86,6 +86,11 @@ public class BluewaterContextSeeder
             Name = $"Maintainers",
             Description = "Maintainers that have access to all site functionalities.",
             UserGroupCategoryId =  groupCategoryResults.Entity.Id,
+            Permissions = Enum.GetValues<BluePermission>().Select(p => new UserGroupPermission()
+            {
+                Id = Guid.NewGuid(),
+                Permission = p
+            }).ToList()
         });
 
         var membersGroupInstance = _context.UserGroupInstances.Add(new UserGroupInstance()
@@ -111,11 +116,7 @@ public class BluewaterContextSeeder
                 {
                     UserId = adminUser.Id
                 }
-            },
-            Permissions = Enum.GetValues<BluePermission>().Select(p => new UserGroupInstancePermission()
-            {
-                Permission = p
-            }).ToList()
+            }
         });
 
         var gyasIcon = await CreateNewsIconAsync("Gyas", "gyas-logo.png");

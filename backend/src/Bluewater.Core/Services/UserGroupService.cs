@@ -18,18 +18,25 @@ public class UserGroupService : IUserGroupService
 
     public async Task<List<UserGroupDto>> ListAsync()
     {
-        return await _db.UserGroups
-            .Select(ProjectToDto)
+        var groups = await _db.UserGroups
+            .AsNoTracking()
+            .Include(x => x.Permissions)
+            .Include(x => x.UserGroupCategory)
             .ToListAsync();
+
+        return groups.Select(ToDto).ToList();
     }
 
     public async Task<UserGroupDto> GetAsync(Guid id)
     {
-        return await _db.UserGroups
-            .Where(x => x.Id == id)
-            .Select(ProjectToDto)
-            .FirstOrDefaultAsync()
+        var group = await _db.UserGroups
+            .AsNoTracking()
+            .Include(x => x.Permissions)
+            .Include(x => x.UserGroupCategory)
+            .FirstOrDefaultAsync(x => x.Id == id)
             ?? throw new BlueNotFoundException($"UserGroup '{id}' was not found.");
+
+        return ToDto(group);
     }
 
     public async Task<UserGroupDto> CreateAsync(UpsertUserGroupRequest request)
@@ -76,10 +83,67 @@ public class UserGroupService : IUserGroupService
     public async Task<List<UserGroupDto>> FindByNameAsync(string name)
     {
         var normalized = name.Trim().ToLower();
-        return await _db.UserGroups
+        var groups = await _db.UserGroups
+            .AsNoTracking()
+            .Include(x => x.Permissions)
+            .Include(x => x.UserGroupCategory)
             .Where(x => x.Name.ToLower() == normalized)
-            .Select(ProjectToDto)
             .ToListAsync();
+
+        return groups.Select(ToDto).ToList();
+    }
+
+    public async Task AssignPermissionAsync(Guid groupId, BluePermission permission, Guid? roleId)
+    {
+        await Find(groupId);
+
+        if (roleId.HasValue)
+        {
+            var roleExists = await _db.UserGroupCategoryRoles.AnyAsync(x => x.Id == roleId.Value);
+            if (!roleExists)
+                throw new BlueValidationException($"UserGroupCategoryRole '{roleId}' does not exist.");
+        }
+
+        var existing = await _db.UserGroupPermissions
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.UserGroupId == groupId
+                                   && x.Permission == permission
+                                   && x.UserGroupCategoryRoleId == roleId);
+
+        if (existing != null)
+        {
+            if (existing.DeletedAt == null)
+                return; // already active
+
+            existing.DeletedAt = null;
+            existing.DeletedByUserId = null;
+            await _db.SaveChangesAsync();
+            return;
+        }
+
+        _db.UserGroupPermissions.Add(new UserGroupPermission
+        {
+            Id = Guid.NewGuid(),
+            UserGroupId = groupId,
+            Permission = permission,
+            UserGroupCategoryRoleId = roleId
+        });
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task RevokePermissionAsync(Guid groupId, BluePermission permission, Guid? roleId)
+    {
+        var assignment = await _db.UserGroupPermissions
+            .FirstOrDefaultAsync(x => x.UserGroupId == groupId
+                                   && x.Permission == permission
+                                   && x.UserGroupCategoryRoleId == roleId);
+
+        if (assignment == null)
+            return;
+
+        _db.UserGroupPermissions.Remove(assignment);
+        await _db.SaveChangesAsync();
     }
 
     private async Task<UserGroup> Find(Guid id)
@@ -92,11 +156,14 @@ public class UserGroupService : IUserGroupService
     {
         var exists = await _db.UserGroupCategories.AnyAsync(x => x.Id == categoryId);
         if (!exists)
-        {
             throw new BlueValidationException($"UserGroupCategory '{categoryId}' does not exist.");
-        }
     }
 
-    private static readonly System.Linq.Expressions.Expression<Func<UserGroup, UserGroupDto>> ProjectToDto =
-        x => new UserGroupDto(x.Id, x.Name, x.Description, x.UserGroupCategoryId, x.UserGroupCategory.Name);
+    private static UserGroupDto ToDto(UserGroup x) =>
+        new(x.Id,
+            x.Name,
+            x.Description,
+            x.UserGroupCategoryId,
+            x.UserGroupCategory?.Name ?? string.Empty,
+            x.Permissions.Select(p => new UserGroupPermissionDto(p.Permission, p.UserGroupCategoryRoleId)).ToList());
 }

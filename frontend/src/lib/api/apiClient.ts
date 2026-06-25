@@ -1887,6 +1887,333 @@ export class Client {
     /**
      * @return OK
      */
+    rolesAll(id: string): Promise<UserGroupCategoryRoleDto[]> {
+        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRolesAll(_response);
+        });
+    }
+
+    protected processRolesAll(response: Response): Promise<UserGroupCategoryRoleDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(UserGroupCategoryRoleDto.fromJS(item));
+            }
+            else {
+                result200 = null as any;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserGroupCategoryRoleDto[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    rolesPOST(id: string, body: UpsertUserGroupCategoryRoleRequest): Promise<UserGroupCategoryRoleDto> {
+        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRolesPOST(_response);
+        });
+    }
+
+    protected processRolesPOST(response: Response): Promise<UserGroupCategoryRoleDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    rolesPUT(id: string, roleId: string, body: UpsertUserGroupCategoryRoleRequest): Promise<UserGroupCategoryRoleDto> {
+        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/{roleId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (roleId === undefined || roleId === null)
+            throw new globalThis.Error("The parameter 'roleId' must be defined.");
+        url_ = url_.replace("{roleId}", encodeURIComponent("" + roleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRolesPUT(_response);
+        });
+    }
+
+    protected processRolesPUT(response: Response): Promise<UserGroupCategoryRoleDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    rolesDELETE(id: string, roleId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/{roleId}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (roleId === undefined || roleId === null)
+            throw new globalThis.Error("The parameter 'roleId' must be defined.");
+        url_ = url_.replace("{roleId}", encodeURIComponent("" + roleId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRolesDELETE(_response);
+        });
+    }
+
+    protected processRolesDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    reorder(id: string, body: ReorderRolesRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/reorder";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processReorder(_response);
+        });
+    }
+
+    protected processReorder(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     userGroupInstancesAll(): Promise<UserGroupInstanceDto[]> {
         let url_ = this.baseUrl + "/api/UserGroupInstances";
         url_ = url_.replace(/[?&]$/, "");
@@ -2258,90 +2585,32 @@ export class Client {
     /**
      * @return OK
      */
-    permissionsPOST(id: string, body: AssignPermissionRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/permissions";
+    role(id: string, userId: string, body: AssignMemberRoleRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/users/{userId}/role";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (userId === undefined || userId === null)
+            throw new globalThis.Error("The parameter 'userId' must be defined.");
+        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
 
         let options_: RequestInit = {
             body: content_,
-            method: "POST",
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPermissionsPOST(_response);
+            return this.processRole(_response);
         });
     }
 
-    protected processPermissionsPOST(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    permissionsDELETE(id: string, permission: BluePermission): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/permissions/{permission}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (permission === undefined || permission === null)
-            throw new globalThis.Error("The parameter 'permission' must be defined.");
-        url_ = url_.replace("{permission}", encodeURIComponent("" + permission));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPermissionsDELETE(_response);
-        });
-    }
-
-    protected processPermissionsDELETE(response: Response): Promise<void> {
+    protected processRole(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2897,6 +3166,134 @@ export class Client {
             });
         }
         return Promise.resolve<UserGroupMembershipDto[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    permissionsPOST(id: string, body: AssignGroupPermissionRequest): Promise<void> {
+        let url_ = this.baseUrl + "/api/UserGroups/{id}/permissions";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processPermissionsPOST(_response);
+        });
+    }
+
+    protected processPermissionsPOST(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @param roleId (optional) 
+     * @return OK
+     */
+    permissionsDELETE(id: string, permission: BluePermission, roleId: string | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/UserGroups/{id}/permissions/{permission}?";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (permission === undefined || permission === null)
+            throw new globalThis.Error("The parameter 'permission' must be defined.");
+        url_ = url_.replace("{permission}", encodeURIComponent("" + permission));
+        if (roleId === null)
+            throw new globalThis.Error("The parameter 'roleId' cannot be null.");
+        else if (roleId !== undefined)
+            url_ += "roleId=" + encodeURIComponent("" + roleId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processPermissionsDELETE(_response);
+        });
+    }
+
+    protected processPermissionsDELETE(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
     }
 
     /**
@@ -3759,12 +4156,13 @@ export interface IAgendaItemDto {
     [key: string]: any;
 }
 
-export class AssignPermissionRequest implements IAssignPermissionRequest {
+export class AssignGroupPermissionRequest implements IAssignGroupPermissionRequest {
     permission!: BluePermission;
+    userGroupCategoryRoleId!: string | undefined;
 
     [key: string]: any;
 
-    constructor(data?: IAssignPermissionRequest) {
+    constructor(data?: IAssignGroupPermissionRequest) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3780,12 +4178,13 @@ export class AssignPermissionRequest implements IAssignPermissionRequest {
                     this[property] = _data[property];
             }
             this.permission = _data["permission"];
+            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
         }
     }
 
-    static fromJS(data: any): AssignPermissionRequest {
+    static fromJS(data: any): AssignGroupPermissionRequest {
         data = typeof data === 'object' ? data : {};
-        let result = new AssignPermissionRequest();
+        let result = new AssignGroupPermissionRequest();
         result.init(data);
         return result;
     }
@@ -3797,12 +4196,62 @@ export class AssignPermissionRequest implements IAssignPermissionRequest {
                 data[property] = this[property];
         }
         data["permission"] = this.permission;
+        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
         return data;
     }
 }
 
-export interface IAssignPermissionRequest {
+export interface IAssignGroupPermissionRequest {
     permission: BluePermission;
+    userGroupCategoryRoleId: string | undefined;
+
+    [key: string]: any;
+}
+
+export class AssignMemberRoleRequest implements IAssignMemberRoleRequest {
+    userGroupCategoryRoleId!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IAssignMemberRoleRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
+        }
+    }
+
+    static fromJS(data: any): AssignMemberRoleRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssignMemberRoleRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
+        return data;
+    }
+}
+
+export interface IAssignMemberRoleRequest {
+    userGroupCategoryRoleId: string | undefined;
 
     [key: string]: any;
 }
@@ -4132,6 +4581,58 @@ export class CreateUserResponse implements ICreateUserResponse {
 export interface ICreateUserResponse {
     user: UserDto;
     generatedPassword: string;
+
+    [key: string]: any;
+}
+
+export class InstanceMemberDto implements IInstanceMemberDto {
+    userId!: string;
+    userGroupCategoryRoleId!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IInstanceMemberDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.userId = _data["userId"];
+            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
+        }
+    }
+
+    static fromJS(data: any): InstanceMemberDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new InstanceMemberDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["userId"] = this.userId;
+        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
+        return data;
+    }
+}
+
+export interface IInstanceMemberDto {
+    userId: string;
+    userGroupCategoryRoleId: string | undefined;
 
     [key: string]: any;
 }
@@ -4661,6 +5162,65 @@ export interface IRefreshRequest {
     [key: string]: any;
 }
 
+export class ReorderRolesRequest implements IReorderRolesRequest {
+    roleIds!: string[];
+
+    [key: string]: any;
+
+    constructor(data?: IReorderRolesRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.roleIds = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            if (Array.isArray(_data["roleIds"])) {
+                this.roleIds = [] as any;
+                for (let item of _data["roleIds"])
+                    this.roleIds!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): ReorderRolesRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReorderRolesRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        if (Array.isArray(this.roleIds)) {
+            data["roleIds"] = [];
+            for (let item of this.roleIds)
+                data["roleIds"].push(item);
+        }
+        return data;
+    }
+}
+
+export interface IReorderRolesRequest {
+    roleIds: string[];
+
+    [key: string]: any;
+}
+
 export class SeasonDto implements ISeasonDto {
     id!: string;
     name!: string;
@@ -5001,6 +5561,62 @@ export interface IUpsertUserGroupCategoryRequest {
     [key: string]: any;
 }
 
+export class UpsertUserGroupCategoryRoleRequest implements IUpsertUserGroupCategoryRoleRequest {
+    namePlural!: string;
+    nameMasculine!: string | undefined;
+    nameFeminine!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IUpsertUserGroupCategoryRoleRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.namePlural = _data["namePlural"];
+            this.nameMasculine = _data["nameMasculine"];
+            this.nameFeminine = _data["nameFeminine"];
+        }
+    }
+
+    static fromJS(data: any): UpsertUserGroupCategoryRoleRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpsertUserGroupCategoryRoleRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["namePlural"] = this.namePlural;
+        data["nameMasculine"] = this.nameMasculine;
+        data["nameFeminine"] = this.nameFeminine;
+        return data;
+    }
+}
+
+export interface IUpsertUserGroupCategoryRoleRequest {
+    namePlural: string;
+    nameMasculine: string | undefined;
+    nameFeminine: string | undefined;
+
+    [key: string]: any;
+}
+
 export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
     name!: string;
     description!: string;
@@ -5292,16 +5908,16 @@ export interface IUserGroupCategoryOverviewDto {
     [key: string]: any;
 }
 
-export class UserGroupDto implements IUserGroupDto {
+export class UserGroupCategoryRoleDto implements IUserGroupCategoryRoleDto {
     id!: string;
-    name!: string;
-    description!: string;
     userGroupCategoryId!: string;
-    userGroupCategoryName!: string;
+    namePlural!: string;
+    nameMasculine!: string | undefined;
+    nameFeminine!: string | undefined;
 
     [key: string]: any;
 
-    constructor(data?: IUserGroupDto) {
+    constructor(data?: IUserGroupCategoryRoleDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -5317,10 +5933,83 @@ export class UserGroupDto implements IUserGroupDto {
                     this[property] = _data[property];
             }
             this.id = _data["id"];
+            this.userGroupCategoryId = _data["userGroupCategoryId"];
+            this.namePlural = _data["namePlural"];
+            this.nameMasculine = _data["nameMasculine"];
+            this.nameFeminine = _data["nameFeminine"];
+        }
+    }
+
+    static fromJS(data: any): UserGroupCategoryRoleDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserGroupCategoryRoleDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["id"] = this.id;
+        data["userGroupCategoryId"] = this.userGroupCategoryId;
+        data["namePlural"] = this.namePlural;
+        data["nameMasculine"] = this.nameMasculine;
+        data["nameFeminine"] = this.nameFeminine;
+        return data;
+    }
+}
+
+export interface IUserGroupCategoryRoleDto {
+    id: string;
+    userGroupCategoryId: string;
+    namePlural: string;
+    nameMasculine: string | undefined;
+    nameFeminine: string | undefined;
+
+    [key: string]: any;
+}
+
+export class UserGroupDto implements IUserGroupDto {
+    id!: string;
+    name!: string;
+    description!: string;
+    userGroupCategoryId!: string;
+    userGroupCategoryName!: string;
+    permissions!: UserGroupPermissionDto[];
+
+    [key: string]: any;
+
+    constructor(data?: IUserGroupDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.permissions = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
             this.userGroupCategoryId = _data["userGroupCategoryId"];
             this.userGroupCategoryName = _data["userGroupCategoryName"];
+            if (Array.isArray(_data["permissions"])) {
+                this.permissions = [] as any;
+                for (let item of _data["permissions"])
+                    this.permissions!.push(UserGroupPermissionDto.fromJS(item));
+            }
         }
     }
 
@@ -5342,6 +6031,11 @@ export class UserGroupDto implements IUserGroupDto {
         data["description"] = this.description;
         data["userGroupCategoryId"] = this.userGroupCategoryId;
         data["userGroupCategoryName"] = this.userGroupCategoryName;
+        if (Array.isArray(this.permissions)) {
+            data["permissions"] = [];
+            for (let item of this.permissions)
+                data["permissions"].push(item ? item.toJSON() : undefined as any);
+        }
         return data;
     }
 }
@@ -5352,6 +6046,7 @@ export interface IUserGroupDto {
     description: string;
     userGroupCategoryId: string;
     userGroupCategoryName: string;
+    permissions: UserGroupPermissionDto[];
 
     [key: string]: any;
 }
@@ -5360,10 +6055,11 @@ export class UserGroupInstanceDto implements IUserGroupInstanceDto {
     id!: string;
     userGroupId!: string;
     userGroupName!: string;
+    userGroupCategoryId!: string;
     seasonId!: string;
     seasonName!: string;
-    permissions!: BluePermission[];
-    memberUserIds!: string[];
+    permissions!: UserGroupPermissionDto[];
+    members!: InstanceMemberDto[];
 
     [key: string]: any;
 
@@ -5376,7 +6072,7 @@ export class UserGroupInstanceDto implements IUserGroupInstanceDto {
         }
         if (!data) {
             this.permissions = [];
-            this.memberUserIds = [];
+            this.members = [];
         }
     }
 
@@ -5389,17 +6085,18 @@ export class UserGroupInstanceDto implements IUserGroupInstanceDto {
             this.id = _data["id"];
             this.userGroupId = _data["userGroupId"];
             this.userGroupName = _data["userGroupName"];
+            this.userGroupCategoryId = _data["userGroupCategoryId"];
             this.seasonId = _data["seasonId"];
             this.seasonName = _data["seasonName"];
             if (Array.isArray(_data["permissions"])) {
                 this.permissions = [] as any;
                 for (let item of _data["permissions"])
-                    this.permissions!.push(item);
+                    this.permissions!.push(UserGroupPermissionDto.fromJS(item));
             }
-            if (Array.isArray(_data["memberUserIds"])) {
-                this.memberUserIds = [] as any;
-                for (let item of _data["memberUserIds"])
-                    this.memberUserIds!.push(item);
+            if (Array.isArray(_data["members"])) {
+                this.members = [] as any;
+                for (let item of _data["members"])
+                    this.members!.push(InstanceMemberDto.fromJS(item));
             }
         }
     }
@@ -5420,17 +6117,18 @@ export class UserGroupInstanceDto implements IUserGroupInstanceDto {
         data["id"] = this.id;
         data["userGroupId"] = this.userGroupId;
         data["userGroupName"] = this.userGroupName;
+        data["userGroupCategoryId"] = this.userGroupCategoryId;
         data["seasonId"] = this.seasonId;
         data["seasonName"] = this.seasonName;
         if (Array.isArray(this.permissions)) {
             data["permissions"] = [];
             for (let item of this.permissions)
-                data["permissions"].push(item);
+                data["permissions"].push(item ? item.toJSON() : undefined as any);
         }
-        if (Array.isArray(this.memberUserIds)) {
-            data["memberUserIds"] = [];
-            for (let item of this.memberUserIds)
-                data["memberUserIds"].push(item);
+        if (Array.isArray(this.members)) {
+            data["members"] = [];
+            for (let item of this.members)
+                data["members"].push(item ? item.toJSON() : undefined as any);
         }
         return data;
     }
@@ -5440,10 +6138,11 @@ export interface IUserGroupInstanceDto {
     id: string;
     userGroupId: string;
     userGroupName: string;
+    userGroupCategoryId: string;
     seasonId: string;
     seasonName: string;
-    permissions: BluePermission[];
-    memberUserIds: string[];
+    permissions: UserGroupPermissionDto[];
+    members: InstanceMemberDto[];
 
     [key: string]: any;
 }
@@ -5568,6 +6267,58 @@ export interface IUserGroupOverviewDto {
     instanceId: string | undefined;
     memberCount: number | undefined;
     permissionCount: number | undefined;
+
+    [key: string]: any;
+}
+
+export class UserGroupPermissionDto implements IUserGroupPermissionDto {
+    permission!: BluePermission;
+    userGroupCategoryRoleId!: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IUserGroupPermissionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.permission = _data["permission"];
+            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
+        }
+    }
+
+    static fromJS(data: any): UserGroupPermissionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserGroupPermissionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["permission"] = this.permission;
+        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
+        return data;
+    }
+}
+
+export interface IUserGroupPermissionDto {
+    permission: BluePermission;
+    userGroupCategoryRoleId: string | undefined;
 
     [key: string]: any;
 }

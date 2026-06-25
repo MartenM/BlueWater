@@ -4,6 +4,7 @@ using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Groups;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace Bluewater.Api.Controllers.Api;
 
 /// <summary>
@@ -15,10 +16,14 @@ namespace Bluewater.Api.Controllers.Api;
 public class UserGroupCategoriesController : ControllerBase
 {
     private readonly IUserGroupCategoryService _service;
+    private readonly IUserGroupCategoryRoleService _roleService;
 
-    public UserGroupCategoriesController(IUserGroupCategoryService service)
+    public UserGroupCategoriesController(
+        IUserGroupCategoryService service,
+        IUserGroupCategoryRoleService roleService)
     {
         _service = service;
+        _roleService = roleService;
     }
 
     /// <summary>Lists all categories.</summary>
@@ -74,5 +79,47 @@ public class UserGroupCategoriesController : ControllerBase
     public Task<List<UserGroupCategoryOverviewDto>> Overview([FromQuery] Guid? seasonId)
     {
         return _service.GetOverviewAsync(seasonId);
+    }
+
+    /// <summary>Lists all roles defined for a category.</summary>
+    [BlueAuthorize(BluePermission.AdminViewGroups)]
+    [HttpGet("{id:guid}/roles")]
+    public Task<List<UserGroupCategoryRoleDto>> ListRoles(Guid id)
+    {
+        return _roleService.ListAsync(id);
+    }
+
+    /// <summary>Creates a new role for the category.</summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpPost("{id:guid}/roles")]
+    public Task<UserGroupCategoryRoleDto> CreateRole(Guid id, UpsertUserGroupCategoryRoleRequest request)
+    {
+        return _roleService.CreateAsync(id, request);
+    }
+
+    /// <summary>Updates a role's name fields.</summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpPut("{id:guid}/roles/{roleId:guid}")]
+    public Task<UserGroupCategoryRoleDto> UpdateRole(Guid id, Guid roleId, UpsertUserGroupCategoryRoleRequest request)
+    {
+        return _roleService.UpdateAsync(roleId, request);
+    }
+
+    /// <summary>
+    /// Deletes a role. Members assigned this role will have their role cleared (SetNull).
+    /// </summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpDelete("{id:guid}/roles/{roleId:guid}")]
+    public Task DeleteRole(Guid id, Guid roleId)
+    {
+        return _roleService.DeleteAsync(roleId);
+    }
+
+    /// <summary>Updates the display order of roles within a category.</summary>
+    [BlueAuthorize(BluePermission.AdminModifyGroups)]
+    [HttpPut("{id:guid}/roles/reorder")]
+    public Task ReorderRoles(Guid id, ReorderRolesRequest request)
+    {
+        return _roleService.ReorderAsync(id, request);
     }
 }

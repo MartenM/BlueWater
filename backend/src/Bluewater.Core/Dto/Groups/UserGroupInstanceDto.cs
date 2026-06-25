@@ -6,7 +6,8 @@ public record UserGroupInstanceDto(
     Guid Id,
     Guid UserGroupId,
     string UserGroupName,
+    Guid UserGroupCategoryId,
     Guid SeasonId,
     string SeasonName,
-    IReadOnlyList<BluePermission> Permissions,
-    IReadOnlyList<Guid> MemberUserIds);
+    IReadOnlyList<UserGroupPermissionDto> Permissions,
+    IReadOnlyList<InstanceMemberDto> Members);

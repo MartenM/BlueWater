@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, BlueAlert, ProfilePicture, breadcrumbs } from '$lib';
+	import { HasPermission, BlueAlert, ConfirmDialog, ProfilePicture, breadcrumbs } from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import { BluePermission, BlueUserSex } from '$lib/api/apiClient';
@@ -27,6 +27,7 @@
 	let error = $state(untrack(() => data.error));
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
+	let deleteDialog = $state<HTMLDialogElement>();
 
 	let pictureVersion = $state(0);
 	let pictureFile = $state<File | null>(null);
@@ -56,7 +57,7 @@
 	}
 
 	async function handleDelete() {
-		if (!user || !confirm(`Weet je zeker dat je ${user.fullname} wilt verwijderen?`)) return;
+		if (!user) return;
 		deleting = true;
 		deleteError = null;
 		try {
@@ -156,7 +157,7 @@
 			</a>
 			<button
 				type="button"
-				onclick={handleDelete}
+				onclick={() => deleteDialog?.showModal()}
 				disabled={deleting}
 				class="text-sm font-medium text-red-600 hover:underline disabled:opacity-60"
 			>
@@ -168,5 +169,10 @@
 				<BlueAlert level={AlertLevel.Danger}>{deleteError}</BlueAlert>
 			</div>
 		{/if}
+		<ConfirmDialog
+			bind:dialog={deleteDialog}
+			message={`Weet je zeker dat je ${user.fullname} wilt verwijderen?`}
+			onConfirm={handleDelete}
+		/>
 	</HasPermission>
 {/if}

@@ -8,8 +8,8 @@ namespace Bluewater.Api.Controllers.Api;
 
 /// <summary>
 /// CRUD for UserGroupInstance — a UserGroup scoped to one season, with its own
-/// member list and permission assignments. Permissions assigned here are only
-/// granted to a member's JWT while their instance's season is the app's current season.
+/// member list. Permissions are defined on the UserGroup itself (not the instance)
+/// and are effective for members' JWTs while the instance's season is the current season.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -30,7 +30,7 @@ public class UserGroupInstancesController : ControllerBase
         return _service.ListAsync();
     }
 
-    /// <summary>Gets a single instance, including its members and assigned permissions.</summary>
+    /// <summary>Gets a single instance, including its members and the group's permissions.</summary>
     [BlueAuthorize(BluePermission.AdminViewGroups)]
     [HttpGet("{id:guid}")]
     public Task<UserGroupInstanceDto> Get(Guid id)
@@ -49,7 +49,7 @@ public class UserGroupInstancesController : ControllerBase
         return _service.CreateAsync(request);
     }
 
-    /// <summary>Deletes an instance. Cascades to its members and permission assignments.</summary>
+    /// <summary>Deletes an instance. Cascades to its members.</summary>
     [BlueAuthorize(BluePermission.AdminModifyGroups)]
     [HttpDelete("{id:guid}")]
     public Task Delete(Guid id)
@@ -74,21 +74,14 @@ public class UserGroupInstancesController : ControllerBase
     }
 
     /// <summary>
-    /// Assigns a permission to the instance. Takes effect for members' JWTs on their
-    /// next login/refresh once this is the current season. No-op if already assigned.
+    /// Assigns (or clears) a role for a member within this instance.
+    /// The role must belong to the same category as this instance's group.
+    /// Send null RoleId to clear the member's role.
     /// </summary>
     [BlueAuthorize(BluePermission.AdminModifyGroups)]
-    [HttpPost("{id:guid}/permissions")]
-    public Task AssignPermission(Guid id, AssignPermissionRequest request)
+    [HttpPut("{id:guid}/users/{userId:guid}/role")]
+    public Task AssignMemberRole(Guid id, Guid userId, AssignMemberRoleRequest request)
     {
-        return _service.AssignPermissionAsync(id, request.Permission);
-    }
-
-    /// <summary>Revokes a permission from the instance. No-op if not assigned.</summary>
-    [BlueAuthorize(BluePermission.AdminModifyGroups)]
-    [HttpDelete("{id:guid}/permissions/{permission}")]
-    public Task RevokePermission(Guid id, BluePermission permission)
-    {
-        return _service.RevokePermissionAsync(id, permission);
+        return _service.AssignMemberRoleAsync(id, userId, request.UserGroupCategoryRoleId);
     }
 }

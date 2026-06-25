@@ -129,11 +129,29 @@ public class AuthService : IAuthService
             .Select(x => x.CurrentSeasonId)
             .FirstAsync();
 
-        return await _db.UserGroupInstanceMembers
+        var memberRoles = await _db.UserGroupInstanceMembers
             .Where(m => m.UserId == userId && m.UserGroupInstance.SeasonId == currentSeasonId)
-            .SelectMany(m => m.UserGroupInstance.Permissions.Select(p => p.Permission))
-            .Distinct()
+            .Select(m => new { m.UserGroupInstance.UserGroupId, m.UserGroupCategoryRoleId })
             .ToListAsync();
+
+        if (memberRoles.Count == 0)
+            return [];
+
+        var groupIds = memberRoles.Select(m => m.UserGroupId).Distinct().ToList();
+
+        var groupPermissions = await _db.UserGroupPermissions
+            .Where(p => groupIds.Contains(p.UserGroupId))
+            .Select(p => new { p.UserGroupId, p.Permission, p.UserGroupCategoryRoleId })
+            .ToListAsync();
+
+        return memberRoles
+            .SelectMany(m => groupPermissions
+                .Where(p => p.UserGroupId == m.UserGroupId
+                         && (p.UserGroupCategoryRoleId == null
+                             || p.UserGroupCategoryRoleId == m.UserGroupCategoryRoleId))
+                .Select(p => p.Permission))
+            .Distinct()
+            .ToList();
     }
 
     private async Task<string> CreateRefreshToken(Guid userId)

@@ -131,6 +131,122 @@ public class UserGroupServiceTests : SqliteServiceTestBase
         result.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task AssignPermissionAsync_AddsPermissionToGroup()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        var dto = await _sut.GetAsync(group.Id);
+        dto.Permissions.ShouldHaveSingleItem();
+        dto.Permissions[0].Permission.ShouldBe(BluePermission.AdminViewGroups);
+        dto.Permissions[0].UserGroupCategoryRoleId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task AssignPermissionAsync_IsIdempotent_WhenAlreadyAssigned()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        var dto = await _sut.GetAsync(group.Id);
+        dto.Permissions.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task AssignPermissionAsync_CanAssignSamePermissionToMultipleRoles()
+    {
+        var category = await CreateCategoryAsync();
+        var roleA = new UserGroupCategoryRole { Id = Guid.NewGuid(), UserGroupCategoryId = category.Id, NamePlural = "Roeiers" };
+        var roleB = new UserGroupCategoryRole { Id = Guid.NewGuid(), UserGroupCategoryId = category.Id, NamePlural = "Coaches" };
+        Db.UserGroupCategoryRoles.AddRange(roleA, roleB);
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "A1", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, roleA.Id);
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, roleB.Id);
+
+        var dto = await _sut.GetAsync(group.Id);
+        dto.Permissions.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task AssignPermissionAsync_RevivesAfterRevoke()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+        await _sut.RevokePermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        var dto = await _sut.GetAsync(group.Id);
+        dto.Permissions.ShouldHaveSingleItem();
+        var rows = await Db.UserGroupPermissions
+            .IgnoreQueryFilters()
+            .Where(x => x.UserGroupId == group.Id && x.Permission == BluePermission.AdminViewGroups)
+            .ToListAsync();
+        rows.Count.ShouldBe(1);
+        rows[0].DeletedAt.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RevokePermissionAsync_RemovesPermission()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+        await _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        await _sut.RevokePermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+
+        var dto = await _sut.GetAsync(group.Id);
+        dto.Permissions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RevokePermissionAsync_DoesNotThrow_WhenNotAssigned()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+
+        await _sut.RevokePermissionAsync(group.Id, BluePermission.AdminViewGroups, null);
+    }
+
+    [Fact]
+    public async Task AssignPermissionAsync_Throws_WhenGroupDoesNotExist()
+    {
+        await Should.ThrowAsync<BlueNotFoundException>(
+            () => _sut.AssignPermissionAsync(Guid.NewGuid(), BluePermission.AdminViewGroups, null));
+    }
+
+    [Fact]
+    public async Task AssignPermissionAsync_Throws_WhenRoleDoesNotExist()
+    {
+        var category = await CreateCategoryAsync();
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "", UserGroupCategoryId = category.Id };
+        Db.UserGroups.Add(group);
+        await Db.SaveChangesAsync();
+
+        await Should.ThrowAsync<BlueValidationException>(
+            () => _sut.AssignPermissionAsync(group.Id, BluePermission.AdminViewGroups, Guid.NewGuid()));
+    }
+
     private async Task<UserGroupCategory> CreateCategoryAsync(string name = "General")
     {
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = name, Description = $"{name} members" };
