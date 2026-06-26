@@ -4,6 +4,7 @@ using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Auth;
+using Bluewater.Domain.Models.Exams;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
@@ -38,6 +39,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
     public DbSet<NewsIcon> NewsIcons => Set<NewsIcon>();
     public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
+    public DbSet<ExamType> ExamTypes => Set<ExamType>();
+    public DbSet<UserExam> UserExams => Set<UserExam>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -209,6 +212,26 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
         builder.Entity<AgendaItem>(e =>
         {
             e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<ExamType>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<UserExam>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.ExamType)
+                .WithMany()
+                .HasForeignKey(x => x.ExamTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

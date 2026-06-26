@@ -124,6 +124,8 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<INewsIconService, NewsIconService>();
         builder.Services.AddScoped<IAgendaService, AgendaService>();
         builder.Services.AddScoped<ISeasonService, SeasonService>();
+        builder.Services.AddScoped<IExamTypeService, ExamTypeService>();
+        builder.Services.AddScoped<IUserExamService, UserExamService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
         builder.Services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 

@@ -15,4 +15,7 @@ public enum BluePermission
     AgendaModify = 11,
     AdminUsersView = 12,
     AdminUsersModify = 13,
+    ExamsView = 14,
+    ExamsModify = 15,
+    ExamsAssign = 16,
 }

@@ -20,6 +20,14 @@ public class UserProfilesController : ControllerBase
         _currentUser = currentUser;
     }
 
+    /// <summary>Lists members with an active group in the current season, optionally filtered by name.</summary>
+    [BlueAuthorize(BluePermission.ViewProfiles)]
+    [HttpGet("active")]
+    public Task<List<ActiveMemberDto>> SearchActive([FromQuery] string? search)
+    {
+        return _service.SearchActiveAsync(search);
+    }
+
     /// <summary>Gets the current user's own profile.</summary>
     [Authorize]
     [HttpGet("me")]

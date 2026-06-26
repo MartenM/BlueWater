@@ -15,6 +15,8 @@ export { default as AgendaItemShort } from './components/AgendaItemShort.svelte'
 export { default as AgendaForm } from './components/AgendaForm.svelte';
 export { default as UserForm } from './components/UserForm.svelte';
 export { default as CategoryForm } from './components/CategoryForm.svelte';
+export { default as ExamTypeForm } from './components/ExamTypeForm.svelte';
+export { default as MemberPicker } from './components/MemberPicker.svelte';
 export { default as GroupForm } from './components/GroupForm.svelte';
 export { default as InstanceMemberManager } from './components/InstanceMemberManager.svelte';
 export { default as InstancePermissionManager } from './components/InstancePermissionManager.svelte';

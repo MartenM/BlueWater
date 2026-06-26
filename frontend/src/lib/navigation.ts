@@ -39,7 +39,8 @@ export const navItems: NavItem[] = [
 			{ label: 'Outing Planner', href: '/tools/outing-planner' },
 			{ label: 'Botenboek', href: '/tools/fleet' },
 			{ label: 'Gebruikers', href: '/tools/users' },
-			{ label: 'Groepen', href: '/tools/groups' }
+			{ label: 'Groepen', href: '/tools/groups' },
+			{ label: 'Examens', href: '/tools/exams' }
 		]
 	},
 	{ label: 'Contact', href: '/contact' }

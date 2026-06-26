@@ -1,5 +1,6 @@
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Services.Abstractions;
 using Bluewater.Tests.TestSupport;
@@ -145,6 +146,145 @@ public class UserProfileServiceTests : SqliteServiceTestBase
         var user = await CreateUserAsync();
 
         await Should.ThrowAsync<BlueNotFoundException>(() => _sut.GetProfilePictureAsync(user.Id));
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_ReturnsEmpty_WhenNoMembersInCurrentSeason()
+    {
+        await CreateCurrentSeasonAsync();
+
+        var result = await _sut.SearchActiveAsync(null);
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_ReturnsMembers_InCurrentSeason()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = await CreateUserAsync();
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync(null);
+
+        result.Count.ShouldBe(1);
+        result[0].Id.ShouldBe(user.Id);
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_ExcludesMembers_NotInCurrentSeason()
+    {
+        var currentSeason = await CreateCurrentSeasonAsync();
+        var otherSeason = new BlueSeason { Id = Guid.NewGuid(), StartDate = new DateOnly(2020, 1, 1), EndDate = new DateOnly(2021, 1, 1) };
+        Db.Seasons.Add(otherSeason);
+        await Db.SaveChangesAsync();
+
+        var userInCurrent = await CreateUserAsync("current", "current@example.com");
+        var userInOther = await CreateUserAsync("other", "other@example.com");
+        await AddMemberToSeasonAsync(userInCurrent.Id, currentSeason.Id);
+        await AddMemberToSeasonAsync(userInOther.Id, otherSeason.Id);
+
+        var result = await _sut.SearchActiveAsync(null);
+
+        result.Count.ShouldBe(1);
+        result[0].Id.ShouldBe(userInCurrent.Id);
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_FiltersBy_Firstname()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = new BlueUser { UserName = "jan", Email = "jan@example.com", EmailConfirmed = true, Firstname = "Jan", Surname = "Bakker" };
+        await UserManager.CreateAsync(user, "Test123!");
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync("jan");
+
+        result.Count.ShouldBe(1);
+        result[0].Id.ShouldBe(user.Id);
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_FiltersBy_Surname()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = new BlueUser { UserName = "piet", Email = "piet@example.com", EmailConfirmed = true, Firstname = "Piet", Surname = "Vanderberg" };
+        await UserManager.CreateAsync(user, "Test123!");
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync("vanderberg");
+
+        result.Count.ShouldBe(1);
+        result[0].Id.ShouldBe(user.Id);
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_Search_IsCaseInsensitive()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = new BlueUser { UserName = "anna", Email = "anna@example.com", EmailConfirmed = true, Firstname = "Anna", Surname = "Smit" };
+        await UserManager.CreateAsync(user, "Test123!");
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync("ANNA");
+
+        result.Count.ShouldBe(1);
+        result[0].Id.ShouldBe(user.Id);
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_Search_ReturnsEmpty_WhenNoMatch()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = await CreateUserAsync();
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync("zzznomatch");
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_HasProfilePicture_IsFalse_WhenNoFileSet()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = await CreateUserAsync();
+        await AddMemberToSeasonAsync(user.Id, season.Id);
+
+        var result = await _sut.SearchActiveAsync(null);
+
+        result[0].HasProfilePicture.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task SearchActiveAsync_DeduplicatesUser_InMultipleGroupInstances()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var user = await CreateUserAsync();
+        await AddMemberToSeasonAsync(user.Id, season.Id, suffix: "A");
+        await AddMemberToSeasonAsync(user.Id, season.Id, suffix: "B");
+
+        var result = await _sut.SearchActiveAsync(null);
+
+        result.Count.ShouldBe(1);
+    }
+
+    private async Task AddMemberToSeasonAsync(Guid userId, Guid seasonId, string suffix = "")
+    {
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "Cat" + suffix };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Group" + suffix, UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = seasonId };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.Add(group);
+        Db.UserGroupInstances.Add(instance);
+        Db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember
+        {
+            UserGroupInstanceId = instance.Id,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow,
+            CreatedByUserId = Guid.Empty
+        });
+        await Db.SaveChangesAsync();
     }
 
     private static byte[] BuildPng(int width, int height)

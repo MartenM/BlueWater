@@ -16,6 +16,14 @@ cd frontend && pnpm dev/build/test:e2e/generate:api   # see frontend/CLAUDE.md
 
 The frontend's API client (`frontend/src/lib/api/`) is generated from the backend's OpenAPI spec via NSwag (`pnpm generate:api` in `frontend/`), which requires the backend API running locally first. Any backend DTO/contract change (new/renamed field, new/changed endpoint) is not done until `generate:api` has been re-run and the frontend call sites updated to match the regenerated client.
 
+**After any backend contract change, automatically:**
+1. Start the backend: `dotnet run --project src/Bluewater.Api` (run in background so the shell doesn't block)
+2. Wait for it to be ready (~12 s), then run `pnpm generate:api` in `frontend/`
+3. Fix any TypeScript errors in the frontend call sites that arise from the regenerated client
+4. Stop the background API process when done
+
+Do not skip this sequence or leave it as a manual step for the user. If the backend fails to start (e.g. Postgres is not running), surface the error clearly rather than silently leaving the frontend client stale.
+
 ## Working across both sides
 
 - For a full-stack change, work sequentially in this one session: backend piece first (with its own tests, per `backend/CLAUDE.md`'s testing conventions), then `generate:api`, then the frontend piece. A subagent for the frontend half would have to re-derive what changed and why on the backend side — context this session already has for free — so direct work is the cheaper default.

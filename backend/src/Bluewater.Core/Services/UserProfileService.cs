@@ -25,6 +25,36 @@ public class UserProfileService : IUserProfileService
         _fileStorageService = fileStorageService;
     }
 
+    public async Task<List<ActiveMemberDto>> SearchActiveAsync(string? search, CancellationToken ct = default)
+    {
+        var currentSeasonId = await _db.AppSettings
+            .Select(x => x.CurrentSeasonId)
+            .FirstAsync(ct);
+
+        var query = _db.UserGroupInstanceMembers
+            .AsNoTracking()
+            .Where(m => m.DeletedAt == null && m.UserGroupInstance.SeasonId == currentSeasonId)
+            .Select(m => m.User)
+            .Distinct();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(u =>
+                u.Firstname.ToLower().Contains(term) ||
+                u.Surname.ToLower().Contains(term) ||
+                u.SurnamePrefix.ToLower().Contains(term));
+        }
+
+        var users = await query
+            .OrderBy(u => u.Surname).ThenBy(u => u.Firstname)
+            .ToListAsync(ct);
+
+        return users
+            .Select(u => new ActiveMemberDto(u.Id, u.Fullname, u.ProfilePictureFileId != null))
+            .ToList();
+    }
+
     public async Task<UserProfileDto> GetAsync(Guid userId)
     {
         var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId)
