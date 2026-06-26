@@ -10,7 +10,29 @@ This is a .NET 10 solution (`Bluewater.sln`) built with the standard SDK CLI —
 dotnet build Bluewater.sln                       # build everything
 dotnet run --project src/Bluewater.Api           # run the API (http://localhost:5066, https://localhost:7292)
 dotnet test src/Bluewater.Tests/Bluewater.Tests.csproj   # run the test suite
+dotnet test src/Bluewater.Tests/Bluewater.Tests.csproj --filter "FullyQualifiedName~ServiceName"  # targeted (preferred per-change)
 ```
+
+## Key file locations
+
+| What | Where |
+|---|---|
+| New service interface | `src/Bluewater.Core/Services/Abstractions/I<Name>Service.cs` |
+| New service implementation | `src/Bluewater.Core/Services/<Name>Service.cs` |
+| Register service in DI | `src/Bluewater.Api/Extensions/WebApplicationBuilderExtensions.cs` |
+| New controller | `src/Bluewater.Api/Controllers/Api/<Name>Controller.cs` |
+| New DTO | `src/Bluewater.Core/Dto/<Feature>/` |
+| New validator | `src/Bluewater.Core/Validators/<Name>Validator.cs` (auto-scanned, no extra registration) |
+| New domain model | `src/Bluewater.Domain/Models/<Feature>/` |
+| New migration | `dotnet ef migrations add <Name> --project src/Bluewater.Infra --startup-project src/Bluewater.Api` |
+| New test class | `src/Bluewater.Tests/Services/<Name>ServiceTests.cs` |
+
+## Don'ts
+
+- Don't add `try`/`catch` in controllers — exception filters in `Filters/` handle all error-to-HTTP mapping
+- Don't curl-test thin controllers — service tests (`SqliteServiceTestBase`) are sufficient
+- Don't run the full test suite per change — target the affected service's test class with `--filter`
+- Don't hand-register validators — `AddValidatorsFromAssemblyContaining<>` in `WebApplicationBuilderExtensions` auto-scans all validators in `Bluewater.Core`
 
 There is no lint/format config beyond the default SDK analyzers.
 
@@ -37,7 +59,7 @@ Bluewater.Api  -->  Bluewater.Core  -->  Bluewater.Infra  -->  Bluewater.Domain
   - `Context/BluewaterContextSeeder` — Development-only seeding of an admin user, a current season, and default group/permission data.
   - `Services/TokenService` (JWT issuance via `JsonWebTokenHandler`), `Services/LocalFileStorageService` (`IFileStorageService` — stores uploaded files on local disk under `LocalFileStorageOptions.RootPath`).
   - `Options/`: `TokenOptions` (config section `"Jwt"`), `DatabaseOptions` (`"Database"` — built into an Npgsql connection string), `LocalFileStorageOptions` (`"FileStorage:Local"`).
-- **Bluewater.Core** — application services and DTOs consumed by the API, under `Services/` (+ `Services/Abstractions` for interfaces), `Dto/<Feature>`, and `Validators/` (FluentValidation — see below). Current services: `AuthService` (login/refresh/logout against `UserManager<BlueUser>` + `BluewaterContext`, refresh tokens stored as SHA-256 hashes and rotated on each refresh), `CurrentUserService` (`ICurrentUserService` for API/MVC callers, `ICurrentUserAccessor` for Infra — both backed by `IHttpContextAccessor`), `UserGroupCategoryService`, `UserGroupService`, `UserGroupInstanceService`, `UserGroupMembershipService` (group/category/instance/membership CRUD — see Domain model below), `UserProfileService` (profile read + profile picture upload, delegates storage to `IFileStorageService`), `NewsService`/`NewsIconService` (see FluentValidation usage below). `Exceptions/BlueNotFoundException` and `BlueValidationException` are the two exception types services throw for client-facing errors (FluentValidation throws its own `ValidationException` instead — see below).
+- **Bluewater.Core** — application services and DTOs consumed by the API, under `Services/` (+ `Services/Abstractions` for interfaces), `Dto/<Feature>`, and `Validators/` (FluentValidation — see below). `Exceptions/BlueNotFoundException` and `BlueValidationException` are the two exception types services throw for client-facing errors (FluentValidation throws its own `ValidationException` instead — see below). See `Services/` for the current list of services.
 - **Bluewater.Api** — ASP.NET Core Web API host.
   - `Extensions/WebApplicationBuilderExtensions.AddBluewater()` is the single composition-root method that wires up options binding and DI (add new service registrations here rather than directly in `Program.cs`) — Npgsql `DbContext`, CORS, `AddIdentityCore<BlueUser>()` + roles, JWT bearer authentication, the custom permission-based authorization policy provider/handler, and all Core/Infra service registrations.
   - `Extensions/WebApplicationExtensions.UseBluewater()` runs EF migrations on startup and triggers Development seeding; called from `Program.cs` between `builder.Build()` and the middleware pipeline.

@@ -6,9 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Frontend client for Bluewater, a rowing club management app (membership, scheduling, fleet operations), built with SvelteKit. The site supports both guest (unauthenticated) and member (authenticated) browsing.
 
-It consumes the Bluewater API (sibling `backend` project, ASP.NET Core / .NET 10, Postgres-backed). Auth is JWT bearer tokens: login returns an access+refresh token pair, refresh rotates both tokens, and errors across all endpoints follow the RFC ProblemDetails shape. The API currently implements user auth only; user/season/group management, fleet reservations, training planner, and news/announcements are planned but not yet built on either side.
+It consumes the Bluewater API (sibling `backend` project, ASP.NET Core / .NET 10, Postgres-backed). Auth is JWT bearer tokens: login returns an access+refresh token pair, refresh rotates both tokens, and errors across all endpoints follow the RFC ProblemDetails shape.
 
-The project is in its initial scaffold state (default SvelteKit template pages) — most application structure does not exist yet.
+Implemented so far: auth (login/refresh), news, agenda, user profiles, user management (tools), group/category/instance management (tools), exams (tools).
+
+## Key file locations
+
+| What | Where |
+|---|---|
+| New route page | `src/routes/<path>/+page.svelte` + `+page.server.ts` for server-side data loading |
+| Shared UI components | `src/lib/components/` |
+| Common primitives (Button, Modal, etc.) | `src/lib/components/common/` |
+| Form building blocks | `src/lib/forms/` (`FormState`, `FormField`, `apiError`) |
+| Generated API client (do not edit) | `src/lib/api/apiClient.ts` |
+| Shared exports | `src/lib/index.ts` |
+| Navigation items | `src/lib/navigation.ts` |
+| Global styles / Tailwind theme | `src/routes/layout.css` |
+
+## Don'ts
+
+- Don't hand-edit `src/lib/api/apiClient.ts` — it's fully generated; change the backend and re-run `pnpm generate:api`
+- Don't use npm or yarn — pnpm only (`engine-strict=true`)
+- Don't hand-roll submit/error state in forms — use `FormState`/`FormField` from `src/lib/forms/`
+- Don't run the full E2E suite per change — target the relevant spec: `pnpm exec playwright test e2e/foo.spec.ts`
+- Don't delete or skip E2E specs to make a change easier — ask the user first
 
 ## Commands
 
