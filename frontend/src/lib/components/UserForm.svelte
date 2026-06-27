@@ -6,11 +6,9 @@
 		CreateUserRequest,
 		UpdateUserRequest
 	} from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { UserDto } from '$lib/api/apiClient';
-	import { Button } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -46,35 +44,32 @@
 	let dateOfBirth = $state(untrack(() => toDateInputValue(user?.dateOfBirth)));
 	let gender = $state(untrack(() => user?.gender) ?? BlueUserSex.Unknown);
 	const form = new FormState();
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() => {
-			const data = {
-				userName,
-				email,
-				firstname,
-				surnamePrefix,
-				surname,
-				phoneNumber: phoneNumber || undefined,
-				address: new BlueAddressDto({ address, city, zip }),
-				emergencyAddress: new BlueAddressDto({
-					address: emergencyAddress,
-					city: emergencyCity,
-					zip: emergencyZip
-				}),
-				emergencyPhoneNumber,
-				dateOfBirth: new Date(dateOfBirth),
-				gender
-			};
-			return onSubmit(
-				mode === 'create' ? new CreateUserRequest(data) : new UpdateUserRequest(data)
-			);
-		});
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() => {
+		const data = {
+			userName,
+			email,
+			firstname,
+			surnamePrefix,
+			surname,
+			phoneNumber: phoneNumber || undefined,
+			address: new BlueAddressDto({ address, city, zip }),
+			emergencyAddress: new BlueAddressDto({
+				address: emergencyAddress,
+				city: emergencyCity,
+				zip: emergencyZip
+			}),
+			emergencyPhoneNumber,
+			dateOfBirth: new Date(dateOfBirth),
+			gender
+		};
+		return onSubmit(mode === 'create' ? new CreateUserRequest(data) : new UpdateUserRequest(data));
+	}}
+>
 	<div class="grid grid-cols-2 gap-4">
 		<FormField label="Gebruikersnaam" errors={form.errorsFor('userName')}>
 			{#snippet children(invalid)}
@@ -287,12 +282,4 @@
 			</FormField>
 		</div>
 	</fieldset>
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>

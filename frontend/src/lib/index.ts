@@ -27,6 +27,7 @@ export { default as InstancePermissionManager } from './components/InstancePermi
 export { default as GroupPermissionManager } from './components/GroupPermissionManager.svelte';
 export { default as CategoryRoleManager } from './components/CategoryRoleManager.svelte';
 export { default as Pagination } from './components/common/Pagination.svelte';
+export { default as BlueForm } from './components/common/BlueForm.svelte';
 export { default as Button } from './components/common/Button.svelte';
 export { default as Modal } from './components/common/Modal.svelte';
 export { default as ConfirmDialog } from './components/common/ConfirmDialog.svelte';

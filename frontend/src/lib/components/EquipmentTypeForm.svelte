@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { UpsertEquipmentTypeRequest } from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { EquipmentTypeDto } from '$lib/api/apiClient';
-	import { Button } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -25,16 +23,14 @@
 	let rowersCount = $state(untrack(() => equipmentType?.rowersCount) ?? 1);
 	let isBoat = $state(untrack(() => equipmentType?.isBoat) ?? true);
 	const form = new FormState();
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() =>
-			onSubmit(new UpsertEquipmentTypeRequest({ code, name, scull, coxed, rowersCount, isBoat }))
-		);
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() =>
+		onSubmit(new UpsertEquipmentTypeRequest({ code, name, scull, coxed, rowersCount, isBoat }))}
+>
 	<FormField label="Code" errors={form.errorsFor('code')}>
 		{#snippet children(invalid)}
 			<input
@@ -93,12 +89,4 @@
 			Met stuurman
 		</label>
 	</div>
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>

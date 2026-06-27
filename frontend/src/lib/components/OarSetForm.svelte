@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { UpsertOarSetRequest } from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { OarSetDto, ManufacturerDto } from '$lib/api/apiClient';
-	import { Button, apiClient } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm, apiClient } from '$lib';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -31,22 +29,20 @@
 			// non-fatal; dropdown stays empty
 		}
 	});
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() =>
-			onSubmit(
-				new UpsertOarSetRequest({
-					name,
-					manufacturerId: manufacturerId || undefined,
-					scull
-				})
-			)
-		);
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() =>
+		onSubmit(
+			new UpsertOarSetRequest({
+				name,
+				manufacturerId: manufacturerId || undefined,
+				scull
+			})
+		)}
+>
 	<FormField label="Naam" errors={form.errorsFor('name')}>
 		{#snippet children(invalid)}
 			<input
@@ -82,12 +78,4 @@
 			Scull
 		</label>
 	</div>
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>

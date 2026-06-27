@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { UpsertUserGroupRequest } from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { UserGroupDto } from '$lib/api/apiClient';
-	import { Button } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -25,16 +23,13 @@
 	let name = $state(untrack(() => group?.name) ?? '');
 	let description = $state(untrack(() => group?.description) ?? '');
 	const form = new FormState();
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() =>
-			onSubmit(new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId }))
-		);
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() => onSubmit(new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId }))}
+>
 	<div>
 		<span class="text-sm font-medium text-gray-700">Categorie</span>
 		<p class="text-sm text-gray-900">{categoryName}</p>
@@ -64,12 +59,4 @@
 			/>
 		{/snippet}
 	</FormField>
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>

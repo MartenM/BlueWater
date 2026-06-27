@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { UpsertAgendaItemRequest } from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { AgendaItemDto } from '$lib/api/apiClient';
-	import { Button } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -34,25 +32,23 @@
 	let endDate = $state(untrack(() => toDateInputValue(item?.endDate)));
 	let endTime = $state(untrack(() => toTimeInputValue(item?.endTime)));
 	const form = new FormState();
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() =>
-			onSubmit(
-				new UpsertAgendaItemRequest({
-					date: new Date(date),
-					time: time || undefined,
-					title,
-					description,
-					endDate: endDate ? new Date(endDate) : undefined,
-					endTime: endTime || undefined
-				})
-			)
-		);
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() =>
+		onSubmit(
+			new UpsertAgendaItemRequest({
+				date: new Date(date),
+				time: time || undefined,
+				title,
+				description,
+				endDate: endDate ? new Date(endDate) : undefined,
+				endTime: endTime || undefined
+			})
+		)}
+>
 	<FormField label="Titel" errors={form.errorsFor('title')}>
 		{#snippet children(invalid)}
 			<input
@@ -128,12 +124,4 @@
 			{/snippet}
 		</FormField>
 	</div>
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>

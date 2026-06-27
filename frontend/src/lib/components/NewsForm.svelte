@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { UpsertNewsPostRequest } from '$lib/api/apiClient';
-	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { NewsPostDto } from '$lib/api/apiClient';
-	import { Button } from '$lib';
-	import BlueAlert from './BlueAlert.svelte';
+	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
 	import IconPicker from './IconPicker.svelte';
 
@@ -25,24 +23,22 @@
 	let membersOnly = $state(untrack(() => post?.membersOnly) ?? false);
 	let iconId = $state<string | undefined>(untrack(() => post?.iconId));
 	const form = new FormState();
-
-	function handleSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		form.submit(() =>
-			onSubmit(
-				new UpsertNewsPostRequest({
-					title,
-					shortText,
-					additionalText: additionalText || undefined,
-					membersOnly,
-					iconId
-				})
-			)
-		);
-	}
 </script>
 
-<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() =>
+		onSubmit(
+			new UpsertNewsPostRequest({
+				title,
+				shortText,
+				additionalText: additionalText || undefined,
+				membersOnly,
+				iconId
+			})
+		)}
+>
 	<FormField label="Titel" errors={form.errorsFor('title')}>
 		{#snippet children(invalid)}
 			<input
@@ -92,12 +88,4 @@
 	{#each form.errorsFor('iconId') as message (message)}
 		<span class="text-sm text-red-600">{message}</span>
 	{/each}
-
-	{#if form.formError}
-		<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>
-	{/if}
-
-	<div class="mt-2 self-start">
-		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
-	</div>
-</form>
+</BlueForm>
