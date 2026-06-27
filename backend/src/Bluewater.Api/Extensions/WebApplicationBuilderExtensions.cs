@@ -126,6 +126,10 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<ISeasonService, SeasonService>();
         builder.Services.AddScoped<IExamTypeService, ExamTypeService>();
         builder.Services.AddScoped<IUserExamService, UserExamService>();
+        builder.Services.AddScoped<IManufacturerService, ManufacturerService>();
+        builder.Services.AddScoped<IFleetEquipmentTypeService, FleetEquipmentTypeService>();
+        builder.Services.AddScoped<IOarSetService, OarSetService>();
+        builder.Services.AddScoped<IEquipmentService, EquipmentService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
         builder.Services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 

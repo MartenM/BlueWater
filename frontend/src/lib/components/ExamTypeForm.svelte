@@ -49,8 +49,7 @@
 				bind:value={description}
 				class="rounded-md focus:border-primary focus:ring-primary {invalid
 					? 'border-red-400'
-					: 'border-gray-300'}"
-			></textarea>
+					: 'border-gray-300'}"></textarea>
 		{/snippet}
 	</FormField>
 

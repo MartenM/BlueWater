@@ -6,6 +6,7 @@ using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Exams;
 using Bluewater.Domain.Models.Files;
+using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
 using Bluewater.Infra.Services.Abstractions;
@@ -41,6 +42,10 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
     public DbSet<UserExam> UserExams => Set<UserExam>();
+    public DbSet<Manufacturer> Manufacturers => Set<Manufacturer>();
+    public DbSet<EquipmentType> EquipmentTypes => Set<EquipmentType>();
+    public DbSet<OarSet> OarSets => Set<OarSet>();
+    public DbSet<Equipment> Equipment => Set<Equipment>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -232,6 +237,51 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany()
                 .HasForeignKey(x => x.ExamTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Manufacturer>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<EquipmentType>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Code).IsUnique();
+        });
+
+        builder.Entity<OarSet>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.Manufacturer)
+                .WithMany()
+                .HasForeignKey(x => x.ManufacturerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+        });
+
+        builder.Entity<Equipment>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.EquipmentType)
+                .WithMany()
+                .HasForeignKey(x => x.EquipmentTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            e.HasOne(x => x.Manufacturer)
+                .WithMany()
+                .HasForeignKey(x => x.ManufacturerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            e.HasOne(x => x.OarSet)
+                .WithMany()
+                .HasForeignKey(x => x.OarSetId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

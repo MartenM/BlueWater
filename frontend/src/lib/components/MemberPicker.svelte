@@ -115,11 +115,7 @@
 			/>
 			{#if searching}
 				<div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-					<svg
-						class="h-4 w-4 animate-spin text-gray-400"
-						fill="none"
-						viewBox="0 0 24 24"
-					>
+					<svg class="h-4 w-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
 						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
 						></circle>
 						<path

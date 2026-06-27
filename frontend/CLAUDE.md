@@ -12,16 +12,16 @@ Implemented so far: auth (login/refresh), news, agenda, user profiles, user mana
 
 ## Key file locations
 
-| What | Where |
-|---|---|
-| New route page | `src/routes/<path>/+page.svelte` + `+page.server.ts` for server-side data loading |
-| Shared UI components | `src/lib/components/` |
-| Common primitives (Button, Modal, etc.) | `src/lib/components/common/` |
-| Form building blocks | `src/lib/forms/` (`FormState`, `FormField`, `apiError`) |
-| Generated API client (do not edit) | `src/lib/api/apiClient.ts` |
-| Shared exports | `src/lib/index.ts` |
-| Navigation items | `src/lib/navigation.ts` |
-| Global styles / Tailwind theme | `src/routes/layout.css` |
+| What                                    | Where                                                                             |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| New route page                          | `src/routes/<path>/+page.svelte` + `+page.server.ts` for server-side data loading |
+| Shared UI components                    | `src/lib/components/`                                                             |
+| Common primitives (Button, Modal, etc.) | `src/lib/components/common/`                                                      |
+| Form building blocks                    | `src/lib/forms/` (`FormState`, `FormField`, `apiError`)                           |
+| Generated API client (do not edit)      | `src/lib/api/apiClient.ts`                                                        |
+| Shared exports                          | `src/lib/index.ts`                                                                |
+| Navigation items                        | `src/lib/navigation.ts`                                                           |
+| Global styles / Tailwind theme          | `src/routes/layout.css`                                                           |
 
 ## Don'ts
 

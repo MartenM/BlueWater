@@ -3,7 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, BlueAlert, ConfirmDialog, GroupPermissionManager, Spinner, breadcrumbs } from '$lib';
+	import {
+		HasPermission,
+		BlueAlert,
+		ConfirmDialog,
+		GroupPermissionManager,
+		Spinner,
+		breadcrumbs
+	} from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { UserGroupDto } from '$lib/api/apiClient';

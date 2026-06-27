@@ -3,7 +3,12 @@
 	import { apiClient } from '$lib/api/client';
 	import { Button } from '$lib';
 	import { AlertLevel } from '$lib/alert';
-	import { AssignMemberRoleRequest, InstanceMemberDto, type UserDto, type UserGroupCategoryRoleDto } from '$lib/api/apiClient';
+	import {
+		AssignMemberRoleRequest,
+		InstanceMemberDto,
+		type UserDto,
+		type UserGroupCategoryRoleDto
+	} from '$lib/api/apiClient';
 	import BlueAlert from './BlueAlert.svelte';
 	import ConfirmDialog from './common/ConfirmDialog.svelte';
 
@@ -80,7 +85,13 @@
 		actionError = null;
 		try {
 			await apiClient.usersPOST(instanceId, user.id);
-			members = [...members, { dto: new InstanceMemberDto({ userId: user.id, userGroupCategoryRoleId: undefined }), user }];
+			members = [
+				...members,
+				{
+					dto: new InstanceMemberDto({ userId: user.id, userGroupCategoryRoleId: undefined }),
+					user
+				}
+			];
 			searchResults = searchResults.filter((u) => u.id !== user.id);
 		} catch {
 			actionError = 'Toevoegen is mislukt. Probeer het later opnieuw.';
@@ -112,10 +123,17 @@
 		busy = true;
 		actionError = null;
 		try {
-			await apiClient.role(instanceId, item.user.id, new AssignMemberRoleRequest({ userGroupCategoryRoleId: roleId }));
+			await apiClient.role(
+				instanceId,
+				item.user.id,
+				new AssignMemberRoleRequest({ userGroupCategoryRoleId: roleId })
+			);
 			members = members.map((m) =>
 				m.user.id === item.user.id
-					? { ...m, dto: new InstanceMemberDto({ userId: m.dto.userId, userGroupCategoryRoleId: roleId }) }
+					? {
+							...m,
+							dto: new InstanceMemberDto({ userId: m.dto.userId, userGroupCategoryRoleId: roleId })
+						}
 					: m
 			);
 		} catch {

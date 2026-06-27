@@ -3,7 +3,11 @@
 	import { apiClient } from '$lib/api/client';
 	import { Button, ConfirmDialog } from '$lib';
 	import { AlertLevel } from '$lib/alert';
-	import { ReorderRolesRequest, UserGroupCategoryRoleDto, UpsertUserGroupCategoryRoleRequest } from '$lib/api/apiClient';
+	import {
+		ReorderRolesRequest,
+		UserGroupCategoryRoleDto,
+		UpsertUserGroupCategoryRoleRequest
+	} from '$lib/api/apiClient';
 	import BlueAlert from './BlueAlert.svelte';
 
 	let { categoryId }: { categoryId: string } = $props();
@@ -137,7 +141,10 @@
 		busy = true;
 		actionError = null;
 		try {
-			await apiClient.reorder(categoryId, new ReorderRolesRequest({ roleIds: updated.map((r) => r.id) }));
+			await apiClient.reorder(
+				categoryId,
+				new ReorderRolesRequest({ roleIds: updated.map((r) => r.id) })
+			);
 		} catch {
 			roles = previous;
 			actionError = 'Volgorde opslaan is mislukt. Probeer het later opnieuw.';
@@ -212,14 +219,16 @@
 									onclick={() => moveUp(i)}
 									aria-label="Omhoog"
 									class="rounded px-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-								>↑</button>
+									>↑</button
+								>
 								<button
 									type="button"
 									disabled={i === roles.length - 1 || busy}
 									onclick={() => moveDown(i)}
 									aria-label="Omlaag"
 									class="rounded px-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
-								>↓</button>
+									>↓</button
+								>
 							</div>
 							<button
 								type="button"

@@ -2,10 +2,8 @@
 	import { resolve } from '$app/paths';
 	import type { UserGroupPermissionDto } from '$lib/api/apiClient';
 
-	let {
-		userGroupId,
-		permissions
-	}: { userGroupId: string; permissions: UserGroupPermissionDto[] } = $props();
+	let { userGroupId, permissions }: { userGroupId: string; permissions: UserGroupPermissionDto[] } =
+		$props();
 </script>
 
 <div>

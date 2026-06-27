@@ -381,6 +381,204 @@ namespace Bluewater.Infra.Migrations
                     b.ToTable("StoredFiles");
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.Equipment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("DateBought")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("DateBuild")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("DateSold")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("EquipmentTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("FreeFleet")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("ManufacturerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OarSetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("OutOfOrder")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("RowersWeight")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RowersWeightMax")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentTypeId");
+
+                    b.HasIndex("ManufacturerId");
+
+                    b.HasIndex("OarSetId");
+
+                    b.ToTable("Equipment");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.EquipmentType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Coxed")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsBoat")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RowersCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Scull")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("EquipmentTypes");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.Manufacturer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Manufacturers");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.OarSet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ManufacturerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Scull")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManufacturerId");
+
+                    b.ToTable("OarSets");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroup", b =>
                 {
                     b.Property<Guid>("Id")
@@ -920,6 +1118,40 @@ namespace Bluewater.Infra.Migrations
                     b.Navigation("ExamType");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.Equipment", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Fleet.EquipmentType", "EquipmentType")
+                        .WithMany()
+                        .HasForeignKey("EquipmentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bluewater.Domain.Models.Fleet.Manufacturer", "Manufacturer")
+                        .WithMany()
+                        .HasForeignKey("ManufacturerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Bluewater.Domain.Models.Fleet.OarSet", "OarSet")
+                        .WithMany()
+                        .HasForeignKey("OarSetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EquipmentType");
+
+                    b.Navigation("Manufacturer");
+
+                    b.Navigation("OarSet");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Fleet.OarSet", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Fleet.Manufacturer", "Manufacturer")
+                        .WithMany()
+                        .HasForeignKey("ManufacturerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Manufacturer");
                 });
 
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroup", b =>

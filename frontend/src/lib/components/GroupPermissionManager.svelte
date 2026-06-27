@@ -3,7 +3,12 @@
 	import { apiClient } from '$lib/api/client';
 	import { Button } from '$lib';
 	import { AlertLevel } from '$lib/alert';
-	import { AssignGroupPermissionRequest, BluePermission, UserGroupPermissionDto, type UserGroupCategoryRoleDto } from '$lib/api/apiClient';
+	import {
+		AssignGroupPermissionRequest,
+		BluePermission,
+		UserGroupPermissionDto,
+		type UserGroupCategoryRoleDto
+	} from '$lib/api/apiClient';
 	import ConfirmDialog from './common/ConfirmDialog.svelte';
 	import BlueAlert from './BlueAlert.svelte';
 
@@ -55,8 +60,14 @@
 		busy = true;
 		actionError = null;
 		try {
-			await apiClient.permissionsPOST(groupId, new AssignGroupPermissionRequest({ permission, userGroupCategoryRoleId: roleId }));
-			permissions = [...permissions, new UserGroupPermissionDto({ permission, userGroupCategoryRoleId: roleId })];
+			await apiClient.permissionsPOST(
+				groupId,
+				new AssignGroupPermissionRequest({ permission, userGroupCategoryRoleId: roleId })
+			);
+			permissions = [
+				...permissions,
+				new UserGroupPermissionDto({ permission, userGroupCategoryRoleId: roleId })
+			];
 			selectedPermission = '';
 			selectedRoleId = '';
 		} catch {
@@ -78,7 +89,10 @@
 		try {
 			await apiClient.permissionsDELETE(groupId, p.permission, p.userGroupCategoryRoleId);
 			permissions = permissions.filter(
-				(x) => !(x.permission === p.permission && x.userGroupCategoryRoleId === p.userGroupCategoryRoleId)
+				(x) =>
+					!(
+						x.permission === p.permission && x.userGroupCategoryRoleId === p.userGroupCategoryRoleId
+					)
 			);
 		} catch {
 			actionError = 'Verwijderen is mislukt. Probeer het later opnieuw.';

@@ -2,7 +2,14 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { apiClient } from '$lib/api/client';
-	import { CategoryForm, CategoryRoleManager, BlueAlert, ConfirmDialog, Spinner, breadcrumbs } from '$lib';
+	import {
+		CategoryForm,
+		CategoryRoleManager,
+		BlueAlert,
+		ConfirmDialog,
+		Spinner,
+		breadcrumbs
+	} from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import type { UpsertUserGroupCategoryRequest, UserGroupCategoryDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
