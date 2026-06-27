@@ -1,14 +1,24 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { HasPermission } from '$lib';
+	import { HasPermission, Spinner } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
-	import type { PageProps } from './$types';
+	import type { OarSetDto } from '$lib/api/apiClient';
+	import { apiClient } from '$lib/api/client';
 
-	let { data }: PageProps = $props();
+	let items = $state<OarSetDto[]>([]);
+	let error = $state(false);
+	let loading = $state(true);
 
-	let items = $state(untrack(() => data.items));
-	let error = $state(untrack(() => data.error));
+	onMount(async () => {
+		try {
+			items = await apiClient.oarSetsAll();
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
 </script>
 
 <div class="flex items-center justify-between">
@@ -26,7 +36,9 @@
 	</HasPermission>
 </div>
 
-{#if error}
+{#if loading}
+	<Spinner />
+{:else if error}
 	<p class="mt-4 text-sm text-gray-600">Riemstellen konden niet worden geladen.</p>
 {:else}
 	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">

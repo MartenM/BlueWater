@@ -37,7 +37,7 @@ export const navItems: NavItem[] = [
 		href: '/tools',
 		children: [
 			{ label: 'Outing Planner', href: '/tools/outing-planner' },
-			{ label: 'Botenboek', href: '/tools/fleet' },
+			{ label: 'Materiaal / Vloot', href: '/tools/fleet' },
 			{ label: 'Gebruikers', href: '/tools/users' },
 			{ label: 'Groepen', href: '/tools/groups' },
 			{ label: 'Examens', href: '/tools/exams' }

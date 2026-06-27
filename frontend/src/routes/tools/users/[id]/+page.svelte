@@ -1,15 +1,23 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, BlueAlert, ConfirmDialog, ProfilePicture, breadcrumbs } from '$lib';
+	import {
+		HasPermission,
+		BlueAlert,
+		ConfirmDialog,
+		ProfilePicture,
+		Spinner,
+		breadcrumbs
+	} from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import { BluePermission, BlueUserSex } from '$lib/api/apiClient';
+	import type { UserDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { params }: PageProps = $props();
 
 	const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
 		day: 'numeric',
@@ -23,8 +31,9 @@
 		[BlueUserSex.Unknown]: 'Onbekend'
 	};
 
-	let user = $state(untrack(() => data.user));
-	let error = $state(untrack(() => data.error));
+	let user = $state<UserDto | null>(null);
+	let error = $state(false);
+	let loading = $state(true);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
 	let deleteDialog = $state<HTMLDialogElement>();
@@ -32,6 +41,16 @@
 	let pictureVersion = $state(0);
 	let pictureFile = $state<File | null>(null);
 	const pictureForm = new FormState();
+
+	onMount(async () => {
+		try {
+			user = await apiClient.getUser(params.id);
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
 
 	$effect(() => {
 		if (!user) return;
@@ -70,7 +89,9 @@
 	}
 </script>
 
-{#if error}
+{#if loading}
+	<Spinner />
+{:else if error}
 	<p class="text-sm text-gray-600">Gebruiker kon niet worden geladen.</p>
 {:else if user}
 	<div class="flex items-center gap-4">

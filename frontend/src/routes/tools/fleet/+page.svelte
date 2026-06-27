@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { HasPermission, Pagination } from '$lib';
+	import { DataTable, HasPermission, Pagination, Spinner } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
+	import type { EquipmentDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
-	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
-
-	let items = $state(untrack(() => data.items));
-	let totalCount = $state(untrack(() => data.totalCount));
-	let page = $state(untrack(() => data.page));
-	let pageSize = $state(untrack(() => data.pageSize));
-	let search = $state(untrack(() => data.search));
-	let error = $state(untrack(() => data.error));
+	let items = $state<EquipmentDto[]>([]);
+	let totalCount = $state(0);
+	let page = $state(1);
+	const pageSize = 25;
+	let search = $state('');
+	let error = $state(false);
+	let loading = $state(true);
 
 	const totalPages = $derived(Math.ceil(totalCount / pageSize));
 
 	async function load() {
+		loading = true;
 		try {
 			const result = await apiClient.fleetGET(page, pageSize, search || undefined);
 			items = result.items ?? [];
@@ -25,8 +25,12 @@
 			error = false;
 		} catch {
 			error = true;
+		} finally {
+			loading = false;
 		}
 	}
+
+	onMount(load);
 
 	function handleSearchSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -74,63 +78,57 @@
 	</div>
 </div>
 
-{#if error}
+{#if loading}
+	<Spinner />
+{:else if error}
 	<p class="mt-4 text-sm text-gray-600">Vloot kon niet worden geladen.</p>
 {:else}
-	<div class="mt-4 overflow-x-auto">
-		<table class="min-w-full divide-y divide-gray-200 text-sm">
-			<thead class="bg-gray-50">
-				<tr>
-					<th class="px-4 py-3 text-left font-medium text-gray-500">Naam</th>
-					<th class="px-4 py-3 text-left font-medium text-gray-500">Type</th>
-					<th class="px-4 py-3 text-left font-medium text-gray-500">Fabrikant</th>
-					<th class="px-4 py-3 text-left font-medium text-gray-500">Vrije vloot</th>
-					<th class="px-4 py-3 text-left font-medium text-gray-500">Buiten gebruik</th>
-				</tr>
-			</thead>
-			<tbody class="divide-y divide-gray-200 bg-white">
-				{#each items as item (item.id)}
-					<tr class="hover:bg-gray-50">
-						<td class="px-4 py-3">
-							<a
-								href={resolve('/tools/fleet/[id]', { id: item.id })}
-								class="font-medium text-primary hover:underline"
-							>
-								{item.name}
-							</a>
-						</td>
-						<td class="px-4 py-3 text-gray-600">{item.equipmentTypeName ?? '—'}</td>
-						<td class="px-4 py-3 text-gray-600">{item.manufacturerName ?? '—'}</td>
-						<td class="px-4 py-3">
-							{#if item.freeFleet}
-								<span
-									class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-									>Ja</span
-								>
-							{:else}
-								<span class="text-gray-400">Nee</span>
-							{/if}
-						</td>
-						<td class="px-4 py-3">
-							{#if item.outOfOrder}
-								<span
-									class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
-									>Ja</span
-								>
-							{:else}
-								<span class="text-gray-400">Nee</span>
-							{/if}
-						</td>
-					</tr>
-				{:else}
-					<tr>
-						<td colspan="5" class="px-4 py-6 text-center text-gray-500">Geen materiaal gevonden.</td
-						>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
+	{#snippet nameCell(item: EquipmentDto)}
+		<a
+			href={resolve('/tools/fleet/[id]', { id: item.id })}
+			class="font-medium text-primary hover:underline"
+		>
+			{item.name}
+		</a>
+	{/snippet}
+	{#snippet typeCell(item: EquipmentDto)}
+		<span class="text-gray-600">{item.equipmentTypeName ?? '—'}</span>
+	{/snippet}
+	{#snippet manufacturerCell(item: EquipmentDto)}
+		<span class="text-gray-600">{item.manufacturerName ?? '—'}</span>
+	{/snippet}
+	{#snippet freeFleetCell(item: EquipmentDto)}
+		{#if item.freeFleet}
+			<span
+				class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+				>Ja</span
+			>
+		{:else}
+			<span class="text-gray-400">Nee</span>
+		{/if}
+	{/snippet}
+	{#snippet outOfOrderCell(item: EquipmentDto)}
+		{#if item.outOfOrder}
+			<span
+				class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
+				>Ja</span
+			>
+		{:else}
+			<span class="text-gray-400">Nee</span>
+		{/if}
+	{/snippet}
+
+	<DataTable
+		columns={[
+			{ header: 'Naam', cell: nameCell },
+			{ header: 'Type', cell: typeCell },
+			{ header: 'Fabrikant', cell: manufacturerCell },
+			{ header: 'Vrije vloot', cell: freeFleetCell },
+			{ header: 'Buiten gebruik', cell: outOfOrderCell }
+		]}
+		{items}
+		emptyMessage="Geen materiaal gevonden."
+	/>
 
 	{#if totalPages > 1}
 		<div class="mt-4">

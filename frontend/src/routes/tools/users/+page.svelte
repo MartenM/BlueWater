@@ -1,40 +1,41 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, Pagination } from '$lib';
+	import { HasPermission, Pagination, Spinner } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
-	import type { PageProps } from './$types';
+	import type { UserDto } from '$lib/api/apiClient';
 
 	const USERS_PAGE_SIZE = 20;
 
-	let { data }: PageProps = $props();
-
-	let currentPage = $state(untrack(() => data.page));
-	let search = $state(untrack(() => data.search));
-	let items = $state(untrack(() => data.items));
-	let totalCount = $state(untrack(() => data.totalCount));
-	let error = $state(untrack(() => data.error));
+	let currentPage = $state(1);
+	let search = $state('');
+	let items = $state<UserDto[]>([]);
+	let totalCount = $state(0);
+	let error = $state(false);
+	let loading = $state(true);
 
 	const totalPages = $derived(Math.max(1, Math.ceil(totalCount / USERS_PAGE_SIZE)));
 
-	function reload(page: number) {
+	async function reload(page: number) {
 		currentPage = page;
 		const query = `page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- query-only list state, not a static route resolve() can check
 		pushState(`?${query}`, {});
-		apiClient
-			.listUsers(page, USERS_PAGE_SIZE, search || undefined)
-			.then((result) => {
-				items = result.items;
-				totalCount = result.totalCount;
-				error = false;
-			})
-			.catch(() => {
-				error = true;
-			});
+		try {
+			const result = await apiClient.listUsers(page, USERS_PAGE_SIZE, search || undefined);
+			items = result.items;
+			totalCount = result.totalCount;
+			error = false;
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
 	}
+
+	onMount(() => reload(1));
 
 	function handleSearchSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -63,7 +64,9 @@
 	/>
 </form>
 
-{#if error}
+{#if loading}
+	<Spinner />
+{:else if error}
 	<p class="mt-4 text-sm text-gray-600">Gebruikers konden niet worden geladen.</p>
 {:else}
 	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">

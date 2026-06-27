@@ -30,6 +30,7 @@ export { default as Pagination } from './components/common/Pagination.svelte';
 export { default as Button } from './components/common/Button.svelte';
 export { default as Modal } from './components/common/Modal.svelte';
 export { default as ConfirmDialog } from './components/common/ConfirmDialog.svelte';
+export { default as DataTable } from './components/common/DataTable.svelte';
 export { default as BlueAlert } from './components/BlueAlert.svelte';
 export { default as FormField } from './components/FormField.svelte';
 export { default as Breadcrumbs } from './components/Breadcrumbs.svelte';

@@ -1,17 +1,29 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { HasPermission, ConfirmDialog, Button, breadcrumbs } from '$lib';
+	import { HasPermission, ConfirmDialog, Button, Spinner, breadcrumbs } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
+	import type { EquipmentTypeDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import type { PageProps } from './$types';
 
-	let { data, params }: PageProps = $props();
+	let { params }: PageProps = $props();
 
-	let equipmentType = $state(untrack(() => data.equipmentType));
-	let error = $state(untrack(() => data.error));
+	let equipmentType = $state<EquipmentTypeDto | null>(null);
+	let error = $state(false);
+	let loading = $state(true);
 	let deleteDialog = $state<HTMLDialogElement>();
+
+	onMount(async () => {
+		try {
+			equipmentType = await apiClient.typesGET2(params.id);
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
 
 	$effect(() => {
 		if (equipmentType) {
@@ -30,7 +42,9 @@
 	}
 </script>
 
-{#if error || !equipmentType}
+{#if loading}
+	<Spinner />
+{:else if error || !equipmentType}
 	<p class="text-sm text-gray-600">Materiaaltype kon niet worden geladen.</p>
 {:else}
 	<div class="flex items-start justify-between">

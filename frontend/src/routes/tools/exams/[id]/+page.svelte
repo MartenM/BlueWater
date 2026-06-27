@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
@@ -11,18 +11,21 @@
 		FormField,
 		MemberPicker,
 		Modal,
+		Spinner,
 		breadcrumbs
 	} from '$lib';
 	import { AlertLevel } from '$lib/alert';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import { BluePermission, AssignExamRequest } from '$lib/api/apiClient';
+	import type { ExamTypeDto, UserExamDto } from '$lib/api/apiClient';
 	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { params }: PageProps = $props();
 
-	let examType = $state(untrack(() => data.examType));
-	let assigned = $state(untrack(() => data.assigned));
-	let error = $state(untrack(() => data.error));
+	let examType = $state<ExamTypeDto | null>(null);
+	let assigned = $state<UserExamDto[]>([]);
+	let error = $state(false);
+	let loading = $state(true);
 	let deleteError = $state<string | null>(null);
 	let deleting = $state(false);
 	let deleteDialog = $state<HTMLDialogElement>();
@@ -31,6 +34,19 @@
 	let assignUserId = $state('');
 	let assignObtainedAt = $state('');
 	const assignForm = new FormState();
+
+	onMount(async () => {
+		try {
+			[examType, assigned] = await Promise.all([
+				apiClient.typesGET(params.id),
+				apiClient.assigned(params.id)
+			]);
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
 
 	$effect(() => {
 		if (!examType) return;
@@ -68,15 +84,7 @@
 					obtainedAt: new Date(assignObtainedAt)
 				})
 			);
-			assigned = [
-				...assigned,
-				{
-					id: result.id,
-					userId: result.userId,
-					userFullname: result.userFullname,
-					obtainedAt: result.obtainedAt
-				}
-			];
+			assigned = [...assigned, result];
 			assignDialog?.close();
 		});
 	}
@@ -97,7 +105,9 @@
 	});
 </script>
 
-{#if error}
+{#if loading}
+	<Spinner />
+{:else if error}
 	<p class="text-sm text-gray-600">Examentype kon niet worden geladen.</p>
 {:else if examType}
 	<div class="flex items-start justify-between gap-4">

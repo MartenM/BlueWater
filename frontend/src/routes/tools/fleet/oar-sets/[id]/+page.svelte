@@ -1,17 +1,29 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { HasPermission, ConfirmDialog, Button, breadcrumbs } from '$lib';
+	import { HasPermission, ConfirmDialog, Button, Spinner, breadcrumbs } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
+	import type { OarSetDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import type { PageProps } from './$types';
 
-	let { data, params }: PageProps = $props();
+	let { params }: PageProps = $props();
 
-	let oarSet = $state(untrack(() => data.oarSet));
-	let error = $state(untrack(() => data.error));
+	let oarSet = $state<OarSetDto | null>(null);
+	let error = $state(false);
+	let loading = $state(true);
 	let deleteDialog = $state<HTMLDialogElement>();
+
+	onMount(async () => {
+		try {
+			oarSet = await apiClient.oarSetsGET(params.id);
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
 
 	$effect(() => {
 		if (oarSet) {
@@ -30,7 +42,9 @@
 	}
 </script>
 
-{#if error || !oarSet}
+{#if loading}
+	<Spinner />
+{:else if error || !oarSet}
 	<p class="text-sm text-gray-600">Riemstel kon niet worden geladen.</p>
 {:else}
 	<div class="flex items-start justify-between">
