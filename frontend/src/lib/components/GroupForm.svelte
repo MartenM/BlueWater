@@ -70,6 +70,6 @@
 	{/if}
 
 	<div class="mt-2 self-start">
-		<Button type="submit" disabled={form.submitting}>{submitLabel}</Button>
+		<Button type="submit" loading={form.submitting}>{submitLabel}</Button>
 	</div>
 </form>

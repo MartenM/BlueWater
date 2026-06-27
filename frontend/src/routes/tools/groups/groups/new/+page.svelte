@@ -135,7 +135,7 @@
 			{/if}
 
 			<div class="mt-2 self-start">
-				<Button type="submit" disabled={form.submitting}>Aanmaken</Button>
+				<Button type="submit" loading={form.submitting}>Aanmaken</Button>
 			</div>
 		</form>
 	{/if}
