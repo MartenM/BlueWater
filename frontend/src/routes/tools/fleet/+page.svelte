@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { DataTable, HasPermission, Pagination, Spinner } from '$lib';
+	import { DataTable, HasPermission, Pagination } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { EquipmentDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
@@ -78,61 +78,57 @@
 	</div>
 </div>
 
-{#if loading}
-	<Spinner />
-{:else if error}
-	<p class="mt-4 text-sm text-gray-600">Vloot kon niet worden geladen.</p>
-{:else}
-	{#snippet nameCell(item: EquipmentDto)}
-		<a
-			href={resolve('/tools/fleet/[id]', { id: item.id })}
-			class="font-medium text-primary hover:underline"
+{#snippet nameCell(item: EquipmentDto)}
+	<a
+		href={resolve('/tools/fleet/[id]', { id: item.id })}
+		class="font-medium text-primary hover:underline"
+	>
+		{item.name}
+	</a>
+{/snippet}
+{#snippet typeCell(item: EquipmentDto)}
+	<span class="text-gray-600">{item.equipmentTypeName ?? '—'}</span>
+{/snippet}
+{#snippet manufacturerCell(item: EquipmentDto)}
+	<span class="text-gray-600">{item.manufacturerName ?? '—'}</span>
+{/snippet}
+{#snippet freeFleetCell(item: EquipmentDto)}
+	{#if item.freeFleet}
+		<span
+			class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+			>Ja</span
 		>
-			{item.name}
-		</a>
-	{/snippet}
-	{#snippet typeCell(item: EquipmentDto)}
-		<span class="text-gray-600">{item.equipmentTypeName ?? '—'}</span>
-	{/snippet}
-	{#snippet manufacturerCell(item: EquipmentDto)}
-		<span class="text-gray-600">{item.manufacturerName ?? '—'}</span>
-	{/snippet}
-	{#snippet freeFleetCell(item: EquipmentDto)}
-		{#if item.freeFleet}
-			<span
-				class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-				>Ja</span
-			>
-		{:else}
-			<span class="text-gray-400">Nee</span>
-		{/if}
-	{/snippet}
-	{#snippet outOfOrderCell(item: EquipmentDto)}
-		{#if item.outOfOrder}
-			<span
-				class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
-				>Ja</span
-			>
-		{:else}
-			<span class="text-gray-400">Nee</span>
-		{/if}
-	{/snippet}
-
-	<DataTable
-		columns={[
-			{ header: 'Naam', cell: nameCell },
-			{ header: 'Type', cell: typeCell },
-			{ header: 'Fabrikant', cell: manufacturerCell },
-			{ header: 'Vrije vloot', cell: freeFleetCell },
-			{ header: 'Buiten gebruik', cell: outOfOrderCell }
-		]}
-		{items}
-		emptyMessage="Geen materiaal gevonden."
-	/>
-
-	{#if totalPages > 1}
-		<div class="mt-4">
-			<Pagination {page} {totalPages} onPageChange={goToPage} />
-		</div>
+	{:else}
+		<span class="text-gray-400">Nee</span>
 	{/if}
+{/snippet}
+{#snippet outOfOrderCell(item: EquipmentDto)}
+	{#if item.outOfOrder}
+		<span
+			class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
+			>Ja</span
+		>
+	{:else}
+		<span class="text-gray-400">Nee</span>
+	{/if}
+{/snippet}
+
+<DataTable
+	columns={[
+		{ header: 'Naam', cell: nameCell },
+		{ header: 'Type', cell: typeCell },
+		{ header: 'Fabrikant', cell: manufacturerCell },
+		{ header: 'Vrije vloot', cell: freeFleetCell },
+		{ header: 'Buiten gebruik', cell: outOfOrderCell }
+	]}
+	{items}
+	{loading}
+	error={error ? 'Vloot kon niet worden geladen.' : undefined}
+	emptyMessage="Geen materiaal gevonden."
+/>
+
+{#if !loading && !error && totalPages > 1}
+	<div class="mt-4">
+		<Pagination {page} {totalPages} onPageChange={goToPage} />
+	</div>
 {/if}
