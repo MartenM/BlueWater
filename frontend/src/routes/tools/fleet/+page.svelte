@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { DataTable, HasPermission, Pagination } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
@@ -30,13 +29,16 @@
 		}
 	}
 
-	onMount(load);
-
-	function handleSearchSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		page = 1;
-		load();
-	}
+	let debounceTimer: ReturnType<typeof setTimeout>;
+	$effect(() => {
+		void search; // track as reactive dependency
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			page = 1;
+			load();
+		}, 300);
+		return () => clearTimeout(debounceTimer);
+	});
 
 	function goToPage(p: number) {
 		page = p;
@@ -57,20 +59,12 @@
 </div>
 
 <div class="mt-4 flex items-center justify-between gap-4">
-	<form class="flex gap-2" onsubmit={handleSearchSubmit}>
-		<input
-			type="search"
-			placeholder="Zoeken..."
-			bind:value={search}
-			class="rounded-md border-gray-300 text-sm focus:border-primary focus:ring-primary"
-		/>
-		<button
-			type="submit"
-			class="rounded-md bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-hover"
-		>
-			Zoeken
-		</button>
-	</form>
+	<input
+		type="search"
+		placeholder="Zoeken..."
+		bind:value={search}
+		class="rounded-md border-gray-300 text-sm focus:border-primary focus:ring-primary"
+	/>
 	<div class="flex gap-4 text-sm text-gray-500">
 		<a href={resolve('/tools/fleet/types')} class="hover:underline">Types</a>
 		<a href={resolve('/tools/fleet/manufacturers')} class="hover:underline">Fabrikanten</a>
