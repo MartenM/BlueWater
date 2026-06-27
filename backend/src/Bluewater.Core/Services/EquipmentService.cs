@@ -27,6 +27,7 @@ public class EquipmentService : IEquipmentService
             .Include(x => x.EquipmentType)
             .Include(x => x.Manufacturer)
             .Include(x => x.OarSet)
+            .Include(x => x.RequiredExamType)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -51,6 +52,7 @@ public class EquipmentService : IEquipmentService
             .Include(x => x.EquipmentType)
             .Include(x => x.Manufacturer)
             .Include(x => x.OarSet)
+            .Include(x => x.RequiredExamType)
             .FirstOrDefaultAsync(x => x.Id == id)
             ?? throw new BlueNotFoundException($"Equipment '{id}' was not found.");
 
@@ -69,6 +71,7 @@ public class EquipmentService : IEquipmentService
             EquipmentTypeId = request.EquipmentTypeId,
             ManufacturerId = request.ManufacturerId,
             OarSetId = request.OarSetId,
+            RequiredExamTypeId = request.RequiredExamTypeId,
             FreeFleet = request.FreeFleet,
             OutOfOrder = request.OutOfOrder,
             RowersWeight = request.RowersWeight,
@@ -94,6 +97,7 @@ public class EquipmentService : IEquipmentService
         equipment.EquipmentTypeId = request.EquipmentTypeId;
         equipment.ManufacturerId = request.ManufacturerId;
         equipment.OarSetId = request.OarSetId;
+        equipment.RequiredExamTypeId = request.RequiredExamTypeId;
         equipment.FreeFleet = request.FreeFleet;
         equipment.OutOfOrder = request.OutOfOrder;
         equipment.RowersWeight = request.RowersWeight;
@@ -125,6 +129,7 @@ public class EquipmentService : IEquipmentService
         x.EquipmentTypeId, x.EquipmentType?.Name,
         x.ManufacturerId, x.Manufacturer?.Name,
         x.OarSetId, x.OarSet?.Name,
+        x.RequiredExamTypeId, x.RequiredExamType?.Name,
         x.FreeFleet, x.OutOfOrder,
         x.RowersWeight, x.RowersWeightMax,
         x.DateBuild, x.DateBought, x.DateSold);

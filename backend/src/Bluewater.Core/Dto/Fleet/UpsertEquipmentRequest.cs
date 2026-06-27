@@ -6,6 +6,7 @@ public record UpsertEquipmentRequest(
     Guid? EquipmentTypeId,
     Guid? ManufacturerId,
     Guid? OarSetId,
+    Guid? RequiredExamTypeId,
     bool FreeFleet,
     bool OutOfOrder,
     int? RowersWeight,

@@ -10,6 +10,8 @@ public record EquipmentDto(
     string? ManufacturerName,
     Guid? OarSetId,
     string? OarSetName,
+    Guid? RequiredExamTypeId,
+    string? RequiredExamTypeName,
     bool FreeFleet,
     bool OutOfOrder,
     int? RowersWeight,

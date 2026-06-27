@@ -5,6 +5,7 @@
 	import type {
 		EquipmentDto,
 		EquipmentTypeDto,
+		ExamTypeDto,
 		ManufacturerDto,
 		OarSetDto
 	} from '$lib/api/apiClient';
@@ -26,6 +27,7 @@
 	let equipmentTypeId = $state(untrack(() => equipment?.equipmentTypeId) ?? '');
 	let manufacturerId = $state(untrack(() => equipment?.manufacturerId) ?? '');
 	let oarSetId = $state(untrack(() => equipment?.oarSetId) ?? '');
+	let requiredExamTypeId = $state(untrack(() => equipment?.requiredExamTypeId) ?? '');
 	let freeFleet = $state(untrack(() => equipment?.freeFleet) ?? false);
 	let outOfOrder = $state(untrack(() => equipment?.outOfOrder) ?? false);
 	let rowersWeight = $state(untrack(() => equipment?.rowersWeight?.toString()) ?? '');
@@ -37,6 +39,7 @@
 	let types = $state<EquipmentTypeDto[]>([]);
 	let manufacturers = $state<ManufacturerDto[]>([]);
 	let oarSets = $state<OarSetDto[]>([]);
+	let examTypes = $state<ExamTypeDto[]>([]);
 
 	const form = new FormState();
 
@@ -51,10 +54,11 @@
 
 	onMount(async () => {
 		try {
-			[types, manufacturers, oarSets] = await Promise.all([
+			[types, manufacturers, oarSets, examTypes] = await Promise.all([
 				apiClient.typesAll2(),
 				apiClient.manufacturersAll(),
-				apiClient.oarSetsAll()
+				apiClient.oarSetsAll(),
+				apiClient.typesAll()
 			]);
 		} catch {
 			// non-fatal
@@ -73,6 +77,7 @@
 				equipmentTypeId: equipmentTypeId || undefined,
 				manufacturerId: manufacturerId || undefined,
 				oarSetId: oarSetId || undefined,
+				requiredExamTypeId: requiredExamTypeId || undefined,
 				freeFleet,
 				outOfOrder,
 				rowersWeight: rowersWeight ? parseInt(rowersWeight) : undefined,
@@ -150,6 +155,22 @@
 				<option value="">— geen —</option>
 				{#each oarSets as o (o.id)}
 					<option value={o.id}>{o.name}</option>
+				{/each}
+			</select>
+		{/snippet}
+	</FormField>
+
+	<FormField label="Vereist examen" errors={form.errorsFor('requiredExamTypeId')}>
+		{#snippet children(invalid)}
+			<select
+				bind:value={requiredExamTypeId}
+				class="rounded-md focus:border-primary focus:ring-primary {invalid
+					? 'border-red-400'
+					: 'border-gray-300'}"
+			>
+				<option value="">— geen —</option>
+				{#each examTypes as e (e.id)}
+					<option value={e.id}>{e.name}</option>
 				{/each}
 			</select>
 		{/snippet}

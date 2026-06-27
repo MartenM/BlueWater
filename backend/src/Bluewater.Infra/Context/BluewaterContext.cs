@@ -282,6 +282,12 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .HasForeignKey(x => x.OarSetId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
+
+            e.HasOne(x => x.RequiredExamType)
+                .WithMany()
+                .HasForeignKey(x => x.RequiredExamTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

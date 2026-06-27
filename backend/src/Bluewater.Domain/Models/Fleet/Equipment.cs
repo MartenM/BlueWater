@@ -1,4 +1,5 @@
 using Bluewater.Domain.Auditing;
+using Bluewater.Domain.Models.Exams;
 
 namespace Bluewater.Domain.Models.Fleet;
 
@@ -13,6 +14,8 @@ public class Equipment : IAuditable
     public Manufacturer? Manufacturer { get; set; }
     public Guid? OarSetId { get; set; }
     public OarSet? OarSet { get; set; }
+    public Guid? RequiredExamTypeId { get; set; }
+    public ExamType? RequiredExamType { get; set; }
     public bool FreeFleet { get; set; }
     public bool OutOfOrder { get; set; }
     public int? RowersWeight { get; set; }
