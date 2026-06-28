@@ -6,8 +6,10 @@ using Bluewater.Domain.Models.Exams;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
+using Bluewater.Domain.Models.Signup;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Bluewater.Infra.Context;
@@ -39,6 +41,7 @@ public class BluewaterContextSeeder
         if (_context.Users.Any())
         {
             _logger.LogInformation("No database seeding. Users already exists.");
+            await EnsureAllPermissionsSeededAsync();
             return;
         }
 
@@ -64,8 +67,37 @@ public class BluewaterContextSeeder
         CreateMemberClusters(generalCategory, trainingCategory, membersGroup, seniorsGroup, juniorsGroup);
         await CreateNewsAsync();
         CreateAgendaItems();
+        CreateSignups(faker, adminUser, memberUsers);
 
         await _context.SaveChangesAsync();
+    }
+
+    // Ensures the "all permissions" group always has every BluePermission value.
+    // Runs on every startup so new enum values are picked up without a DB reset.
+    private async Task EnsureAllPermissionsSeededAsync()
+    {
+        var allPermissions = Enum.GetValues<BluePermission>().ToHashSet();
+
+        var groups = await _context.UserGroups
+            .Include(g => g.Permissions)
+            .Where(g => g.Name == "Beheerders")
+            .ToListAsync();
+
+        if (groups.Count == 0) return;
+
+        bool changed = false;
+        foreach (var group in groups)
+        {
+            var existing = group.Permissions.Select(p => p.Permission).ToHashSet();
+            foreach (var permission in allPermissions.Except(existing))
+            {
+                group.Permissions.Add(new UserGroupPermission { Id = Guid.NewGuid(), Permission = permission });
+                changed = true;
+            }
+        }
+
+        if (changed)
+            await _context.SaveChangesAsync();
     }
 
     private async Task<BlueUser> CreateAdminUserAsync()
@@ -493,6 +525,129 @@ public class BluewaterContextSeeder
                 ],
             }
         );
+    }
+
+    private void CreateSignups(Faker faker, BlueUser adminUser, List<BlueUser> memberUsers)
+    {
+        var today = DateTime.UtcNow;
+
+        var eventsCategory = _context.SignupCategories.Add(new SignupCategory
+        {
+            Id = Guid.NewGuid(),
+            Title = "Evenementen",
+            SortOrder = 1,
+        }).Entity;
+
+        var trainingCategory = _context.SignupCategories.Add(new SignupCategory
+        {
+            Id = Guid.NewGuid(),
+            Title = "Training",
+            SortOrder = 2,
+        }).Entity;
+
+        // Open dag — simple signup with a meal-choice radio list
+        var openDag = new Domain.Models.Signup.Signup
+        {
+            Id = Guid.NewGuid(),
+            Title = "Open dag",
+            Description = "Schrijf je in voor de open dag van de vereniging.",
+            CategoryId = eventsCategory.Id,
+            EndDate = today.AddDays(5),
+            AllowMultiple = false,
+            AllowDelete = true,
+            AllowUpdate = true,
+            MaxSignups = 40,
+            HideSignups = false,
+            Anonymous = false,
+            InputFields = new List<SignupInputField>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Maaltijdkeuze",
+                    Note = "We verzorgen een eenvoudige lunch na afloop.",
+                    Type = SignupInputFieldType.RadioList,
+                    Options = "Vegetarisch\nVlees\nVis",
+                    Visible = true,
+                    SortOrder = 1,
+                },
+            },
+        };
+
+        // Trainingsweekend — signup with a text field and a checkbox
+        var trainingsweekend = new Domain.Models.Signup.Signup
+        {
+            Id = Guid.NewGuid(),
+            Title = "Trainingsweekend Friesland",
+            Description = "Jaarlijks meerdaags trainingskamp. Geef je op voor het volledige weekend.",
+            CategoryId = eventsCategory.Id,
+            EndDate = today.AddDays(14),
+            AllowMultiple = false,
+            AllowDelete = true,
+            AllowUpdate = true,
+            MaxSignups = 24,
+            MaxWaitlist = 8,
+            HideSignups = false,
+            Anonymous = false,
+            InputFields = new List<SignupInputField>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Bijzonderheden / dieetwensen",
+                    Type = SignupInputFieldType.Textarea,
+                    Visible = true,
+                    SortOrder = 1,
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Ik heb een auto en kan meerijders meenemen",
+                    Type = SignupInputFieldType.Checkbox,
+                    Visible = true,
+                    SortOrder = 2,
+                },
+            },
+        };
+
+        // Reguliere training dinsdag — no extra fields
+        var trainingDinsdag = new Domain.Models.Signup.Signup
+        {
+            Id = Guid.NewGuid(),
+            Title = "Training dinsdag 8 juli",
+            CategoryId = trainingCategory.Id,
+            EndDate = today.AddDays(3),
+            AllowMultiple = false,
+            AllowDelete = true,
+            AllowUpdate = false,
+            MaxSignups = 16,
+            HideSignups = false,
+            Anonymous = false,
+        };
+
+        _context.Signups.AddRange(openDag, trainingsweekend, trainingDinsdag);
+
+        // Seed a handful of responses on the open dag signup
+        var respondents = faker.Random.ListItems(memberUsers, Math.Min(8, memberUsers.Count));
+        foreach (var user in respondents)
+        {
+            var mealOptions = new[] { "Vegetarisch", "Vlees", "Vis" };
+            var mealField = openDag.InputFields.First();
+            openDag.Responses.Add(new SignupResponse
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                FieldValues = new List<SignupResponseFieldValue>
+                {
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        FieldId = mealField.Id,
+                        Value = faker.PickRandom(mealOptions),
+                    },
+                },
+            });
+        }
     }
 
     private async Task CreateNewsAsync()

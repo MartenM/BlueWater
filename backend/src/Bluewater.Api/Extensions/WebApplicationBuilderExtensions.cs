@@ -1,6 +1,7 @@
 using System.Text;
 using Bluewater.Api.Authorization;
 using Bluewater.Api.Options;
+using Bluewater.Core.Options;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Core.Validators;
@@ -131,7 +132,12 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IOarSetService, OarSetService>();
         builder.Services.AddScoped<IEquipmentService, EquipmentService>();
         builder.Services.AddScoped<IMemberClusterService, MemberClusterService>();
+        builder.Services.AddScoped<ISignupCategoryService, SignupCategoryService>();
+        builder.Services.AddScoped<ISignupService, SignupService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        builder.Services.AddOptions<SignupOptions>()
+            .Bind(builder.Configuration.GetSection("Signup"))
+            .ValidateOnStart();
         builder.Services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 
         return builder;

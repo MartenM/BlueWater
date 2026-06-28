@@ -3,6 +3,7 @@ using System;
 using Bluewater.Infra.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewater.Infra.Migrations
 {
     [DbContext(typeof(BluewaterContext))]
-    partial class BluewaterContextModelSnapshot : ModelSnapshot
+    [Migration("20260628121231_AddSignup")]
+    partial class AddSignup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1007,7 +1010,7 @@ namespace Bluewater.Infra.Migrations
                     b.Property<bool>("Anonymous")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1598,8 +1601,7 @@ namespace Bluewater.Infra.Migrations
                     b.HasOne("Bluewater.Domain.Models.Signup.SignupCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
                 });

@@ -21,6 +21,7 @@ export { default as EquipmentTypeForm } from './components/EquipmentTypeForm.sve
 export { default as OarSetForm } from './components/OarSetForm.svelte';
 export { default as EquipmentForm } from './components/EquipmentForm.svelte';
 export { default as MemberPicker } from './components/MemberPicker.svelte';
+export { default as ClusterPicker } from './components/ClusterPicker.svelte';
 export { default as GroupForm } from './components/GroupForm.svelte';
 export { default as InstanceMemberManager } from './components/InstanceMemberManager.svelte';
 export { default as InstancePermissionManager } from './components/InstancePermissionManager.svelte';

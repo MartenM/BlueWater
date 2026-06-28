@@ -22,4 +22,9 @@ public enum BluePermission
     FleetModify = 18,
     ClustersView = 19,
     ClustersModify = 20,
+    SignupView = 21,
+    SignupRespond = 22,
+    AdminSignupView = 23,
+    AdminSignupModify = 24,
+    AdminSignupModifyOthers = 25,
 }

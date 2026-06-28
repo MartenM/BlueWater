@@ -1,3 +1,4 @@
+using Bluewater.Core.Options;
 using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Core.Validators;
@@ -43,6 +44,17 @@ public abstract class SqliteServiceTestBase : IDisposable
     {
         get => _currentUserAccessor.UserId;
         set => _currentUserAccessor.UserId = value;
+    }
+
+    /// <summary>
+    /// The user ID surfaced to services via <see cref="ICurrentUserService.Id"/>.
+    /// Defaults to <see cref="Guid.Empty"/>. Set this alongside <see cref="CurrentUserId"/>
+    /// when testing services that read both the audit actor and the acting user identity.
+    /// </summary>
+    protected Guid CurrentServiceUserId
+    {
+        get => _currentUserService.Id;
+        set => _currentUserService.Id = value;
     }
 
     /// <summary>
@@ -103,6 +115,9 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<ISeasonService, SeasonService>();
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IMemberClusterService, MemberClusterService>();
+        services.AddScoped<ISignupCategoryService, SignupCategoryService>();
+        services.AddScoped<ISignupService, SignupService>();
+        services.Configure<SignupOptions>(o => o.HideAfterDays = 14);
         services.AddScoped<IExamTypeService, ExamTypeService>();
         services.AddScoped<IUserExamService, UserExamService>();
         services.AddScoped<BluewaterContextSeeder>();

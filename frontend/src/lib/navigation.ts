@@ -12,7 +12,8 @@ export const navItems: NavItem[] = [
 		href: '/',
 		children: [
 			{ label: 'Nieuws', href: '/news' },
-			{ label: 'Agenda', href: '/agenda' }
+			{ label: 'Agenda', href: '/agenda' },
+			{ label: 'Inschrijvingen', href: '/signup' }
 		]
 	},
 	{
@@ -41,7 +42,8 @@ export const navItems: NavItem[] = [
 			{ label: 'Gebruikers', href: '/tools/users' },
 			{ label: 'Groepen', href: '/tools/groups' },
 			{ label: 'Examens', href: '/tools/exams' },
-			{ label: 'Clusters', href: '/tools/clusters' }
+			{ label: 'Clusters', href: '/tools/clusters' },
+			{ label: 'Inschrijvingen', href: '/tools/signup' }
 		]
 	},
 	{ label: 'Contact', href: '/contact' }

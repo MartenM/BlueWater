@@ -6,6 +6,7 @@ using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Clusters;
 using Bluewater.Domain.Models.Exams;
+using Bluewater.Domain.Models.Signup;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
@@ -49,6 +50,12 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<Equipment> Equipment => Set<Equipment>();
     public DbSet<MemberCluster> MemberClusters => Set<MemberCluster>();
     public DbSet<MemberClusterCriterion> MemberClusterCriteria => Set<MemberClusterCriterion>();
+    public DbSet<SignupCategory> SignupCategories => Set<SignupCategory>();
+    public DbSet<Signup> Signups => Set<Signup>();
+    public DbSet<SignupCluster> SignupClusters => Set<SignupCluster>();
+    public DbSet<SignupInputField> SignupInputFields => Set<SignupInputField>();
+    public DbSet<SignupResponse> SignupResponses => Set<SignupResponse>();
+    public DbSet<SignupResponseFieldValue> SignupResponseFieldValues => Set<SignupResponseFieldValue>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -328,6 +335,81 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .HasForeignKey(x => x.UserGroupId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
+        });
+
+        builder.Entity<SignupCategory>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<Signup>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.Category)
+                .WithMany()
+                .HasForeignKey(x => x.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+        });
+
+        builder.Entity<SignupCluster>(e =>
+        {
+            e.HasKey(x => new { x.SignupId, x.MemberClusterId });
+
+            e.HasOne(x => x.Signup)
+                .WithMany(x => x.Clusters)
+                .HasForeignKey(x => x.SignupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.MemberCluster)
+                .WithMany()
+                .HasForeignKey(x => x.MemberClusterId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<SignupInputField>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Type).HasConversion<string>();
+
+            e.HasOne(x => x.Signup)
+                .WithMany(x => x.InputFields)
+                .HasForeignKey(x => x.SignupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<SignupResponse>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.Signup)
+                .WithMany(x => x.Responses)
+                .HasForeignKey(x => x.SignupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<SignupResponseFieldValue>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasQueryFilter(x => x.Response.DeletedAt == null);
+
+            e.HasOne(x => x.Response)
+                .WithMany(x => x.FieldValues)
+                .HasForeignKey(x => x.ResponseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.Field)
+                .WithMany(x => x.FieldValues)
+                .HasForeignKey(x => x.FieldId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         foreach (var entityType in builder.Model.GetEntityTypes())

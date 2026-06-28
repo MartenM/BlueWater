@@ -141,7 +141,7 @@
 		busy = true;
 		actionError = null;
 		try {
-			await apiClient.reorder(
+			await apiClient.reorder2(
 				categoryId,
 				new ReorderRolesRequest({ roleIds: updated.map((r) => r.id) })
 			);
