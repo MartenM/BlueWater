@@ -8,9374 +8,11271 @@
 // ReSharper disable InconsistentNaming
 
 export class Client {
-    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
-
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-        this.http = http ? http : window as any;
-        this.baseUrl = baseUrl ?? "https://localhost:7292/";
-    }
-
-    /**
-     * @return OK
-     */
-    health(): Promise<string> {
-        let url_ = this.baseUrl + "/Health";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processHealth(_response);
-        });
-    }
-
-    protected processHealth(response: Response): Promise<string> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : null as any;
-    
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<string>(null as any);
-    }
-
-    /**
-     * @param page (optional) 
-     * @param pageSize (optional) 
-     * @return OK
-     */
-    agendaGET(page: number | undefined, pageSize: number | undefined): Promise<PagedResultOfAgendaItemDto> {
-        let url_ = this.baseUrl + "/api/Agenda?";
-        if (page === null)
-            throw new globalThis.Error("The parameter 'page' cannot be null.");
-        else if (page !== undefined)
-            url_ += "page=" + encodeURIComponent("" + page) + "&";
-        if (pageSize === null)
-            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
-        else if (pageSize !== undefined)
-            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAgendaGET(_response);
-        });
-    }
-
-    protected processAgendaGET(response: Response): Promise<PagedResultOfAgendaItemDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PagedResultOfAgendaItemDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<PagedResultOfAgendaItemDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    agendaPOST(body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
-        let url_ = this.baseUrl + "/api/Agenda";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAgendaPOST(_response);
-        });
-    }
-
-    protected processAgendaPOST(response: Response): Promise<AgendaItemDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AgendaItemDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AgendaItemDto>(null as any);
-    }
-
-    /**
-     * @param start (optional) 
-     * @param end (optional) 
-     * @return OK
-     */
-    range(start: Date | undefined, end: Date | undefined): Promise<AgendaItemDto[]> {
-        let url_ = this.baseUrl + "/api/Agenda/range?";
-        if (start === null)
-            throw new globalThis.Error("The parameter 'start' cannot be null.");
-        else if (start !== undefined)
-            url_ += "start=" + encodeURIComponent(start ? "" + start.toISOString() : "") + "&";
-        if (end === null)
-            throw new globalThis.Error("The parameter 'end' cannot be null.");
-        else if (end !== undefined)
-            url_ += "end=" + encodeURIComponent(end ? "" + end.toISOString() : "") + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRange(_response);
-        });
-    }
-
-    protected processRange(response: Response): Promise<AgendaItemDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(AgendaItemDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AgendaItemDto[]>(null as any);
-    }
-
-    /**
-     * @param count (optional) 
-     * @return OK
-     */
-    upcoming(count: number | undefined): Promise<AgendaItemDto[]> {
-        let url_ = this.baseUrl + "/api/Agenda/upcoming?";
-        if (count === null)
-            throw new globalThis.Error("The parameter 'count' cannot be null.");
-        else if (count !== undefined)
-            url_ += "count=" + encodeURIComponent("" + count) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUpcoming(_response);
-        });
-    }
-
-    protected processUpcoming(response: Response): Promise<AgendaItemDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(AgendaItemDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AgendaItemDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    agendaGET2(id: string): Promise<AgendaItemDto> {
-        let url_ = this.baseUrl + "/api/Agenda/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAgendaGET2(_response);
-        });
-    }
-
-    protected processAgendaGET2(response: Response): Promise<AgendaItemDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AgendaItemDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AgendaItemDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    agendaPUT(id: string, body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
-        let url_ = this.baseUrl + "/api/Agenda/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAgendaPUT(_response);
-        });
-    }
-
-    protected processAgendaPUT(response: Response): Promise<AgendaItemDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AgendaItemDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AgendaItemDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    agendaDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Agenda/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAgendaDELETE(_response);
-        });
-    }
-
-    protected processAgendaDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    login(body: LoginRequest): Promise<AuthResponse> {
-        let url_ = this.baseUrl + "/api/Auth/login";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processLogin(_response);
-        });
-    }
-
-    protected processLogin(response: Response): Promise<AuthResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AuthResponse.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AuthResponse>(null as any);
-    }
-
-    /**
-     * @param body (optional) 
-     * @return OK
-     */
-    refresh(body: RefreshRequest | null | undefined): Promise<AuthResponse> {
-        let url_ = this.baseUrl + "/api/Auth/refresh";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRefresh(_response);
-        });
-    }
-
-    protected processRefresh(response: Response): Promise<AuthResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = AuthResponse.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AuthResponse>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    logout(): Promise<void> {
-        let url_ = this.baseUrl + "/api/Auth/logout";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "POST",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processLogout(_response);
-        });
-    }
-
-    protected processLogout(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    permissionsAll(): Promise<BluePermission[]> {
-        let url_ = this.baseUrl + "/api/Auth/permissions";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPermissionsAll(_response);
-        });
-    }
-
-    protected processPermissionsAll(response: Response): Promise<BluePermission[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(item);
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<BluePermission[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesAll(): Promise<ExamTypeDto[]> {
-        let url_ = this.baseUrl + "/api/Exams/types";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesAll(_response);
-        });
-    }
-
-    protected processTypesAll(response: Response): Promise<ExamTypeDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(ExamTypeDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ExamTypeDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesPOST(body: UpsertExamTypeRequest): Promise<ExamTypeDto> {
-        let url_ = this.baseUrl + "/api/Exams/types";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesPOST(_response);
-        });
-    }
-
-    protected processTypesPOST(response: Response): Promise<ExamTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ExamTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ExamTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesGET(id: string): Promise<ExamTypeDto> {
-        let url_ = this.baseUrl + "/api/Exams/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesGET(_response);
-        });
-    }
-
-    protected processTypesGET(response: Response): Promise<ExamTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ExamTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ExamTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesPUT(id: string, body: UpsertExamTypeRequest): Promise<ExamTypeDto> {
-        let url_ = this.baseUrl + "/api/Exams/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesPUT(_response);
-        });
-    }
-
-    protected processTypesPUT(response: Response): Promise<ExamTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ExamTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ExamTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Exams/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesDELETE(_response);
-        });
-    }
-
-    protected processTypesDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    byUser(userId: string): Promise<UserExamDto[]> {
-        let url_ = this.baseUrl + "/api/Exams/by-user/{userId}";
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processByUser(_response);
-        });
-    }
-
-    protected processByUser(response: Response): Promise<UserExamDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserExamDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserExamDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    assigned(examTypeId: string): Promise<UserExamDto[]> {
-        let url_ = this.baseUrl + "/api/Exams/types/{examTypeId}/assigned";
-        if (examTypeId === undefined || examTypeId === null)
-            throw new globalThis.Error("The parameter 'examTypeId' must be defined.");
-        url_ = url_.replace("{examTypeId}", encodeURIComponent("" + examTypeId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAssigned(_response);
-        });
-    }
-
-    protected processAssigned(response: Response): Promise<UserExamDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserExamDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserExamDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    assignPOST(body: AssignExamRequest): Promise<UserExamDto> {
-        let url_ = this.baseUrl + "/api/Exams/assign";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAssignPOST(_response);
-        });
-    }
-
-    protected processAssignPOST(response: Response): Promise<UserExamDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserExamDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserExamDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    assignDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Exams/assign/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processAssignDELETE(_response);
-        });
-    }
-
-    protected processAssignDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param page (optional) 
-     * @param pageSize (optional) 
-     * @param search (optional) 
-     * @return OK
-     */
-    fleetGET(page: number | undefined, pageSize: number | undefined, search: string | undefined): Promise<PagedResultOfEquipmentDto> {
-        let url_ = this.baseUrl + "/api/Fleet?";
-        if (page === null)
-            throw new globalThis.Error("The parameter 'page' cannot be null.");
-        else if (page !== undefined)
-            url_ += "page=" + encodeURIComponent("" + page) + "&";
-        if (pageSize === null)
-            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
-        else if (pageSize !== undefined)
-            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
-        if (search === null)
-            throw new globalThis.Error("The parameter 'search' cannot be null.");
-        else if (search !== undefined)
-            url_ += "search=" + encodeURIComponent("" + search) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFleetGET(_response);
-        });
-    }
-
-    protected processFleetGET(response: Response): Promise<PagedResultOfEquipmentDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PagedResultOfEquipmentDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<PagedResultOfEquipmentDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    fleetPOST(body: UpsertEquipmentRequest): Promise<EquipmentDto> {
-        let url_ = this.baseUrl + "/api/Fleet";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFleetPOST(_response);
-        });
-    }
-
-    protected processFleetPOST(response: Response): Promise<EquipmentDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    fleetGET2(id: string): Promise<EquipmentDto> {
-        let url_ = this.baseUrl + "/api/Fleet/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFleetGET2(_response);
-        });
-    }
-
-    protected processFleetGET2(response: Response): Promise<EquipmentDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    fleetPUT(id: string, body: UpsertEquipmentRequest): Promise<EquipmentDto> {
-        let url_ = this.baseUrl + "/api/Fleet/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFleetPUT(_response);
-        });
-    }
-
-    protected processFleetPUT(response: Response): Promise<EquipmentDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    fleetDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Fleet/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processFleetDELETE(_response);
-        });
-    }
-
-    protected processFleetDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesAll2(): Promise<EquipmentTypeDto[]> {
-        let url_ = this.baseUrl + "/api/Fleet/types";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesAll2(_response);
-        });
-    }
-
-    protected processTypesAll2(response: Response): Promise<EquipmentTypeDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(EquipmentTypeDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentTypeDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesPOST2(body: UpsertEquipmentTypeRequest): Promise<EquipmentTypeDto> {
-        let url_ = this.baseUrl + "/api/Fleet/types";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesPOST2(_response);
-        });
-    }
-
-    protected processTypesPOST2(response: Response): Promise<EquipmentTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesGET2(id: string): Promise<EquipmentTypeDto> {
-        let url_ = this.baseUrl + "/api/Fleet/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesGET2(_response);
-        });
-    }
-
-    protected processTypesGET2(response: Response): Promise<EquipmentTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesPUT2(id: string, body: UpsertEquipmentTypeRequest): Promise<EquipmentTypeDto> {
-        let url_ = this.baseUrl + "/api/Fleet/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesPUT2(_response);
-        });
-    }
-
-    protected processTypesPUT2(response: Response): Promise<EquipmentTypeDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = EquipmentTypeDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<EquipmentTypeDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    typesDELETE2(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Fleet/types/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processTypesDELETE2(_response);
-        });
-    }
-
-    protected processTypesDELETE2(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    manufacturersAll(): Promise<ManufacturerDto[]> {
-        let url_ = this.baseUrl + "/api/Fleet/manufacturers";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processManufacturersAll(_response);
-        });
-    }
-
-    protected processManufacturersAll(response: Response): Promise<ManufacturerDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(ManufacturerDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ManufacturerDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    manufacturersPOST(body: UpsertManufacturerRequest): Promise<ManufacturerDto> {
-        let url_ = this.baseUrl + "/api/Fleet/manufacturers";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processManufacturersPOST(_response);
-        });
-    }
-
-    protected processManufacturersPOST(response: Response): Promise<ManufacturerDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ManufacturerDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ManufacturerDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    manufacturersGET(id: string): Promise<ManufacturerDto> {
-        let url_ = this.baseUrl + "/api/Fleet/manufacturers/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processManufacturersGET(_response);
-        });
-    }
-
-    protected processManufacturersGET(response: Response): Promise<ManufacturerDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ManufacturerDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ManufacturerDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    manufacturersPUT(id: string, body: UpsertManufacturerRequest): Promise<ManufacturerDto> {
-        let url_ = this.baseUrl + "/api/Fleet/manufacturers/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processManufacturersPUT(_response);
-        });
-    }
-
-    protected processManufacturersPUT(response: Response): Promise<ManufacturerDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = ManufacturerDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ManufacturerDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    manufacturersDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Fleet/manufacturers/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processManufacturersDELETE(_response);
-        });
-    }
-
-    protected processManufacturersDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    oarSetsAll(): Promise<OarSetDto[]> {
-        let url_ = this.baseUrl + "/api/Fleet/oar-sets";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOarSetsAll(_response);
-        });
-    }
-
-    protected processOarSetsAll(response: Response): Promise<OarSetDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(OarSetDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<OarSetDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    oarSetsPOST(body: UpsertOarSetRequest): Promise<OarSetDto> {
-        let url_ = this.baseUrl + "/api/Fleet/oar-sets";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOarSetsPOST(_response);
-        });
-    }
-
-    protected processOarSetsPOST(response: Response): Promise<OarSetDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = OarSetDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<OarSetDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    oarSetsGET(id: string): Promise<OarSetDto> {
-        let url_ = this.baseUrl + "/api/Fleet/oar-sets/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOarSetsGET(_response);
-        });
-    }
-
-    protected processOarSetsGET(response: Response): Promise<OarSetDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = OarSetDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<OarSetDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    oarSetsPUT(id: string, body: UpsertOarSetRequest): Promise<OarSetDto> {
-        let url_ = this.baseUrl + "/api/Fleet/oar-sets/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOarSetsPUT(_response);
-        });
-    }
-
-    protected processOarSetsPUT(response: Response): Promise<OarSetDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = OarSetDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<OarSetDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    oarSetsDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Fleet/oar-sets/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOarSetsDELETE(_response);
-        });
-    }
-
-    protected processOarSetsDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param page (optional) 
-     * @param pageSize (optional) 
-     * @return OK
-     */
-    newsGET(page: number | undefined, pageSize: number | undefined): Promise<PagedResultOfNewsPostDto> {
-        let url_ = this.baseUrl + "/api/News?";
-        if (page === null)
-            throw new globalThis.Error("The parameter 'page' cannot be null.");
-        else if (page !== undefined)
-            url_ += "page=" + encodeURIComponent("" + page) + "&";
-        if (pageSize === null)
-            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
-        else if (pageSize !== undefined)
-            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsGET(_response);
-        });
-    }
-
-    protected processNewsGET(response: Response): Promise<PagedResultOfNewsPostDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PagedResultOfNewsPostDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<PagedResultOfNewsPostDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsPOST(body: UpsertNewsPostRequest): Promise<NewsPostDto> {
-        let url_ = this.baseUrl + "/api/News";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsPOST(_response);
-        });
-    }
-
-    protected processNewsPOST(response: Response): Promise<NewsPostDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = NewsPostDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<NewsPostDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsGET2(id: string): Promise<NewsPostDto> {
-        let url_ = this.baseUrl + "/api/News/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsGET2(_response);
-        });
-    }
-
-    protected processNewsGET2(response: Response): Promise<NewsPostDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = NewsPostDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<NewsPostDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsPUT(id: string, body: UpsertNewsPostRequest): Promise<NewsPostDto> {
-        let url_ = this.baseUrl + "/api/News/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsPUT(_response);
-        });
-    }
-
-    protected processNewsPUT(response: Response): Promise<NewsPostDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = NewsPostDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<NewsPostDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/News/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsDELETE(_response);
-        });
-    }
-
-    protected processNewsDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsIconsAll(): Promise<NewsIconDto[]> {
-        let url_ = this.baseUrl + "/api/NewsIcons";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsIconsAll(_response);
-        });
-    }
-
-    protected processNewsIconsAll(response: Response): Promise<NewsIconDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(NewsIconDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<NewsIconDto[]>(null as any);
-    }
-
-    /**
-     * @param name (optional) 
-     * @param file (optional) 
-     * @return OK
-     */
-    newsIconsPOST(name: string | undefined, file: FileParameter | undefined): Promise<NewsIconDto> {
-        let url_ = this.baseUrl + "/api/NewsIcons";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (name === null || name === undefined)
-            throw new globalThis.Error("The parameter 'name' cannot be null.");
-        else
-            content_.append("name", name.toString());
-        if (file === null || file === undefined)
-            throw new globalThis.Error("The parameter 'file' cannot be null.");
-        else
-            content_.append("file", file.data, file.fileName ? file.fileName : "file");
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsIconsPOST(_response);
-        });
-    }
-
-    protected processNewsIconsPOST(response: Response): Promise<NewsIconDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = NewsIconDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<NewsIconDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    content(id: string): Promise<FileResponse> {
-        let url_ = this.baseUrl + "/api/NewsIcons/{id}/content";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/octet-stream"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processContent(_response);
-        });
-    }
-
-    protected processContent(response: Response): Promise<FileResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<FileResponse>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    newsIconsDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/NewsIcons/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processNewsIconsDELETE(_response);
-        });
-    }
-
-    protected processNewsIconsDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    seasonsAll(): Promise<SeasonDto[]> {
-        let url_ = this.baseUrl + "/api/Seasons";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSeasonsAll(_response);
-        });
-    }
-
-    protected processSeasonsAll(response: Response): Promise<SeasonDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(SeasonDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<SeasonDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    seasons(id: string): Promise<SeasonDto> {
-        let url_ = this.baseUrl + "/api/Seasons/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSeasons(_response);
-        });
-    }
-
-    protected processSeasons(response: Response): Promise<SeasonDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = SeasonDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<SeasonDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupCategoriesAll(): Promise<UserGroupCategoryDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupCategoriesAll(_response);
-        });
-    }
-
-    protected processUserGroupCategoriesAll(response: Response): Promise<UserGroupCategoryDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupCategoryDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupCategoriesPOST(body: UpsertUserGroupCategoryRequest): Promise<UserGroupCategoryDto> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupCategoriesPOST(_response);
-        });
-    }
-
-    protected processUserGroupCategoriesPOST(response: Response): Promise<UserGroupCategoryDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupCategoryDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupCategoriesGET(id: string): Promise<UserGroupCategoryDto> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupCategoriesGET(_response);
-        });
-    }
-
-    protected processUserGroupCategoriesGET(response: Response): Promise<UserGroupCategoryDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupCategoryDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupCategoriesPUT(id: string, body: UpsertUserGroupCategoryRequest): Promise<UserGroupCategoryDto> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupCategoriesPUT(_response);
-        });
-    }
-
-    protected processUserGroupCategoriesPUT(response: Response): Promise<UserGroupCategoryDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupCategoryDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupCategoriesDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupCategoriesDELETE(_response);
-        });
-    }
-
-    protected processUserGroupCategoriesDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param seasonId (optional) 
-     * @return OK
-     */
-    overview(seasonId: string | undefined): Promise<UserGroupCategoryOverviewDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/overview?";
-        if (seasonId === null)
-            throw new globalThis.Error("The parameter 'seasonId' cannot be null.");
-        else if (seasonId !== undefined)
-            url_ += "seasonId=" + encodeURIComponent("" + seasonId) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOverview(_response);
-        });
-    }
-
-    protected processOverview(response: Response): Promise<UserGroupCategoryOverviewDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupCategoryOverviewDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryOverviewDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    rolesAll(id: string): Promise<UserGroupCategoryRoleDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRolesAll(_response);
-        });
-    }
-
-    protected processRolesAll(response: Response): Promise<UserGroupCategoryRoleDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupCategoryRoleDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryRoleDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    rolesPOST(id: string, body: UpsertUserGroupCategoryRoleRequest): Promise<UserGroupCategoryRoleDto> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRolesPOST(_response);
-        });
-    }
-
-    protected processRolesPOST(response: Response): Promise<UserGroupCategoryRoleDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    rolesPUT(id: string, roleId: string, body: UpsertUserGroupCategoryRoleRequest): Promise<UserGroupCategoryRoleDto> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/{roleId}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (roleId === undefined || roleId === null)
-            throw new globalThis.Error("The parameter 'roleId' must be defined.");
-        url_ = url_.replace("{roleId}", encodeURIComponent("" + roleId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRolesPUT(_response);
-        });
-    }
-
-    protected processRolesPUT(response: Response): Promise<UserGroupCategoryRoleDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    rolesDELETE(id: string, roleId: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/{roleId}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (roleId === undefined || roleId === null)
-            throw new globalThis.Error("The parameter 'roleId' must be defined.");
-        url_ = url_.replace("{roleId}", encodeURIComponent("" + roleId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRolesDELETE(_response);
-        });
-    }
-
-    protected processRolesDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    reorder(id: string, body: ReorderRolesRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupCategories/{id}/roles/reorder";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processReorder(_response);
-        });
-    }
-
-    protected processReorder(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupInstancesAll(): Promise<UserGroupInstanceDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupInstancesAll(_response);
-        });
-    }
-
-    protected processUserGroupInstancesAll(response: Response): Promise<UserGroupInstanceDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupInstanceDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupInstanceDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupInstancesPOST(body: CreateUserGroupInstanceRequest): Promise<UserGroupInstanceDto> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupInstancesPOST(_response);
-        });
-    }
-
-    protected processUserGroupInstancesPOST(response: Response): Promise<UserGroupInstanceDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupInstanceDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupInstanceDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupInstancesGET(id: string): Promise<UserGroupInstanceDto> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupInstancesGET(_response);
-        });
-    }
-
-    protected processUserGroupInstancesGET(response: Response): Promise<UserGroupInstanceDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupInstanceDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupInstanceDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupInstancesDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupInstancesDELETE(_response);
-        });
-    }
-
-    protected processUserGroupInstancesDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    usersPOST(id: string, userId: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/users/{userId}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "POST",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersPOST(_response);
-        });
-    }
-
-    protected processUsersPOST(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    usersDELETE(id: string, userId: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/users/{userId}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersDELETE(_response);
-        });
-    }
-
-    protected processUsersDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    role(id: string, userId: string, body: AssignMemberRoleRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroupInstances/{id}/users/{userId}/role";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRole(_response);
-        });
-    }
-
-    protected processRole(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupsAll(): Promise<UserGroupDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroups";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupsAll(_response);
-        });
-    }
-
-    protected processUserGroupsAll(response: Response): Promise<UserGroupDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupsPOST(body: UpsertUserGroupRequest): Promise<UserGroupDto> {
-        let url_ = this.baseUrl + "/api/UserGroups";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupsPOST(_response);
-        });
-    }
-
-    protected processUserGroupsPOST(response: Response): Promise<UserGroupDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupsGET(id: string): Promise<UserGroupDto> {
-        let url_ = this.baseUrl + "/api/UserGroups/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupsGET(_response);
-        });
-    }
-
-    protected processUserGroupsGET(response: Response): Promise<UserGroupDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupsPUT(id: string, body: UpsertUserGroupRequest): Promise<UserGroupDto> {
-        let url_ = this.baseUrl + "/api/UserGroups/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupsPUT(_response);
-        });
-    }
-
-    protected processUserGroupsPUT(response: Response): Promise<UserGroupDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserGroupDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userGroupsDELETE(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroups/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserGroupsDELETE(_response);
-        });
-    }
-
-    protected processUserGroupsDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param name (optional) 
-     * @return OK
-     */
-    byName(name: string | undefined): Promise<UserGroupDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroups/by-name?";
-        if (name === null)
-            throw new globalThis.Error("The parameter 'name' cannot be null.");
-        else if (name !== undefined)
-            url_ += "name=" + encodeURIComponent("" + name) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processByName(_response);
-        });
-    }
-
-    protected processByName(response: Response): Promise<UserGroupDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    meAll(): Promise<UserGroupMembershipDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroups/me";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMeAll(_response);
-        });
-    }
-
-    protected processMeAll(response: Response): Promise<UserGroupMembershipDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupMembershipDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupMembershipDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    usersAll(userId: string): Promise<UserGroupMembershipDto[]> {
-        let url_ = this.baseUrl + "/api/UserGroups/users/{userId}";
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined.");
-        url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUsersAll(_response);
-        });
-    }
-
-    protected processUsersAll(response: Response): Promise<UserGroupMembershipDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(UserGroupMembershipDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserGroupMembershipDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    permissionsPOST(id: string, body: AssignGroupPermissionRequest): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroups/{id}/permissions";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPermissionsPOST(_response);
-        });
-    }
-
-    protected processPermissionsPOST(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param roleId (optional) 
-     * @return OK
-     */
-    permissionsDELETE(id: string, permission: BluePermission, roleId: string | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserGroups/{id}/permissions/{permission}?";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (permission === undefined || permission === null)
-            throw new globalThis.Error("The parameter 'permission' must be defined.");
-        url_ = url_.replace("{permission}", encodeURIComponent("" + permission));
-        if (roleId === null)
-            throw new globalThis.Error("The parameter 'roleId' cannot be null.");
-        else if (roleId !== undefined)
-            url_ += "roleId=" + encodeURIComponent("" + roleId) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processPermissionsDELETE(_response);
-        });
-    }
-
-    protected processPermissionsDELETE(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param search (optional) 
-     * @return OK
-     */
-    active(search: string | undefined): Promise<ActiveMemberDto[]> {
-        let url_ = this.baseUrl + "/api/UserProfiles/active?";
-        if (search === null)
-            throw new globalThis.Error("The parameter 'search' cannot be null.");
-        else if (search !== undefined)
-            url_ += "search=" + encodeURIComponent("" + search) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processActive(_response);
-        });
-    }
-
-    protected processActive(response: Response): Promise<ActiveMemberDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(ActiveMemberDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<ActiveMemberDto[]>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    me(): Promise<UserProfileDto> {
-        let url_ = this.baseUrl + "/api/UserProfiles/me";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processMe(_response);
-        });
-    }
-
-    protected processMe(response: Response): Promise<UserProfileDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserProfileDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserProfileDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    userProfiles(id: string): Promise<UserProfileDto> {
-        let url_ = this.baseUrl + "/api/UserProfiles/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUserProfiles(_response);
-        });
-    }
-
-    protected processUserProfiles(response: Response): Promise<UserProfileDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserProfileDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserProfileDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    getMyProfilePicture(): Promise<FileResponse> {
-        let url_ = this.baseUrl + "/api/UserProfiles/me/picture";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/octet-stream"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetMyProfilePicture(_response);
-        });
-    }
-
-    protected processGetMyProfilePicture(response: Response): Promise<FileResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<FileResponse>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    getProfilePicture(id: string): Promise<FileResponse> {
-        let url_ = this.baseUrl + "/api/UserProfiles/{id}/picture";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/octet-stream"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetProfilePicture(_response);
-        });
-    }
-
-    protected processGetProfilePicture(response: Response): Promise<FileResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<FileResponse>(null as any);
-    }
-
-    /**
-     * @param file (optional) 
-     * @return OK
-     */
-    setProfilePicture(id: string, file: FileParameter | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/api/UserProfiles/{id}/picture";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (file === null || file === undefined)
-            throw new globalThis.Error("The parameter 'file' cannot be null.");
-        else
-            content_.append("file", file.data, file.fileName ? file.fileName : "file");
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSetProfilePicture(_response);
-        });
-    }
-
-    protected processSetProfilePicture(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param page (optional) 
-     * @param pageSize (optional) 
-     * @param search (optional) 
-     * @return OK
-     */
-    listUsers(page: number | undefined, pageSize: number | undefined, search: string | undefined): Promise<PagedResultOfUserDto> {
-        let url_ = this.baseUrl + "/api/Users?";
-        if (page === null)
-            throw new globalThis.Error("The parameter 'page' cannot be null.");
-        else if (page !== undefined)
-            url_ += "page=" + encodeURIComponent("" + page) + "&";
-        if (pageSize === null)
-            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
-        else if (pageSize !== undefined)
-            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
-        if (search === null)
-            throw new globalThis.Error("The parameter 'search' cannot be null.");
-        else if (search !== undefined)
-            url_ += "search=" + encodeURIComponent("" + search) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processListUsers(_response);
-        });
-    }
-
-    protected processListUsers(response: Response): Promise<PagedResultOfUserDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = PagedResultOfUserDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<PagedResultOfUserDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    createUser(body: CreateUserRequest): Promise<CreateUserResponse> {
-        let url_ = this.baseUrl + "/api/Users";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCreateUser(_response);
-        });
-    }
-
-    protected processCreateUser(response: Response): Promise<CreateUserResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = CreateUserResponse.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<CreateUserResponse>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    getUser(id: string): Promise<UserDto> {
-        let url_ = this.baseUrl + "/api/Users/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetUser(_response);
-        });
-    }
-
-    protected processGetUser(response: Response): Promise<UserDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    updateUser(id: string, body: UpdateUserRequest): Promise<UserDto> {
-        let url_ = this.baseUrl + "/api/Users/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUpdateUser(_response);
-        });
-    }
-
-    protected processUpdateUser(response: Response): Promise<UserDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = UserDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<UserDto>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    deleteUser(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Users/{id}";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processDeleteUser(_response);
-        });
-    }
-
-    protected processDeleteUser(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @param file (optional) 
-     * @return OK
-     */
-    setUserPicture(id: string, file: FileParameter | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/api/Users/{id}/picture";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (file === null || file === undefined)
-            throw new globalThis.Error("The parameter 'file' cannot be null.");
-        else
-            content_.append("file", file.data, file.fileName ? file.fileName : "file");
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSetUserPicture(_response);
-        });
-    }
-
-    protected processSetUserPicture(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    getUserPicture(id: string): Promise<FileResponse> {
-        let url_ = this.baseUrl + "/api/Users/{id}/picture";
-        if (id === undefined || id === null)
-            throw new globalThis.Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/octet-stream"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetUserPicture(_response);
-        });
-    }
-
-    protected processGetUserPicture(response: Response): Promise<FileResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
-        } else if (status === 400) {
-            return response.text().then((_responseText) => {
-            let result400: any = null;
-            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = ValidationProblemDetails.fromJS(resultData400);
-            return throwException("Bad Request", status, _responseText, _headers, result400);
-            });
-        } else if (status === 401) {
-            return response.text().then((_responseText) => {
-            return throwException("Unauthorized", status, _responseText, _headers);
-            });
-        } else if (status === 403) {
-            return response.text().then((_responseText) => {
-            return throwException("Forbidden", status, _responseText, _headers);
-            });
-        } else if (status === 500) {
-            return response.text().then((_responseText) => {
-            let result500: any = null;
-            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Internal Error", status, _responseText, _headers, result500);
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<FileResponse>(null as any);
-    }
+	private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+	private baseUrl: string;
+	protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+	constructor(
+		baseUrl?: string,
+		http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }
+	) {
+		this.http = http ? http : (window as any);
+		this.baseUrl = baseUrl ?? 'https://localhost:7292/';
+	}
+
+	/**
+	 * @return OK
+	 */
+	health(): Promise<string> {
+		let url_ = this.baseUrl + '/Health';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processHealth(_response);
+		});
+	}
+
+	protected processHealth(response: Response): Promise<string> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = resultData200 !== undefined ? resultData200 : (null as any);
+
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<string>(null as any);
+	}
+
+	/**
+	 * @param page (optional)
+	 * @param pageSize (optional)
+	 * @return OK
+	 */
+	agendaGET(
+		page: number | undefined,
+		pageSize: number | undefined
+	): Promise<PagedResultOfAgendaItemDto> {
+		let url_ = this.baseUrl + '/api/Agenda?';
+		if (page === null) throw new globalThis.Error("The parameter 'page' cannot be null.");
+		else if (page !== undefined) url_ += 'page=' + encodeURIComponent('' + page) + '&';
+		if (pageSize === null) throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+		else if (pageSize !== undefined) url_ += 'pageSize=' + encodeURIComponent('' + pageSize) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAgendaGET(_response);
+		});
+	}
+
+	protected processAgendaGET(response: Response): Promise<PagedResultOfAgendaItemDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = PagedResultOfAgendaItemDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<PagedResultOfAgendaItemDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	agendaPOST(body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
+		let url_ = this.baseUrl + '/api/Agenda';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAgendaPOST(_response);
+		});
+	}
+
+	protected processAgendaPOST(response: Response): Promise<AgendaItemDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = AgendaItemDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AgendaItemDto>(null as any);
+	}
+
+	/**
+	 * @param start (optional)
+	 * @param end (optional)
+	 * @return OK
+	 */
+	range(start: Date | undefined, end: Date | undefined): Promise<AgendaItemDto[]> {
+		let url_ = this.baseUrl + '/api/Agenda/range?';
+		if (start === null) throw new globalThis.Error("The parameter 'start' cannot be null.");
+		else if (start !== undefined)
+			url_ += 'start=' + encodeURIComponent(start ? '' + start.toISOString() : '') + '&';
+		if (end === null) throw new globalThis.Error("The parameter 'end' cannot be null.");
+		else if (end !== undefined)
+			url_ += 'end=' + encodeURIComponent(end ? '' + end.toISOString() : '') + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRange(_response);
+		});
+	}
+
+	protected processRange(response: Response): Promise<AgendaItemDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(AgendaItemDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AgendaItemDto[]>(null as any);
+	}
+
+	/**
+	 * @param count (optional)
+	 * @return OK
+	 */
+	upcoming(count: number | undefined): Promise<AgendaItemDto[]> {
+		let url_ = this.baseUrl + '/api/Agenda/upcoming?';
+		if (count === null) throw new globalThis.Error("The parameter 'count' cannot be null.");
+		else if (count !== undefined) url_ += 'count=' + encodeURIComponent('' + count) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUpcoming(_response);
+		});
+	}
+
+	protected processUpcoming(response: Response): Promise<AgendaItemDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(AgendaItemDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AgendaItemDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	agendaGET2(id: string): Promise<AgendaItemDto> {
+		let url_ = this.baseUrl + '/api/Agenda/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAgendaGET2(_response);
+		});
+	}
+
+	protected processAgendaGET2(response: Response): Promise<AgendaItemDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = AgendaItemDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AgendaItemDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	agendaPUT(id: string, body: UpsertAgendaItemRequest): Promise<AgendaItemDto> {
+		let url_ = this.baseUrl + '/api/Agenda/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAgendaPUT(_response);
+		});
+	}
+
+	protected processAgendaPUT(response: Response): Promise<AgendaItemDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = AgendaItemDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AgendaItemDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	agendaDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Agenda/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAgendaDELETE(_response);
+		});
+	}
+
+	protected processAgendaDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	login(body: LoginRequest): Promise<AuthResponse> {
+		let url_ = this.baseUrl + '/api/Auth/login';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processLogin(_response);
+		});
+	}
+
+	protected processLogin(response: Response): Promise<AuthResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = AuthResponse.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AuthResponse>(null as any);
+	}
+
+	/**
+	 * @param body (optional)
+	 * @return OK
+	 */
+	refresh(body: RefreshRequest | null | undefined): Promise<AuthResponse> {
+		let url_ = this.baseUrl + '/api/Auth/refresh';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRefresh(_response);
+		});
+	}
+
+	protected processRefresh(response: Response): Promise<AuthResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = AuthResponse.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<AuthResponse>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	logout(): Promise<void> {
+		let url_ = this.baseUrl + '/api/Auth/logout';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'POST',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processLogout(_response);
+		});
+	}
+
+	protected processLogout(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	permissionsAll(): Promise<BluePermission[]> {
+		let url_ = this.baseUrl + '/api/Auth/permissions';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processPermissionsAll(_response);
+		});
+	}
+
+	protected processPermissionsAll(response: Response): Promise<BluePermission[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(item);
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<BluePermission[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesAll(): Promise<ExamTypeDto[]> {
+		let url_ = this.baseUrl + '/api/Exams/types';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesAll(_response);
+		});
+	}
+
+	protected processTypesAll(response: Response): Promise<ExamTypeDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(ExamTypeDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ExamTypeDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesPOST(body: UpsertExamTypeRequest): Promise<ExamTypeDto> {
+		let url_ = this.baseUrl + '/api/Exams/types';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesPOST(_response);
+		});
+	}
+
+	protected processTypesPOST(response: Response): Promise<ExamTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ExamTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ExamTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesGET(id: string): Promise<ExamTypeDto> {
+		let url_ = this.baseUrl + '/api/Exams/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesGET(_response);
+		});
+	}
+
+	protected processTypesGET(response: Response): Promise<ExamTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ExamTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ExamTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesPUT(id: string, body: UpsertExamTypeRequest): Promise<ExamTypeDto> {
+		let url_ = this.baseUrl + '/api/Exams/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesPUT(_response);
+		});
+	}
+
+	protected processTypesPUT(response: Response): Promise<ExamTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ExamTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ExamTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Exams/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesDELETE(_response);
+		});
+	}
+
+	protected processTypesDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	byUser(userId: string): Promise<UserExamDto[]> {
+		let url_ = this.baseUrl + '/api/Exams/by-user/{userId}';
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processByUser(_response);
+		});
+	}
+
+	protected processByUser(response: Response): Promise<UserExamDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserExamDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserExamDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	assigned(examTypeId: string): Promise<UserExamDto[]> {
+		let url_ = this.baseUrl + '/api/Exams/types/{examTypeId}/assigned';
+		if (examTypeId === undefined || examTypeId === null)
+			throw new globalThis.Error("The parameter 'examTypeId' must be defined.");
+		url_ = url_.replace('{examTypeId}', encodeURIComponent('' + examTypeId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAssigned(_response);
+		});
+	}
+
+	protected processAssigned(response: Response): Promise<UserExamDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserExamDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserExamDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	assignPOST(body: AssignExamRequest): Promise<UserExamDto> {
+		let url_ = this.baseUrl + '/api/Exams/assign';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAssignPOST(_response);
+		});
+	}
+
+	protected processAssignPOST(response: Response): Promise<UserExamDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserExamDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserExamDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	assignDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Exams/assign/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processAssignDELETE(_response);
+		});
+	}
+
+	protected processAssignDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param page (optional)
+	 * @param pageSize (optional)
+	 * @param search (optional)
+	 * @return OK
+	 */
+	fleetGET(
+		page: number | undefined,
+		pageSize: number | undefined,
+		search: string | undefined
+	): Promise<PagedResultOfEquipmentDto> {
+		let url_ = this.baseUrl + '/api/Fleet?';
+		if (page === null) throw new globalThis.Error("The parameter 'page' cannot be null.");
+		else if (page !== undefined) url_ += 'page=' + encodeURIComponent('' + page) + '&';
+		if (pageSize === null) throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+		else if (pageSize !== undefined) url_ += 'pageSize=' + encodeURIComponent('' + pageSize) + '&';
+		if (search === null) throw new globalThis.Error("The parameter 'search' cannot be null.");
+		else if (search !== undefined) url_ += 'search=' + encodeURIComponent('' + search) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processFleetGET(_response);
+		});
+	}
+
+	protected processFleetGET(response: Response): Promise<PagedResultOfEquipmentDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = PagedResultOfEquipmentDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<PagedResultOfEquipmentDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	fleetPOST(body: UpsertEquipmentRequest): Promise<EquipmentDto> {
+		let url_ = this.baseUrl + '/api/Fleet';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processFleetPOST(_response);
+		});
+	}
+
+	protected processFleetPOST(response: Response): Promise<EquipmentDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	fleetGET2(id: string): Promise<EquipmentDto> {
+		let url_ = this.baseUrl + '/api/Fleet/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processFleetGET2(_response);
+		});
+	}
+
+	protected processFleetGET2(response: Response): Promise<EquipmentDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	fleetPUT(id: string, body: UpsertEquipmentRequest): Promise<EquipmentDto> {
+		let url_ = this.baseUrl + '/api/Fleet/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processFleetPUT(_response);
+		});
+	}
+
+	protected processFleetPUT(response: Response): Promise<EquipmentDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	fleetDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Fleet/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processFleetDELETE(_response);
+		});
+	}
+
+	protected processFleetDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesAll2(): Promise<EquipmentTypeDto[]> {
+		let url_ = this.baseUrl + '/api/Fleet/types';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesAll2(_response);
+		});
+	}
+
+	protected processTypesAll2(response: Response): Promise<EquipmentTypeDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(EquipmentTypeDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentTypeDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesPOST2(body: UpsertEquipmentTypeRequest): Promise<EquipmentTypeDto> {
+		let url_ = this.baseUrl + '/api/Fleet/types';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesPOST2(_response);
+		});
+	}
+
+	protected processTypesPOST2(response: Response): Promise<EquipmentTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesGET2(id: string): Promise<EquipmentTypeDto> {
+		let url_ = this.baseUrl + '/api/Fleet/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesGET2(_response);
+		});
+	}
+
+	protected processTypesGET2(response: Response): Promise<EquipmentTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesPUT2(id: string, body: UpsertEquipmentTypeRequest): Promise<EquipmentTypeDto> {
+		let url_ = this.baseUrl + '/api/Fleet/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesPUT2(_response);
+		});
+	}
+
+	protected processTypesPUT2(response: Response): Promise<EquipmentTypeDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = EquipmentTypeDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<EquipmentTypeDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	typesDELETE2(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Fleet/types/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processTypesDELETE2(_response);
+		});
+	}
+
+	protected processTypesDELETE2(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	manufacturersAll(): Promise<ManufacturerDto[]> {
+		let url_ = this.baseUrl + '/api/Fleet/manufacturers';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processManufacturersAll(_response);
+		});
+	}
+
+	protected processManufacturersAll(response: Response): Promise<ManufacturerDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(ManufacturerDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ManufacturerDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	manufacturersPOST(body: UpsertManufacturerRequest): Promise<ManufacturerDto> {
+		let url_ = this.baseUrl + '/api/Fleet/manufacturers';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processManufacturersPOST(_response);
+		});
+	}
+
+	protected processManufacturersPOST(response: Response): Promise<ManufacturerDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ManufacturerDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ManufacturerDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	manufacturersGET(id: string): Promise<ManufacturerDto> {
+		let url_ = this.baseUrl + '/api/Fleet/manufacturers/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processManufacturersGET(_response);
+		});
+	}
+
+	protected processManufacturersGET(response: Response): Promise<ManufacturerDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ManufacturerDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ManufacturerDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	manufacturersPUT(id: string, body: UpsertManufacturerRequest): Promise<ManufacturerDto> {
+		let url_ = this.baseUrl + '/api/Fleet/manufacturers/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processManufacturersPUT(_response);
+		});
+	}
+
+	protected processManufacturersPUT(response: Response): Promise<ManufacturerDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = ManufacturerDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ManufacturerDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	manufacturersDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Fleet/manufacturers/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processManufacturersDELETE(_response);
+		});
+	}
+
+	protected processManufacturersDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	oarSetsAll(): Promise<OarSetDto[]> {
+		let url_ = this.baseUrl + '/api/Fleet/oar-sets';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOarSetsAll(_response);
+		});
+	}
+
+	protected processOarSetsAll(response: Response): Promise<OarSetDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(OarSetDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<OarSetDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	oarSetsPOST(body: UpsertOarSetRequest): Promise<OarSetDto> {
+		let url_ = this.baseUrl + '/api/Fleet/oar-sets';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOarSetsPOST(_response);
+		});
+	}
+
+	protected processOarSetsPOST(response: Response): Promise<OarSetDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = OarSetDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<OarSetDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	oarSetsGET(id: string): Promise<OarSetDto> {
+		let url_ = this.baseUrl + '/api/Fleet/oar-sets/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOarSetsGET(_response);
+		});
+	}
+
+	protected processOarSetsGET(response: Response): Promise<OarSetDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = OarSetDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<OarSetDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	oarSetsPUT(id: string, body: UpsertOarSetRequest): Promise<OarSetDto> {
+		let url_ = this.baseUrl + '/api/Fleet/oar-sets/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOarSetsPUT(_response);
+		});
+	}
+
+	protected processOarSetsPUT(response: Response): Promise<OarSetDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = OarSetDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<OarSetDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	oarSetsDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Fleet/oar-sets/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOarSetsDELETE(_response);
+		});
+	}
+
+	protected processOarSetsDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	memberClustersAll(): Promise<MemberClusterDto[]> {
+		let url_ = this.baseUrl + '/api/member-clusters';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMemberClustersAll(_response);
+		});
+	}
+
+	protected processMemberClustersAll(response: Response): Promise<MemberClusterDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(MemberClusterDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MemberClusterDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	memberClustersPOST(body: UpsertMemberClusterRequest): Promise<MemberClusterDto> {
+		let url_ = this.baseUrl + '/api/member-clusters';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMemberClustersPOST(_response);
+		});
+	}
+
+	protected processMemberClustersPOST(response: Response): Promise<MemberClusterDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MemberClusterDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MemberClusterDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	memberClustersGET(id: string): Promise<MemberClusterDto> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMemberClustersGET(_response);
+		});
+	}
+
+	protected processMemberClustersGET(response: Response): Promise<MemberClusterDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MemberClusterDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MemberClusterDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	memberClustersPUT(id: string, body: UpsertMemberClusterRequest): Promise<MemberClusterDto> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMemberClustersPUT(_response);
+		});
+	}
+
+	protected processMemberClustersPUT(response: Response): Promise<MemberClusterDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MemberClusterDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MemberClusterDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	memberClustersDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMemberClustersDELETE(_response);
+		});
+	}
+
+	protected processMemberClustersDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	membersAll(id: string): Promise<ClusterMemberDto[]> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}/members';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMembersAll(_response);
+		});
+	}
+
+	protected processMembersAll(response: Response): Promise<ClusterMemberDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(ClusterMemberDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ClusterMemberDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	members(id: string, userId: string): Promise<IsMemberDto> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}/members/{userId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMembers(_response);
+		});
+	}
+
+	protected processMembers(response: Response): Promise<IsMemberDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = IsMemberDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<IsMemberDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	criteriaPOST(id: string, body: AddClusterCriterionRequest): Promise<MemberClusterCriterionDto> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}/criteria';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processCriteriaPOST(_response);
+		});
+	}
+
+	protected processCriteriaPOST(response: Response): Promise<MemberClusterCriterionDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MemberClusterCriterionDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MemberClusterCriterionDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	criteriaDELETE(id: string, criterionId: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/member-clusters/{id}/criteria/{criterionId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (criterionId === undefined || criterionId === null)
+			throw new globalThis.Error("The parameter 'criterionId' must be defined.");
+		url_ = url_.replace('{criterionId}', encodeURIComponent('' + criterionId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processCriteriaDELETE(_response);
+		});
+	}
+
+	protected processCriteriaDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param page (optional)
+	 * @param pageSize (optional)
+	 * @return OK
+	 */
+	newsGET(
+		page: number | undefined,
+		pageSize: number | undefined
+	): Promise<PagedResultOfNewsPostDto> {
+		let url_ = this.baseUrl + '/api/News?';
+		if (page === null) throw new globalThis.Error("The parameter 'page' cannot be null.");
+		else if (page !== undefined) url_ += 'page=' + encodeURIComponent('' + page) + '&';
+		if (pageSize === null) throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+		else if (pageSize !== undefined) url_ += 'pageSize=' + encodeURIComponent('' + pageSize) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsGET(_response);
+		});
+	}
+
+	protected processNewsGET(response: Response): Promise<PagedResultOfNewsPostDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = PagedResultOfNewsPostDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<PagedResultOfNewsPostDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsPOST(body: UpsertNewsPostRequest): Promise<NewsPostDto> {
+		let url_ = this.baseUrl + '/api/News';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsPOST(_response);
+		});
+	}
+
+	protected processNewsPOST(response: Response): Promise<NewsPostDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = NewsPostDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<NewsPostDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsGET2(id: string): Promise<NewsPostDto> {
+		let url_ = this.baseUrl + '/api/News/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsGET2(_response);
+		});
+	}
+
+	protected processNewsGET2(response: Response): Promise<NewsPostDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = NewsPostDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<NewsPostDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsPUT(id: string, body: UpsertNewsPostRequest): Promise<NewsPostDto> {
+		let url_ = this.baseUrl + '/api/News/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsPUT(_response);
+		});
+	}
+
+	protected processNewsPUT(response: Response): Promise<NewsPostDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = NewsPostDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<NewsPostDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/News/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsDELETE(_response);
+		});
+	}
+
+	protected processNewsDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsIconsAll(): Promise<NewsIconDto[]> {
+		let url_ = this.baseUrl + '/api/NewsIcons';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsIconsAll(_response);
+		});
+	}
+
+	protected processNewsIconsAll(response: Response): Promise<NewsIconDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(NewsIconDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<NewsIconDto[]>(null as any);
+	}
+
+	/**
+	 * @param name (optional)
+	 * @param file (optional)
+	 * @return OK
+	 */
+	newsIconsPOST(name: string | undefined, file: FileParameter | undefined): Promise<NewsIconDto> {
+		let url_ = this.baseUrl + '/api/NewsIcons';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = new FormData();
+		if (name === null || name === undefined)
+			throw new globalThis.Error("The parameter 'name' cannot be null.");
+		else content_.append('name', name.toString());
+		if (file === null || file === undefined)
+			throw new globalThis.Error("The parameter 'file' cannot be null.");
+		else content_.append('file', file.data, file.fileName ? file.fileName : 'file');
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsIconsPOST(_response);
+		});
+	}
+
+	protected processNewsIconsPOST(response: Response): Promise<NewsIconDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = NewsIconDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<NewsIconDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	content(id: string): Promise<FileResponse> {
+		let url_ = this.baseUrl + '/api/NewsIcons/{id}/content';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processContent(_response);
+		});
+	}
+
+	protected processContent(response: Response): Promise<FileResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200 || status === 206) {
+			const contentDisposition = response.headers
+				? response.headers.get('content-disposition')
+				: undefined;
+			let fileNameMatch = contentDisposition
+				? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition)
+				: undefined;
+			let fileName =
+				fileNameMatch && fileNameMatch.length > 1
+					? fileNameMatch[3] || fileNameMatch[2]
+					: undefined;
+			if (fileName) {
+				fileName = decodeURIComponent(fileName);
+			} else {
+				fileNameMatch = contentDisposition
+					? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition)
+					: undefined;
+				fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+			}
+			return response.blob().then((blob) => {
+				return { fileName: fileName, data: blob, status: status, headers: _headers };
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<FileResponse>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	newsIconsDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/NewsIcons/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processNewsIconsDELETE(_response);
+		});
+	}
+
+	protected processNewsIconsDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	seasonsAll(): Promise<SeasonDto[]> {
+		let url_ = this.baseUrl + '/api/Seasons';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processSeasonsAll(_response);
+		});
+	}
+
+	protected processSeasonsAll(response: Response): Promise<SeasonDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(SeasonDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<SeasonDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	seasons(id: string): Promise<SeasonDto> {
+		let url_ = this.baseUrl + '/api/Seasons/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processSeasons(_response);
+		});
+	}
+
+	protected processSeasons(response: Response): Promise<SeasonDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = SeasonDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<SeasonDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupCategoriesAll(): Promise<UserGroupCategoryDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupCategoriesAll(_response);
+		});
+	}
+
+	protected processUserGroupCategoriesAll(response: Response): Promise<UserGroupCategoryDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupCategoryDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupCategoriesPOST(body: UpsertUserGroupCategoryRequest): Promise<UserGroupCategoryDto> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupCategoriesPOST(_response);
+		});
+	}
+
+	protected processUserGroupCategoriesPOST(response: Response): Promise<UserGroupCategoryDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupCategoryDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupCategoriesGET(id: string): Promise<UserGroupCategoryDto> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupCategoriesGET(_response);
+		});
+	}
+
+	protected processUserGroupCategoriesGET(response: Response): Promise<UserGroupCategoryDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupCategoryDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupCategoriesPUT(
+		id: string,
+		body: UpsertUserGroupCategoryRequest
+	): Promise<UserGroupCategoryDto> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupCategoriesPUT(_response);
+		});
+	}
+
+	protected processUserGroupCategoriesPUT(response: Response): Promise<UserGroupCategoryDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupCategoryDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupCategoriesDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupCategoriesDELETE(_response);
+		});
+	}
+
+	protected processUserGroupCategoriesDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param seasonId (optional)
+	 * @return OK
+	 */
+	overview(seasonId: string | undefined): Promise<UserGroupCategoryOverviewDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/overview?';
+		if (seasonId === null) throw new globalThis.Error("The parameter 'seasonId' cannot be null.");
+		else if (seasonId !== undefined) url_ += 'seasonId=' + encodeURIComponent('' + seasonId) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processOverview(_response);
+		});
+	}
+
+	protected processOverview(response: Response): Promise<UserGroupCategoryOverviewDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200)
+						result200!.push(UserGroupCategoryOverviewDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryOverviewDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	rolesAll(id: string): Promise<UserGroupCategoryRoleDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}/roles';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRolesAll(_response);
+		});
+	}
+
+	protected processRolesAll(response: Response): Promise<UserGroupCategoryRoleDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupCategoryRoleDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryRoleDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	rolesPOST(
+		id: string,
+		body: UpsertUserGroupCategoryRoleRequest
+	): Promise<UserGroupCategoryRoleDto> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}/roles';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRolesPOST(_response);
+		});
+	}
+
+	protected processRolesPOST(response: Response): Promise<UserGroupCategoryRoleDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	rolesPUT(
+		id: string,
+		roleId: string,
+		body: UpsertUserGroupCategoryRoleRequest
+	): Promise<UserGroupCategoryRoleDto> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}/roles/{roleId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (roleId === undefined || roleId === null)
+			throw new globalThis.Error("The parameter 'roleId' must be defined.");
+		url_ = url_.replace('{roleId}', encodeURIComponent('' + roleId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRolesPUT(_response);
+		});
+	}
+
+	protected processRolesPUT(response: Response): Promise<UserGroupCategoryRoleDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupCategoryRoleDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupCategoryRoleDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	rolesDELETE(id: string, roleId: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}/roles/{roleId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (roleId === undefined || roleId === null)
+			throw new globalThis.Error("The parameter 'roleId' must be defined.");
+		url_ = url_.replace('{roleId}', encodeURIComponent('' + roleId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRolesDELETE(_response);
+		});
+	}
+
+	protected processRolesDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	reorder(id: string, body: ReorderRolesRequest): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupCategories/{id}/roles/reorder';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processReorder(_response);
+		});
+	}
+
+	protected processReorder(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupInstancesAll(): Promise<UserGroupInstanceDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupInstancesAll(_response);
+		});
+	}
+
+	protected processUserGroupInstancesAll(response: Response): Promise<UserGroupInstanceDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupInstanceDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupInstanceDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupInstancesPOST(body: CreateUserGroupInstanceRequest): Promise<UserGroupInstanceDto> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupInstancesPOST(_response);
+		});
+	}
+
+	protected processUserGroupInstancesPOST(response: Response): Promise<UserGroupInstanceDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupInstanceDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupInstanceDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupInstancesGET(id: string): Promise<UserGroupInstanceDto> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupInstancesGET(_response);
+		});
+	}
+
+	protected processUserGroupInstancesGET(response: Response): Promise<UserGroupInstanceDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupInstanceDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupInstanceDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupInstancesDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupInstancesDELETE(_response);
+		});
+	}
+
+	protected processUserGroupInstancesDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	usersPOST(id: string, userId: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances/{id}/users/{userId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'POST',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUsersPOST(_response);
+		});
+	}
+
+	protected processUsersPOST(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	usersDELETE(id: string, userId: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances/{id}/users/{userId}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUsersDELETE(_response);
+		});
+	}
+
+	protected processUsersDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	role(id: string, userId: string, body: AssignMemberRoleRequest): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroupInstances/{id}/users/{userId}/role';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processRole(_response);
+		});
+	}
+
+	protected processRole(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupsAll(): Promise<UserGroupDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroups';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupsAll(_response);
+		});
+	}
+
+	protected processUserGroupsAll(response: Response): Promise<UserGroupDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupsPOST(body: UpsertUserGroupRequest): Promise<UserGroupDto> {
+		let url_ = this.baseUrl + '/api/UserGroups';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupsPOST(_response);
+		});
+	}
+
+	protected processUserGroupsPOST(response: Response): Promise<UserGroupDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupsGET(id: string): Promise<UserGroupDto> {
+		let url_ = this.baseUrl + '/api/UserGroups/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupsGET(_response);
+		});
+	}
+
+	protected processUserGroupsGET(response: Response): Promise<UserGroupDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupsPUT(id: string, body: UpsertUserGroupRequest): Promise<UserGroupDto> {
+		let url_ = this.baseUrl + '/api/UserGroups/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupsPUT(_response);
+		});
+	}
+
+	protected processUserGroupsPUT(response: Response): Promise<UserGroupDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserGroupDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userGroupsDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroups/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserGroupsDELETE(_response);
+		});
+	}
+
+	protected processUserGroupsDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param name (optional)
+	 * @return OK
+	 */
+	byName(name: string | undefined): Promise<UserGroupDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroups/by-name?';
+		if (name === null) throw new globalThis.Error("The parameter 'name' cannot be null.");
+		else if (name !== undefined) url_ += 'name=' + encodeURIComponent('' + name) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processByName(_response);
+		});
+	}
+
+	protected processByName(response: Response): Promise<UserGroupDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	meAll(): Promise<UserGroupMembershipDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroups/me';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMeAll(_response);
+		});
+	}
+
+	protected processMeAll(response: Response): Promise<UserGroupMembershipDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupMembershipDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupMembershipDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	usersAll(userId: string): Promise<UserGroupMembershipDto[]> {
+		let url_ = this.baseUrl + '/api/UserGroups/users/{userId}';
+		if (userId === undefined || userId === null)
+			throw new globalThis.Error("The parameter 'userId' must be defined.");
+		url_ = url_.replace('{userId}', encodeURIComponent('' + userId));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUsersAll(_response);
+		});
+	}
+
+	protected processUsersAll(response: Response): Promise<UserGroupMembershipDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(UserGroupMembershipDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserGroupMembershipDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	permissionsPOST(id: string, body: AssignGroupPermissionRequest): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroups/{id}/permissions';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processPermissionsPOST(_response);
+		});
+	}
+
+	protected processPermissionsPOST(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param roleId (optional)
+	 * @return OK
+	 */
+	permissionsDELETE(
+		id: string,
+		permission: BluePermission,
+		roleId: string | undefined
+	): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserGroups/{id}/permissions/{permission}?';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		if (permission === undefined || permission === null)
+			throw new globalThis.Error("The parameter 'permission' must be defined.");
+		url_ = url_.replace('{permission}', encodeURIComponent('' + permission));
+		if (roleId === null) throw new globalThis.Error("The parameter 'roleId' cannot be null.");
+		else if (roleId !== undefined) url_ += 'roleId=' + encodeURIComponent('' + roleId) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processPermissionsDELETE(_response);
+		});
+	}
+
+	protected processPermissionsDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param search (optional)
+	 * @return OK
+	 */
+	active(search: string | undefined): Promise<ActiveMemberDto[]> {
+		let url_ = this.baseUrl + '/api/UserProfiles/active?';
+		if (search === null) throw new globalThis.Error("The parameter 'search' cannot be null.");
+		else if (search !== undefined) url_ += 'search=' + encodeURIComponent('' + search) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processActive(_response);
+		});
+	}
+
+	protected processActive(response: Response): Promise<ActiveMemberDto[]> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				if (Array.isArray(resultData200)) {
+					result200 = [] as any;
+					for (let item of resultData200) result200!.push(ActiveMemberDto.fromJS(item));
+				} else {
+					result200 = null as any;
+				}
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<ActiveMemberDto[]>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	me(): Promise<UserProfileDto> {
+		let url_ = this.baseUrl + '/api/UserProfiles/me';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMe(_response);
+		});
+	}
+
+	protected processMe(response: Response): Promise<UserProfileDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserProfileDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserProfileDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	userProfiles(id: string): Promise<UserProfileDto> {
+		let url_ = this.baseUrl + '/api/UserProfiles/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUserProfiles(_response);
+		});
+	}
+
+	protected processUserProfiles(response: Response): Promise<UserProfileDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserProfileDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserProfileDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	getMyProfilePicture(): Promise<FileResponse> {
+		let url_ = this.baseUrl + '/api/UserProfiles/me/picture';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processGetMyProfilePicture(_response);
+		});
+	}
+
+	protected processGetMyProfilePicture(response: Response): Promise<FileResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200 || status === 206) {
+			const contentDisposition = response.headers
+				? response.headers.get('content-disposition')
+				: undefined;
+			let fileNameMatch = contentDisposition
+				? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition)
+				: undefined;
+			let fileName =
+				fileNameMatch && fileNameMatch.length > 1
+					? fileNameMatch[3] || fileNameMatch[2]
+					: undefined;
+			if (fileName) {
+				fileName = decodeURIComponent(fileName);
+			} else {
+				fileNameMatch = contentDisposition
+					? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition)
+					: undefined;
+				fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+			}
+			return response.blob().then((blob) => {
+				return { fileName: fileName, data: blob, status: status, headers: _headers };
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<FileResponse>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	getProfilePicture(id: string): Promise<FileResponse> {
+		let url_ = this.baseUrl + '/api/UserProfiles/{id}/picture';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processGetProfilePicture(_response);
+		});
+	}
+
+	protected processGetProfilePicture(response: Response): Promise<FileResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200 || status === 206) {
+			const contentDisposition = response.headers
+				? response.headers.get('content-disposition')
+				: undefined;
+			let fileNameMatch = contentDisposition
+				? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition)
+				: undefined;
+			let fileName =
+				fileNameMatch && fileNameMatch.length > 1
+					? fileNameMatch[3] || fileNameMatch[2]
+					: undefined;
+			if (fileName) {
+				fileName = decodeURIComponent(fileName);
+			} else {
+				fileNameMatch = contentDisposition
+					? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition)
+					: undefined;
+				fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+			}
+			return response.blob().then((blob) => {
+				return { fileName: fileName, data: blob, status: status, headers: _headers };
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<FileResponse>(null as any);
+	}
+
+	/**
+	 * @param file (optional)
+	 * @return OK
+	 */
+	setProfilePicture(id: string, file: FileParameter | undefined): Promise<void> {
+		let url_ = this.baseUrl + '/api/UserProfiles/{id}/picture';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = new FormData();
+		if (file === null || file === undefined)
+			throw new globalThis.Error("The parameter 'file' cannot be null.");
+		else content_.append('file', file.data, file.fileName ? file.fileName : 'file');
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processSetProfilePicture(_response);
+		});
+	}
+
+	protected processSetProfilePicture(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param page (optional)
+	 * @param pageSize (optional)
+	 * @param search (optional)
+	 * @return OK
+	 */
+	listUsers(
+		page: number | undefined,
+		pageSize: number | undefined,
+		search: string | undefined
+	): Promise<PagedResultOfUserDto> {
+		let url_ = this.baseUrl + '/api/Users?';
+		if (page === null) throw new globalThis.Error("The parameter 'page' cannot be null.");
+		else if (page !== undefined) url_ += 'page=' + encodeURIComponent('' + page) + '&';
+		if (pageSize === null) throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+		else if (pageSize !== undefined) url_ += 'pageSize=' + encodeURIComponent('' + pageSize) + '&';
+		if (search === null) throw new globalThis.Error("The parameter 'search' cannot be null.");
+		else if (search !== undefined) url_ += 'search=' + encodeURIComponent('' + search) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processListUsers(_response);
+		});
+	}
+
+	protected processListUsers(response: Response): Promise<PagedResultOfUserDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = PagedResultOfUserDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<PagedResultOfUserDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	createUser(body: CreateUserRequest): Promise<CreateUserResponse> {
+		let url_ = this.baseUrl + '/api/Users';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processCreateUser(_response);
+		});
+	}
+
+	protected processCreateUser(response: Response): Promise<CreateUserResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = CreateUserResponse.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<CreateUserResponse>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	getUser(id: string): Promise<UserDto> {
+		let url_ = this.baseUrl + '/api/Users/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processGetUser(_response);
+		});
+	}
+
+	protected processGetUser(response: Response): Promise<UserDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	updateUser(id: string, body: UpdateUserRequest): Promise<UserDto> {
+		let url_ = this.baseUrl + '/api/Users/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processUpdateUser(_response);
+		});
+	}
+
+	protected processUpdateUser(response: Response): Promise<UserDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = UserDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<UserDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	deleteUser(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/Users/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processDeleteUser(_response);
+		});
+	}
+
+	protected processDeleteUser(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param file (optional)
+	 * @return OK
+	 */
+	setUserPicture(id: string, file: FileParameter | undefined): Promise<void> {
+		let url_ = this.baseUrl + '/api/Users/{id}/picture';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = new FormData();
+		if (file === null || file === undefined)
+			throw new globalThis.Error("The parameter 'file' cannot be null.");
+		else content_.append('file', file.data, file.fileName ? file.fileName : 'file');
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processSetUserPicture(_response);
+		});
+	}
+
+	protected processSetUserPicture(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	getUserPicture(id: string): Promise<FileResponse> {
+		let url_ = this.baseUrl + '/api/Users/{id}/picture';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/octet-stream'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processGetUserPicture(_response);
+		});
+	}
+
+	protected processGetUserPicture(response: Response): Promise<FileResponse> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200 || status === 206) {
+			const contentDisposition = response.headers
+				? response.headers.get('content-disposition')
+				: undefined;
+			let fileNameMatch = contentDisposition
+				? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition)
+				: undefined;
+			let fileName =
+				fileNameMatch && fileNameMatch.length > 1
+					? fileNameMatch[3] || fileNameMatch[2]
+					: undefined;
+			if (fileName) {
+				fileName = decodeURIComponent(fileName);
+			} else {
+				fileNameMatch = contentDisposition
+					? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition)
+					: undefined;
+				fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+			}
+			return response.blob().then((blob) => {
+				return { fileName: fileName, data: blob, status: status, headers: _headers };
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<FileResponse>(null as any);
+	}
 }
 
 export class ActiveMemberDto implements IActiveMemberDto {
-    id!: string;
-    fullname!: string;
-    hasProfilePicture!: boolean;
+	id!: string;
+	fullname!: string;
+	hasProfilePicture!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IActiveMemberDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IActiveMemberDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.fullname = _data["fullname"];
-            this.hasProfilePicture = _data["hasProfilePicture"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.fullname = _data['fullname'];
+			this.hasProfilePicture = _data['hasProfilePicture'];
+		}
+	}
 
-    static fromJS(data: any): ActiveMemberDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new ActiveMemberDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ActiveMemberDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new ActiveMemberDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["fullname"] = this.fullname;
-        data["hasProfilePicture"] = this.hasProfilePicture;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['fullname'] = this.fullname;
+		data['hasProfilePicture'] = this.hasProfilePicture;
+		return data;
+	}
 }
 
 export interface IActiveMemberDto {
-    id: string;
-    fullname: string;
-    hasProfilePicture: boolean;
+	id: string;
+	fullname: string;
+	hasProfilePicture: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
+}
+
+export class AddClusterCriterionRequest implements IAddClusterCriterionRequest {
+	type!: ClusterCriterionType;
+	userGroupCategoryId!: string | undefined;
+	userGroupCategoryRoleId!: string | undefined;
+	userGroupId!: string | undefined;
+
+	[key: string]: any;
+
+	constructor(data?: IAddClusterCriterionRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.type = _data['type'];
+			this.userGroupCategoryId = _data['userGroupCategoryId'];
+			this.userGroupCategoryRoleId = _data['userGroupCategoryRoleId'];
+			this.userGroupId = _data['userGroupId'];
+		}
+	}
+
+	static fromJS(data: any): AddClusterCriterionRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new AddClusterCriterionRequest();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['type'] = this.type;
+		data['userGroupCategoryId'] = this.userGroupCategoryId;
+		data['userGroupCategoryRoleId'] = this.userGroupCategoryRoleId;
+		data['userGroupId'] = this.userGroupId;
+		return data;
+	}
+}
+
+export interface IAddClusterCriterionRequest {
+	type: ClusterCriterionType;
+	userGroupCategoryId: string | undefined;
+	userGroupCategoryRoleId: string | undefined;
+	userGroupId: string | undefined;
+
+	[key: string]: any;
 }
 
 export class AgendaItemDto implements IAgendaItemDto {
-    id!: string;
-    date!: Date;
-    time!: string | undefined;
-    title!: string;
-    description!: string;
-    endDate!: Date | undefined;
-    endTime!: string | undefined;
-    createdAt!: Date;
-    createdByUserId!: string;
-    updatedAt!: Date | undefined;
-    updatedByUserId!: string | undefined;
+	id!: string;
+	date!: Date;
+	time!: string | undefined;
+	title!: string;
+	description!: string;
+	endDate!: Date | undefined;
+	endTime!: string | undefined;
+	createdAt!: Date;
+	createdByUserId!: string;
+	updatedAt!: Date | undefined;
+	updatedByUserId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IAgendaItemDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IAgendaItemDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.date = _data["date"] ? new Date(_data["date"].toString()) : undefined as any;
-            this.time = _data["time"];
-            this.title = _data["title"];
-            this.description = _data["description"];
-            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : undefined as any;
-            this.endTime = _data["endTime"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
-            this.createdByUserId = _data["createdByUserId"];
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
-            this.updatedByUserId = _data["updatedByUserId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.date = _data['date'] ? new Date(_data['date'].toString()) : (undefined as any);
+			this.time = _data['time'];
+			this.title = _data['title'];
+			this.description = _data['description'];
+			this.endDate = _data['endDate'] ? new Date(_data['endDate'].toString()) : (undefined as any);
+			this.endTime = _data['endTime'];
+			this.createdAt = _data['createdAt']
+				? new Date(_data['createdAt'].toString())
+				: (undefined as any);
+			this.createdByUserId = _data['createdByUserId'];
+			this.updatedAt = _data['updatedAt']
+				? new Date(_data['updatedAt'].toString())
+				: (undefined as any);
+			this.updatedByUserId = _data['updatedByUserId'];
+		}
+	}
 
-    static fromJS(data: any): AgendaItemDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new AgendaItemDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): AgendaItemDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new AgendaItemDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["date"] = this.date ? formatDate(this.date) : undefined as any;
-        data["time"] = this.time;
-        data["title"] = this.title;
-        data["description"] = this.description;
-        data["endDate"] = this.endDate ? formatDate(this.endDate) : undefined as any;
-        data["endTime"] = this.endTime;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
-        data["createdByUserId"] = this.createdByUserId;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
-        data["updatedByUserId"] = this.updatedByUserId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['date'] = this.date ? formatDate(this.date) : (undefined as any);
+		data['time'] = this.time;
+		data['title'] = this.title;
+		data['description'] = this.description;
+		data['endDate'] = this.endDate ? formatDate(this.endDate) : (undefined as any);
+		data['endTime'] = this.endTime;
+		data['createdAt'] = this.createdAt ? this.createdAt.toISOString() : (undefined as any);
+		data['createdByUserId'] = this.createdByUserId;
+		data['updatedAt'] = this.updatedAt ? this.updatedAt.toISOString() : (undefined as any);
+		data['updatedByUserId'] = this.updatedByUserId;
+		return data;
+	}
 }
 
 export interface IAgendaItemDto {
-    id: string;
-    date: Date;
-    time: string | undefined;
-    title: string;
-    description: string;
-    endDate: Date | undefined;
-    endTime: string | undefined;
-    createdAt: Date;
-    createdByUserId: string;
-    updatedAt: Date | undefined;
-    updatedByUserId: string | undefined;
+	id: string;
+	date: Date;
+	time: string | undefined;
+	title: string;
+	description: string;
+	endDate: Date | undefined;
+	endTime: string | undefined;
+	createdAt: Date;
+	createdByUserId: string;
+	updatedAt: Date | undefined;
+	updatedByUserId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class AssignExamRequest implements IAssignExamRequest {
-    userId!: string;
-    examTypeId!: string;
-    obtainedAt!: Date;
+	userId!: string;
+	examTypeId!: string;
+	obtainedAt!: Date;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IAssignExamRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IAssignExamRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userId = _data["userId"];
-            this.examTypeId = _data["examTypeId"];
-            this.obtainedAt = _data["obtainedAt"] ? new Date(_data["obtainedAt"].toString()) : undefined as any;
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userId = _data['userId'];
+			this.examTypeId = _data['examTypeId'];
+			this.obtainedAt = _data['obtainedAt']
+				? new Date(_data['obtainedAt'].toString())
+				: (undefined as any);
+		}
+	}
 
-    static fromJS(data: any): AssignExamRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new AssignExamRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): AssignExamRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new AssignExamRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userId"] = this.userId;
-        data["examTypeId"] = this.examTypeId;
-        data["obtainedAt"] = this.obtainedAt ? formatDate(this.obtainedAt) : undefined as any;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userId'] = this.userId;
+		data['examTypeId'] = this.examTypeId;
+		data['obtainedAt'] = this.obtainedAt ? formatDate(this.obtainedAt) : (undefined as any);
+		return data;
+	}
 }
 
 export interface IAssignExamRequest {
-    userId: string;
-    examTypeId: string;
-    obtainedAt: Date;
+	userId: string;
+	examTypeId: string;
+	obtainedAt: Date;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class AssignGroupPermissionRequest implements IAssignGroupPermissionRequest {
-    permission!: BluePermission;
-    userGroupCategoryRoleId!: string | undefined;
+	permission!: BluePermission;
+	userGroupCategoryRoleId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IAssignGroupPermissionRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IAssignGroupPermissionRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.permission = _data["permission"];
-            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.permission = _data['permission'];
+			this.userGroupCategoryRoleId = _data['userGroupCategoryRoleId'];
+		}
+	}
 
-    static fromJS(data: any): AssignGroupPermissionRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new AssignGroupPermissionRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): AssignGroupPermissionRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new AssignGroupPermissionRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["permission"] = this.permission;
-        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['permission'] = this.permission;
+		data['userGroupCategoryRoleId'] = this.userGroupCategoryRoleId;
+		return data;
+	}
 }
 
 export interface IAssignGroupPermissionRequest {
-    permission: BluePermission;
-    userGroupCategoryRoleId: string | undefined;
+	permission: BluePermission;
+	userGroupCategoryRoleId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class AssignMemberRoleRequest implements IAssignMemberRoleRequest {
-    userGroupCategoryRoleId!: string | undefined;
+	userGroupCategoryRoleId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IAssignMemberRoleRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IAssignMemberRoleRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userGroupCategoryRoleId = _data['userGroupCategoryRoleId'];
+		}
+	}
 
-    static fromJS(data: any): AssignMemberRoleRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new AssignMemberRoleRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): AssignMemberRoleRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new AssignMemberRoleRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userGroupCategoryRoleId'] = this.userGroupCategoryRoleId;
+		return data;
+	}
 }
 
 export interface IAssignMemberRoleRequest {
-    userGroupCategoryRoleId: string | undefined;
+	userGroupCategoryRoleId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class AuthResponse implements IAuthResponse {
-    accessToken!: string;
-    refreshToken!: string;
+	accessToken!: string;
+	refreshToken!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IAuthResponse) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IAuthResponse) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.accessToken = _data["accessToken"];
-            this.refreshToken = _data["refreshToken"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.accessToken = _data['accessToken'];
+			this.refreshToken = _data['refreshToken'];
+		}
+	}
 
-    static fromJS(data: any): AuthResponse {
-        data = typeof data === 'object' ? data : {};
-        let result = new AuthResponse();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): AuthResponse {
+		data = typeof data === 'object' ? data : {};
+		let result = new AuthResponse();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["accessToken"] = this.accessToken;
-        data["refreshToken"] = this.refreshToken;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['accessToken'] = this.accessToken;
+		data['refreshToken'] = this.refreshToken;
+		return data;
+	}
 }
 
 export interface IAuthResponse {
-    accessToken: string;
-    refreshToken: string;
+	accessToken: string;
+	refreshToken: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class BlueAddressDto implements IBlueAddressDto {
-    address!: string;
-    city!: string;
-    zip!: string;
+	address!: string;
+	city!: string;
+	zip!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IBlueAddressDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IBlueAddressDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.address = _data["address"];
-            this.city = _data["city"];
-            this.zip = _data["zip"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.address = _data['address'];
+			this.city = _data['city'];
+			this.zip = _data['zip'];
+		}
+	}
 
-    static fromJS(data: any): BlueAddressDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new BlueAddressDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): BlueAddressDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new BlueAddressDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["address"] = this.address;
-        data["city"] = this.city;
-        data["zip"] = this.zip;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['address'] = this.address;
+		data['city'] = this.city;
+		data['zip'] = this.zip;
+		return data;
+	}
 }
 
 export interface IBlueAddressDto {
-    address: string;
-    city: string;
-    zip: string;
+	address: string;
+	city: string;
+	zip: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export enum BluePermission {
-    AdminViewGroups = "AdminViewGroups",
-    AdminModifyGroups = "AdminModifyGroups",
-    AdminViewSettings = "AdminViewSettings",
-    AdminModifySettings = "AdminModifySettings",
-    ViewProfiles = "ViewProfiles",
-    AdminModifyUsers = "AdminModifyUsers",
-    NewsView = "NewsView",
-    NewsModify = "NewsModify",
-    NewsIconCreate = "NewsIconCreate",
-    NewsIconDelete = "NewsIconDelete",
-    AgendaModify = "AgendaModify",
-    AdminUsersView = "AdminUsersView",
-    AdminUsersModify = "AdminUsersModify",
-    ExamsView = "ExamsView",
-    ExamsModify = "ExamsModify",
-    ExamsAssign = "ExamsAssign",
-    FleetView = "FleetView",
-    FleetModify = "FleetModify",
+	AdminViewGroups = 'AdminViewGroups',
+	AdminModifyGroups = 'AdminModifyGroups',
+	AdminViewSettings = 'AdminViewSettings',
+	AdminModifySettings = 'AdminModifySettings',
+	ViewProfiles = 'ViewProfiles',
+	AdminModifyUsers = 'AdminModifyUsers',
+	NewsView = 'NewsView',
+	NewsModify = 'NewsModify',
+	NewsIconCreate = 'NewsIconCreate',
+	NewsIconDelete = 'NewsIconDelete',
+	AgendaModify = 'AgendaModify',
+	AdminUsersView = 'AdminUsersView',
+	AdminUsersModify = 'AdminUsersModify',
+	ExamsView = 'ExamsView',
+	ExamsModify = 'ExamsModify',
+	ExamsAssign = 'ExamsAssign',
+	FleetView = 'FleetView',
+	FleetModify = 'FleetModify',
+	ClustersView = 'ClustersView',
+	ClustersModify = 'ClustersModify'
 }
 
 export enum BlueUserSex {
-    Male = "Male",
-    Female = "Female",
-    Unknown = "Unknown",
+	Male = 'Male',
+	Female = 'Female',
+	Unknown = 'Unknown'
+}
+
+export enum ClusterCriterionType {
+	GroupCategory = 'GroupCategory',
+	Group = 'Group'
+}
+
+export class ClusterMemberDto implements IClusterMemberDto {
+	userId!: string;
+	fullname!: string;
+	email!: string;
+
+	[key: string]: any;
+
+	constructor(data?: IClusterMemberDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userId = _data['userId'];
+			this.fullname = _data['fullname'];
+			this.email = _data['email'];
+		}
+	}
+
+	static fromJS(data: any): ClusterMemberDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new ClusterMemberDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userId'] = this.userId;
+		data['fullname'] = this.fullname;
+		data['email'] = this.email;
+		return data;
+	}
+}
+
+export interface IClusterMemberDto {
+	userId: string;
+	fullname: string;
+	email: string;
+
+	[key: string]: any;
 }
 
 export class CreateUserGroupInstanceRequest implements ICreateUserGroupInstanceRequest {
-    userGroupId!: string;
-    seasonId!: string;
+	userGroupId!: string;
+	seasonId!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: ICreateUserGroupInstanceRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: ICreateUserGroupInstanceRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userGroupId = _data["userGroupId"];
-            this.seasonId = _data["seasonId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userGroupId = _data['userGroupId'];
+			this.seasonId = _data['seasonId'];
+		}
+	}
 
-    static fromJS(data: any): CreateUserGroupInstanceRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateUserGroupInstanceRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): CreateUserGroupInstanceRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new CreateUserGroupInstanceRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userGroupId"] = this.userGroupId;
-        data["seasonId"] = this.seasonId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userGroupId'] = this.userGroupId;
+		data['seasonId'] = this.seasonId;
+		return data;
+	}
 }
 
 export interface ICreateUserGroupInstanceRequest {
-    userGroupId: string;
-    seasonId: string;
+	userGroupId: string;
+	seasonId: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class CreateUserRequest implements ICreateUserRequest {
-    userName!: string;
-    email!: string;
-    firstname!: string;
-    surnamePrefix!: string;
-    surname!: string;
-    phoneNumber!: string | undefined;
-    address!: BlueAddressDto;
-    emergencyAddress!: BlueAddressDto;
-    emergencyPhoneNumber!: string;
-    dateOfBirth!: Date;
-    gender!: BlueUserSex;
+	userName!: string;
+	email!: string;
+	firstname!: string;
+	surnamePrefix!: string;
+	surname!: string;
+	phoneNumber!: string | undefined;
+	address!: BlueAddressDto;
+	emergencyAddress!: BlueAddressDto;
+	emergencyPhoneNumber!: string;
+	dateOfBirth!: Date;
+	gender!: BlueUserSex;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: ICreateUserRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.address = new BlueAddressDto();
-            this.emergencyAddress = new BlueAddressDto();
-        }
-    }
+	constructor(data?: ICreateUserRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.address = new BlueAddressDto();
+			this.emergencyAddress = new BlueAddressDto();
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userName = _data["userName"];
-            this.email = _data["email"];
-            this.firstname = _data["firstname"];
-            this.surnamePrefix = _data["surnamePrefix"];
-            this.surname = _data["surname"];
-            this.phoneNumber = _data["phoneNumber"];
-            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
-            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
-            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
-            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
-            this.gender = _data["gender"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userName = _data['userName'];
+			this.email = _data['email'];
+			this.firstname = _data['firstname'];
+			this.surnamePrefix = _data['surnamePrefix'];
+			this.surname = _data['surname'];
+			this.phoneNumber = _data['phoneNumber'];
+			this.address = _data['address']
+				? BlueAddressDto.fromJS(_data['address'])
+				: new BlueAddressDto();
+			this.emergencyAddress = _data['emergencyAddress']
+				? BlueAddressDto.fromJS(_data['emergencyAddress'])
+				: new BlueAddressDto();
+			this.emergencyPhoneNumber = _data['emergencyPhoneNumber'];
+			this.dateOfBirth = _data['dateOfBirth']
+				? new Date(_data['dateOfBirth'].toString())
+				: (undefined as any);
+			this.gender = _data['gender'];
+		}
+	}
 
-    static fromJS(data: any): CreateUserRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateUserRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): CreateUserRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new CreateUserRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userName"] = this.userName;
-        data["email"] = this.email;
-        data["firstname"] = this.firstname;
-        data["surnamePrefix"] = this.surnamePrefix;
-        data["surname"] = this.surname;
-        data["phoneNumber"] = this.phoneNumber;
-        data["address"] = this.address ? this.address.toJSON() : undefined as any;
-        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
-        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
-        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
-        data["gender"] = this.gender;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userName'] = this.userName;
+		data['email'] = this.email;
+		data['firstname'] = this.firstname;
+		data['surnamePrefix'] = this.surnamePrefix;
+		data['surname'] = this.surname;
+		data['phoneNumber'] = this.phoneNumber;
+		data['address'] = this.address ? this.address.toJSON() : (undefined as any);
+		data['emergencyAddress'] = this.emergencyAddress
+			? this.emergencyAddress.toJSON()
+			: (undefined as any);
+		data['emergencyPhoneNumber'] = this.emergencyPhoneNumber;
+		data['dateOfBirth'] = this.dateOfBirth ? formatDate(this.dateOfBirth) : (undefined as any);
+		data['gender'] = this.gender;
+		return data;
+	}
 }
 
 export interface ICreateUserRequest {
-    userName: string;
-    email: string;
-    firstname: string;
-    surnamePrefix: string;
-    surname: string;
-    phoneNumber: string | undefined;
-    address: BlueAddressDto;
-    emergencyAddress: BlueAddressDto;
-    emergencyPhoneNumber: string;
-    dateOfBirth: Date;
-    gender: BlueUserSex;
+	userName: string;
+	email: string;
+	firstname: string;
+	surnamePrefix: string;
+	surname: string;
+	phoneNumber: string | undefined;
+	address: BlueAddressDto;
+	emergencyAddress: BlueAddressDto;
+	emergencyPhoneNumber: string;
+	dateOfBirth: Date;
+	gender: BlueUserSex;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class CreateUserResponse implements ICreateUserResponse {
-    user!: UserDto;
-    generatedPassword!: string;
+	user!: UserDto;
+	generatedPassword!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: ICreateUserResponse) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.user = new UserDto();
-        }
-    }
+	constructor(data?: ICreateUserResponse) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.user = new UserDto();
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : new UserDto();
-            this.generatedPassword = _data["generatedPassword"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.user = _data['user'] ? UserDto.fromJS(_data['user']) : new UserDto();
+			this.generatedPassword = _data['generatedPassword'];
+		}
+	}
 
-    static fromJS(data: any): CreateUserResponse {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateUserResponse();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): CreateUserResponse {
+		data = typeof data === 'object' ? data : {};
+		let result = new CreateUserResponse();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["user"] = this.user ? this.user.toJSON() : undefined as any;
-        data["generatedPassword"] = this.generatedPassword;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['user'] = this.user ? this.user.toJSON() : (undefined as any);
+		data['generatedPassword'] = this.generatedPassword;
+		return data;
+	}
 }
 
 export interface ICreateUserResponse {
-    user: UserDto;
-    generatedPassword: string;
+	user: UserDto;
+	generatedPassword: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class EquipmentDto implements IEquipmentDto {
-    id!: string;
-    name!: string;
-    description!: string | undefined;
-    equipmentTypeId!: string | undefined;
-    equipmentTypeName!: string | undefined;
-    manufacturerId!: string | undefined;
-    manufacturerName!: string | undefined;
-    oarSetId!: string | undefined;
-    oarSetName!: string | undefined;
-    requiredExamTypeId!: string | undefined;
-    requiredExamTypeName!: string | undefined;
-    freeFleet!: boolean;
-    outOfOrder!: boolean;
-    rowersWeight!: number | undefined;
-    rowersWeightMax!: number | undefined;
-    dateBuild!: Date | undefined;
-    dateBought!: Date | undefined;
-    dateSold!: Date | undefined;
+	id!: string;
+	name!: string;
+	description!: string | undefined;
+	equipmentTypeId!: string | undefined;
+	equipmentTypeName!: string | undefined;
+	manufacturerId!: string | undefined;
+	manufacturerName!: string | undefined;
+	oarSetId!: string | undefined;
+	oarSetName!: string | undefined;
+	requiredExamTypeId!: string | undefined;
+	requiredExamTypeName!: string | undefined;
+	freeFleet!: boolean;
+	outOfOrder!: boolean;
+	rowersWeight!: number | undefined;
+	rowersWeightMax!: number | undefined;
+	dateBuild!: Date | undefined;
+	dateBought!: Date | undefined;
+	dateSold!: Date | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IEquipmentDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IEquipmentDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.equipmentTypeId = _data["equipmentTypeId"];
-            this.equipmentTypeName = _data["equipmentTypeName"];
-            this.manufacturerId = _data["manufacturerId"];
-            this.manufacturerName = _data["manufacturerName"];
-            this.oarSetId = _data["oarSetId"];
-            this.oarSetName = _data["oarSetName"];
-            this.requiredExamTypeId = _data["requiredExamTypeId"];
-            this.requiredExamTypeName = _data["requiredExamTypeName"];
-            this.freeFleet = _data["freeFleet"];
-            this.outOfOrder = _data["outOfOrder"];
-            this.rowersWeight = _data["rowersWeight"];
-            this.rowersWeightMax = _data["rowersWeightMax"];
-            this.dateBuild = _data["dateBuild"] ? new Date(_data["dateBuild"].toString()) : undefined as any;
-            this.dateBought = _data["dateBought"] ? new Date(_data["dateBought"].toString()) : undefined as any;
-            this.dateSold = _data["dateSold"] ? new Date(_data["dateSold"].toString()) : undefined as any;
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+			this.equipmentTypeId = _data['equipmentTypeId'];
+			this.equipmentTypeName = _data['equipmentTypeName'];
+			this.manufacturerId = _data['manufacturerId'];
+			this.manufacturerName = _data['manufacturerName'];
+			this.oarSetId = _data['oarSetId'];
+			this.oarSetName = _data['oarSetName'];
+			this.requiredExamTypeId = _data['requiredExamTypeId'];
+			this.requiredExamTypeName = _data['requiredExamTypeName'];
+			this.freeFleet = _data['freeFleet'];
+			this.outOfOrder = _data['outOfOrder'];
+			this.rowersWeight = _data['rowersWeight'];
+			this.rowersWeightMax = _data['rowersWeightMax'];
+			this.dateBuild = _data['dateBuild']
+				? new Date(_data['dateBuild'].toString())
+				: (undefined as any);
+			this.dateBought = _data['dateBought']
+				? new Date(_data['dateBought'].toString())
+				: (undefined as any);
+			this.dateSold = _data['dateSold']
+				? new Date(_data['dateSold'].toString())
+				: (undefined as any);
+		}
+	}
 
-    static fromJS(data: any): EquipmentDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new EquipmentDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): EquipmentDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new EquipmentDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["equipmentTypeId"] = this.equipmentTypeId;
-        data["equipmentTypeName"] = this.equipmentTypeName;
-        data["manufacturerId"] = this.manufacturerId;
-        data["manufacturerName"] = this.manufacturerName;
-        data["oarSetId"] = this.oarSetId;
-        data["oarSetName"] = this.oarSetName;
-        data["requiredExamTypeId"] = this.requiredExamTypeId;
-        data["requiredExamTypeName"] = this.requiredExamTypeName;
-        data["freeFleet"] = this.freeFleet;
-        data["outOfOrder"] = this.outOfOrder;
-        data["rowersWeight"] = this.rowersWeight;
-        data["rowersWeightMax"] = this.rowersWeightMax;
-        data["dateBuild"] = this.dateBuild ? formatDate(this.dateBuild) : undefined as any;
-        data["dateBought"] = this.dateBought ? formatDate(this.dateBought) : undefined as any;
-        data["dateSold"] = this.dateSold ? formatDate(this.dateSold) : undefined as any;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		data['equipmentTypeId'] = this.equipmentTypeId;
+		data['equipmentTypeName'] = this.equipmentTypeName;
+		data['manufacturerId'] = this.manufacturerId;
+		data['manufacturerName'] = this.manufacturerName;
+		data['oarSetId'] = this.oarSetId;
+		data['oarSetName'] = this.oarSetName;
+		data['requiredExamTypeId'] = this.requiredExamTypeId;
+		data['requiredExamTypeName'] = this.requiredExamTypeName;
+		data['freeFleet'] = this.freeFleet;
+		data['outOfOrder'] = this.outOfOrder;
+		data['rowersWeight'] = this.rowersWeight;
+		data['rowersWeightMax'] = this.rowersWeightMax;
+		data['dateBuild'] = this.dateBuild ? formatDate(this.dateBuild) : (undefined as any);
+		data['dateBought'] = this.dateBought ? formatDate(this.dateBought) : (undefined as any);
+		data['dateSold'] = this.dateSold ? formatDate(this.dateSold) : (undefined as any);
+		return data;
+	}
 }
 
 export interface IEquipmentDto {
-    id: string;
-    name: string;
-    description: string | undefined;
-    equipmentTypeId: string | undefined;
-    equipmentTypeName: string | undefined;
-    manufacturerId: string | undefined;
-    manufacturerName: string | undefined;
-    oarSetId: string | undefined;
-    oarSetName: string | undefined;
-    requiredExamTypeId: string | undefined;
-    requiredExamTypeName: string | undefined;
-    freeFleet: boolean;
-    outOfOrder: boolean;
-    rowersWeight: number | undefined;
-    rowersWeightMax: number | undefined;
-    dateBuild: Date | undefined;
-    dateBought: Date | undefined;
-    dateSold: Date | undefined;
+	id: string;
+	name: string;
+	description: string | undefined;
+	equipmentTypeId: string | undefined;
+	equipmentTypeName: string | undefined;
+	manufacturerId: string | undefined;
+	manufacturerName: string | undefined;
+	oarSetId: string | undefined;
+	oarSetName: string | undefined;
+	requiredExamTypeId: string | undefined;
+	requiredExamTypeName: string | undefined;
+	freeFleet: boolean;
+	outOfOrder: boolean;
+	rowersWeight: number | undefined;
+	rowersWeightMax: number | undefined;
+	dateBuild: Date | undefined;
+	dateBought: Date | undefined;
+	dateSold: Date | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class EquipmentTypeDto implements IEquipmentTypeDto {
-    id!: string;
-    code!: string;
-    name!: string;
-    scull!: boolean;
-    coxed!: boolean;
-    rowersCount!: number;
-    isBoat!: boolean;
+	id!: string;
+	code!: string;
+	name!: string;
+	scull!: boolean;
+	coxed!: boolean;
+	rowersCount!: number;
+	isBoat!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IEquipmentTypeDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IEquipmentTypeDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.code = _data["code"];
-            this.name = _data["name"];
-            this.scull = _data["scull"];
-            this.coxed = _data["coxed"];
-            this.rowersCount = _data["rowersCount"];
-            this.isBoat = _data["isBoat"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.code = _data['code'];
+			this.name = _data['name'];
+			this.scull = _data['scull'];
+			this.coxed = _data['coxed'];
+			this.rowersCount = _data['rowersCount'];
+			this.isBoat = _data['isBoat'];
+		}
+	}
 
-    static fromJS(data: any): EquipmentTypeDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new EquipmentTypeDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): EquipmentTypeDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new EquipmentTypeDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["code"] = this.code;
-        data["name"] = this.name;
-        data["scull"] = this.scull;
-        data["coxed"] = this.coxed;
-        data["rowersCount"] = this.rowersCount;
-        data["isBoat"] = this.isBoat;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['code'] = this.code;
+		data['name'] = this.name;
+		data['scull'] = this.scull;
+		data['coxed'] = this.coxed;
+		data['rowersCount'] = this.rowersCount;
+		data['isBoat'] = this.isBoat;
+		return data;
+	}
 }
 
 export interface IEquipmentTypeDto {
-    id: string;
-    code: string;
-    name: string;
-    scull: boolean;
-    coxed: boolean;
-    rowersCount: number;
-    isBoat: boolean;
+	id: string;
+	code: string;
+	name: string;
+	scull: boolean;
+	coxed: boolean;
+	rowersCount: number;
+	isBoat: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class ExamTypeDto implements IExamTypeDto {
-    id!: string;
-    name!: string;
-    description!: string;
+	id!: string;
+	name!: string;
+	description!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IExamTypeDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IExamTypeDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+		}
+	}
 
-    static fromJS(data: any): ExamTypeDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new ExamTypeDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ExamTypeDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new ExamTypeDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		return data;
+	}
 }
 
 export interface IExamTypeDto {
-    id: string;
-    name: string;
-    description: string;
+	id: string;
+	name: string;
+	description: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class InstanceMemberDto implements IInstanceMemberDto {
-    userId!: string;
-    userGroupCategoryRoleId!: string | undefined;
+	userId!: string;
+	userGroupCategoryRoleId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IInstanceMemberDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IInstanceMemberDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userId = _data["userId"];
-            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userId = _data['userId'];
+			this.userGroupCategoryRoleId = _data['userGroupCategoryRoleId'];
+		}
+	}
 
-    static fromJS(data: any): InstanceMemberDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new InstanceMemberDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): InstanceMemberDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new InstanceMemberDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userId"] = this.userId;
-        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userId'] = this.userId;
+		data['userGroupCategoryRoleId'] = this.userGroupCategoryRoleId;
+		return data;
+	}
 }
 
 export interface IInstanceMemberDto {
-    userId: string;
-    userGroupCategoryRoleId: string | undefined;
+	userId: string;
+	userGroupCategoryRoleId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
+}
+
+export class IsMemberDto implements IIsMemberDto {
+	isMember!: boolean;
+
+	[key: string]: any;
+
+	constructor(data?: IIsMemberDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.isMember = _data['isMember'];
+		}
+	}
+
+	static fromJS(data: any): IsMemberDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new IsMemberDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['isMember'] = this.isMember;
+		return data;
+	}
+}
+
+export interface IIsMemberDto {
+	isMember: boolean;
+
+	[key: string]: any;
 }
 
 export class LoginRequest implements ILoginRequest {
-    email!: string;
-    password!: string;
+	email!: string;
+	password!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: ILoginRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: ILoginRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.email = _data["email"];
-            this.password = _data["password"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.email = _data['email'];
+			this.password = _data['password'];
+		}
+	}
 
-    static fromJS(data: any): LoginRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new LoginRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): LoginRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new LoginRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["email"] = this.email;
-        data["password"] = this.password;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['email'] = this.email;
+		data['password'] = this.password;
+		return data;
+	}
 }
 
 export interface ILoginRequest {
-    email: string;
-    password: string;
+	email: string;
+	password: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class ManufacturerDto implements IManufacturerDto {
-    id!: string;
-    name!: string;
+	id!: string;
+	name!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IManufacturerDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IManufacturerDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+		}
+	}
 
-    static fromJS(data: any): ManufacturerDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new ManufacturerDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ManufacturerDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new ManufacturerDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		return data;
+	}
 }
 
 export interface IManufacturerDto {
-    id: string;
-    name: string;
+	id: string;
+	name: string;
 
-    [key: string]: any;
+	[key: string]: any;
+}
+
+export class MemberClusterCriterionDto implements IMemberClusterCriterionDto {
+	id!: string;
+	type!: ClusterCriterionType;
+	categoryId!: string | undefined;
+	categoryName!: string | undefined;
+	roleId!: string | undefined;
+	roleName!: string | undefined;
+	groupId!: string | undefined;
+	groupName!: string | undefined;
+
+	[key: string]: any;
+
+	constructor(data?: IMemberClusterCriterionDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.type = _data['type'];
+			this.categoryId = _data['categoryId'];
+			this.categoryName = _data['categoryName'];
+			this.roleId = _data['roleId'];
+			this.roleName = _data['roleName'];
+			this.groupId = _data['groupId'];
+			this.groupName = _data['groupName'];
+		}
+	}
+
+	static fromJS(data: any): MemberClusterCriterionDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MemberClusterCriterionDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['type'] = this.type;
+		data['categoryId'] = this.categoryId;
+		data['categoryName'] = this.categoryName;
+		data['roleId'] = this.roleId;
+		data['roleName'] = this.roleName;
+		data['groupId'] = this.groupId;
+		data['groupName'] = this.groupName;
+		return data;
+	}
+}
+
+export interface IMemberClusterCriterionDto {
+	id: string;
+	type: ClusterCriterionType;
+	categoryId: string | undefined;
+	categoryName: string | undefined;
+	roleId: string | undefined;
+	roleName: string | undefined;
+	groupId: string | undefined;
+	groupName: string | undefined;
+
+	[key: string]: any;
+}
+
+export class MemberClusterDto implements IMemberClusterDto {
+	id!: string;
+	name!: string;
+	description!: string;
+	criteria!: MemberClusterCriterionDto[];
+
+	[key: string]: any;
+
+	constructor(data?: IMemberClusterDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.criteria = [];
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+			if (Array.isArray(_data['criteria'])) {
+				this.criteria = [] as any;
+				for (let item of _data['criteria'])
+					this.criteria!.push(MemberClusterCriterionDto.fromJS(item));
+			}
+		}
+	}
+
+	static fromJS(data: any): MemberClusterDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MemberClusterDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		if (Array.isArray(this.criteria)) {
+			data['criteria'] = [];
+			for (let item of this.criteria)
+				data['criteria'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
+}
+
+export interface IMemberClusterDto {
+	id: string;
+	name: string;
+	description: string;
+	criteria: MemberClusterCriterionDto[];
+
+	[key: string]: any;
 }
 
 export class NewsIconDto implements INewsIconDto {
-    id!: string;
-    name!: string;
-    fileId!: string;
-    createdAt!: Date;
-    createdByUserId!: string;
+	id!: string;
+	name!: string;
+	fileId!: string;
+	createdAt!: Date;
+	createdByUserId!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: INewsIconDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: INewsIconDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.fileId = _data["fileId"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
-            this.createdByUserId = _data["createdByUserId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.fileId = _data['fileId'];
+			this.createdAt = _data['createdAt']
+				? new Date(_data['createdAt'].toString())
+				: (undefined as any);
+			this.createdByUserId = _data['createdByUserId'];
+		}
+	}
 
-    static fromJS(data: any): NewsIconDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new NewsIconDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): NewsIconDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new NewsIconDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["fileId"] = this.fileId;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
-        data["createdByUserId"] = this.createdByUserId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['fileId'] = this.fileId;
+		data['createdAt'] = this.createdAt ? this.createdAt.toISOString() : (undefined as any);
+		data['createdByUserId'] = this.createdByUserId;
+		return data;
+	}
 }
 
 export interface INewsIconDto {
-    id: string;
-    name: string;
-    fileId: string;
-    createdAt: Date;
-    createdByUserId: string;
+	id: string;
+	name: string;
+	fileId: string;
+	createdAt: Date;
+	createdByUserId: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class NewsPostDto implements INewsPostDto {
-    id!: string;
-    title!: string;
-    shortText!: string;
-    additionalText!: string | undefined;
-    membersOnly!: boolean;
-    iconId!: string | undefined;
-    createdAt!: Date;
-    createdByUserId!: string;
-    updatedAt!: Date | undefined;
-    updatedByUserId!: string | undefined;
+	id!: string;
+	title!: string;
+	shortText!: string;
+	additionalText!: string | undefined;
+	membersOnly!: boolean;
+	iconId!: string | undefined;
+	createdAt!: Date;
+	createdByUserId!: string;
+	updatedAt!: Date | undefined;
+	updatedByUserId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: INewsPostDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: INewsPostDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.title = _data["title"];
-            this.shortText = _data["shortText"];
-            this.additionalText = _data["additionalText"];
-            this.membersOnly = _data["membersOnly"];
-            this.iconId = _data["iconId"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
-            this.createdByUserId = _data["createdByUserId"];
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : undefined as any;
-            this.updatedByUserId = _data["updatedByUserId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.title = _data['title'];
+			this.shortText = _data['shortText'];
+			this.additionalText = _data['additionalText'];
+			this.membersOnly = _data['membersOnly'];
+			this.iconId = _data['iconId'];
+			this.createdAt = _data['createdAt']
+				? new Date(_data['createdAt'].toString())
+				: (undefined as any);
+			this.createdByUserId = _data['createdByUserId'];
+			this.updatedAt = _data['updatedAt']
+				? new Date(_data['updatedAt'].toString())
+				: (undefined as any);
+			this.updatedByUserId = _data['updatedByUserId'];
+		}
+	}
 
-    static fromJS(data: any): NewsPostDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new NewsPostDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): NewsPostDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new NewsPostDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["title"] = this.title;
-        data["shortText"] = this.shortText;
-        data["additionalText"] = this.additionalText;
-        data["membersOnly"] = this.membersOnly;
-        data["iconId"] = this.iconId;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
-        data["createdByUserId"] = this.createdByUserId;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : undefined as any;
-        data["updatedByUserId"] = this.updatedByUserId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['title'] = this.title;
+		data['shortText'] = this.shortText;
+		data['additionalText'] = this.additionalText;
+		data['membersOnly'] = this.membersOnly;
+		data['iconId'] = this.iconId;
+		data['createdAt'] = this.createdAt ? this.createdAt.toISOString() : (undefined as any);
+		data['createdByUserId'] = this.createdByUserId;
+		data['updatedAt'] = this.updatedAt ? this.updatedAt.toISOString() : (undefined as any);
+		data['updatedByUserId'] = this.updatedByUserId;
+		return data;
+	}
 }
 
 export interface INewsPostDto {
-    id: string;
-    title: string;
-    shortText: string;
-    additionalText: string | undefined;
-    membersOnly: boolean;
-    iconId: string | undefined;
-    createdAt: Date;
-    createdByUserId: string;
-    updatedAt: Date | undefined;
-    updatedByUserId: string | undefined;
+	id: string;
+	title: string;
+	shortText: string;
+	additionalText: string | undefined;
+	membersOnly: boolean;
+	iconId: string | undefined;
+	createdAt: Date;
+	createdByUserId: string;
+	updatedAt: Date | undefined;
+	updatedByUserId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class OarSetDto implements IOarSetDto {
-    id!: string;
-    name!: string;
-    manufacturerId!: string | undefined;
-    manufacturerName!: string | undefined;
-    scull!: boolean;
+	id!: string;
+	name!: string;
+	manufacturerId!: string | undefined;
+	manufacturerName!: string | undefined;
+	scull!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IOarSetDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IOarSetDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.manufacturerId = _data["manufacturerId"];
-            this.manufacturerName = _data["manufacturerName"];
-            this.scull = _data["scull"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.manufacturerId = _data['manufacturerId'];
+			this.manufacturerName = _data['manufacturerName'];
+			this.scull = _data['scull'];
+		}
+	}
 
-    static fromJS(data: any): OarSetDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new OarSetDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): OarSetDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new OarSetDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["manufacturerId"] = this.manufacturerId;
-        data["manufacturerName"] = this.manufacturerName;
-        data["scull"] = this.scull;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['manufacturerId'] = this.manufacturerId;
+		data['manufacturerName'] = this.manufacturerName;
+		data['scull'] = this.scull;
+		return data;
+	}
 }
 
 export interface IOarSetDto {
-    id: string;
-    name: string;
-    manufacturerId: string | undefined;
-    manufacturerName: string | undefined;
-    scull: boolean;
+	id: string;
+	name: string;
+	manufacturerId: string | undefined;
+	manufacturerName: string | undefined;
+	scull: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class PagedResultOfAgendaItemDto implements IPagedResultOfAgendaItemDto {
-    items!: AgendaItemDto[];
-    page!: number;
-    pageSize!: number;
-    totalCount!: number;
+	items!: AgendaItemDto[];
+	page!: number;
+	pageSize!: number;
+	totalCount!: number;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IPagedResultOfAgendaItemDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.items = [];
-        }
-    }
+	constructor(data?: IPagedResultOfAgendaItemDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.items = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(AgendaItemDto.fromJS(item));
-            }
-            this.page = _data["page"];
-            this.pageSize = _data["pageSize"];
-            this.totalCount = _data["totalCount"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			if (Array.isArray(_data['items'])) {
+				this.items = [] as any;
+				for (let item of _data['items']) this.items!.push(AgendaItemDto.fromJS(item));
+			}
+			this.page = _data['page'];
+			this.pageSize = _data['pageSize'];
+			this.totalCount = _data['totalCount'];
+		}
+	}
 
-    static fromJS(data: any): PagedResultOfAgendaItemDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PagedResultOfAgendaItemDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): PagedResultOfAgendaItemDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new PagedResultOfAgendaItemDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item ? item.toJSON() : undefined as any);
-        }
-        data["page"] = this.page;
-        data["pageSize"] = this.pageSize;
-        data["totalCount"] = this.totalCount;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		if (Array.isArray(this.items)) {
+			data['items'] = [];
+			for (let item of this.items) data['items'].push(item ? item.toJSON() : (undefined as any));
+		}
+		data['page'] = this.page;
+		data['pageSize'] = this.pageSize;
+		data['totalCount'] = this.totalCount;
+		return data;
+	}
 }
 
 export interface IPagedResultOfAgendaItemDto {
-    items: AgendaItemDto[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
+	items: AgendaItemDto[];
+	page: number;
+	pageSize: number;
+	totalCount: number;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class PagedResultOfEquipmentDto implements IPagedResultOfEquipmentDto {
-    items!: EquipmentDto[];
-    page!: number;
-    pageSize!: number;
-    totalCount!: number;
+	items!: EquipmentDto[];
+	page!: number;
+	pageSize!: number;
+	totalCount!: number;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IPagedResultOfEquipmentDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.items = [];
-        }
-    }
+	constructor(data?: IPagedResultOfEquipmentDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.items = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(EquipmentDto.fromJS(item));
-            }
-            this.page = _data["page"];
-            this.pageSize = _data["pageSize"];
-            this.totalCount = _data["totalCount"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			if (Array.isArray(_data['items'])) {
+				this.items = [] as any;
+				for (let item of _data['items']) this.items!.push(EquipmentDto.fromJS(item));
+			}
+			this.page = _data['page'];
+			this.pageSize = _data['pageSize'];
+			this.totalCount = _data['totalCount'];
+		}
+	}
 
-    static fromJS(data: any): PagedResultOfEquipmentDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PagedResultOfEquipmentDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): PagedResultOfEquipmentDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new PagedResultOfEquipmentDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item ? item.toJSON() : undefined as any);
-        }
-        data["page"] = this.page;
-        data["pageSize"] = this.pageSize;
-        data["totalCount"] = this.totalCount;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		if (Array.isArray(this.items)) {
+			data['items'] = [];
+			for (let item of this.items) data['items'].push(item ? item.toJSON() : (undefined as any));
+		}
+		data['page'] = this.page;
+		data['pageSize'] = this.pageSize;
+		data['totalCount'] = this.totalCount;
+		return data;
+	}
 }
 
 export interface IPagedResultOfEquipmentDto {
-    items: EquipmentDto[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
+	items: EquipmentDto[];
+	page: number;
+	pageSize: number;
+	totalCount: number;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class PagedResultOfNewsPostDto implements IPagedResultOfNewsPostDto {
-    items!: NewsPostDto[];
-    page!: number;
-    pageSize!: number;
-    totalCount!: number;
+	items!: NewsPostDto[];
+	page!: number;
+	pageSize!: number;
+	totalCount!: number;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IPagedResultOfNewsPostDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.items = [];
-        }
-    }
+	constructor(data?: IPagedResultOfNewsPostDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.items = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(NewsPostDto.fromJS(item));
-            }
-            this.page = _data["page"];
-            this.pageSize = _data["pageSize"];
-            this.totalCount = _data["totalCount"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			if (Array.isArray(_data['items'])) {
+				this.items = [] as any;
+				for (let item of _data['items']) this.items!.push(NewsPostDto.fromJS(item));
+			}
+			this.page = _data['page'];
+			this.pageSize = _data['pageSize'];
+			this.totalCount = _data['totalCount'];
+		}
+	}
 
-    static fromJS(data: any): PagedResultOfNewsPostDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PagedResultOfNewsPostDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): PagedResultOfNewsPostDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new PagedResultOfNewsPostDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item ? item.toJSON() : undefined as any);
-        }
-        data["page"] = this.page;
-        data["pageSize"] = this.pageSize;
-        data["totalCount"] = this.totalCount;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		if (Array.isArray(this.items)) {
+			data['items'] = [];
+			for (let item of this.items) data['items'].push(item ? item.toJSON() : (undefined as any));
+		}
+		data['page'] = this.page;
+		data['pageSize'] = this.pageSize;
+		data['totalCount'] = this.totalCount;
+		return data;
+	}
 }
 
 export interface IPagedResultOfNewsPostDto {
-    items: NewsPostDto[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
+	items: NewsPostDto[];
+	page: number;
+	pageSize: number;
+	totalCount: number;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class PagedResultOfUserDto implements IPagedResultOfUserDto {
-    items!: UserDto[];
-    page!: number;
-    pageSize!: number;
-    totalCount!: number;
+	items!: UserDto[];
+	page!: number;
+	pageSize!: number;
+	totalCount!: number;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IPagedResultOfUserDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.items = [];
-        }
-    }
+	constructor(data?: IPagedResultOfUserDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.items = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(UserDto.fromJS(item));
-            }
-            this.page = _data["page"];
-            this.pageSize = _data["pageSize"];
-            this.totalCount = _data["totalCount"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			if (Array.isArray(_data['items'])) {
+				this.items = [] as any;
+				for (let item of _data['items']) this.items!.push(UserDto.fromJS(item));
+			}
+			this.page = _data['page'];
+			this.pageSize = _data['pageSize'];
+			this.totalCount = _data['totalCount'];
+		}
+	}
 
-    static fromJS(data: any): PagedResultOfUserDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new PagedResultOfUserDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): PagedResultOfUserDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new PagedResultOfUserDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item ? item.toJSON() : undefined as any);
-        }
-        data["page"] = this.page;
-        data["pageSize"] = this.pageSize;
-        data["totalCount"] = this.totalCount;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		if (Array.isArray(this.items)) {
+			data['items'] = [];
+			for (let item of this.items) data['items'].push(item ? item.toJSON() : (undefined as any));
+		}
+		data['page'] = this.page;
+		data['pageSize'] = this.pageSize;
+		data['totalCount'] = this.totalCount;
+		return data;
+	}
 }
 
 export interface IPagedResultOfUserDto {
-    items: UserDto[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
+	items: UserDto[];
+	page: number;
+	pageSize: number;
+	totalCount: number;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class ProblemDetails implements IProblemDetails {
-    type?: string | undefined;
-    title?: string | undefined;
-    status?: number | undefined;
-    detail?: string | undefined;
-    instance?: string | undefined;
+	type?: string | undefined;
+	title?: string | undefined;
+	status?: number | undefined;
+	detail?: string | undefined;
+	instance?: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IProblemDetails) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IProblemDetails) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.type = _data["type"];
-            this.title = _data["title"];
-            this.status = _data["status"];
-            this.detail = _data["detail"];
-            this.instance = _data["instance"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.type = _data['type'];
+			this.title = _data['title'];
+			this.status = _data['status'];
+			this.detail = _data['detail'];
+			this.instance = _data['instance'];
+		}
+	}
 
-    static fromJS(data: any): ProblemDetails {
-        data = typeof data === 'object' ? data : {};
-        let result = new ProblemDetails();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ProblemDetails {
+		data = typeof data === 'object' ? data : {};
+		let result = new ProblemDetails();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["type"] = this.type;
-        data["title"] = this.title;
-        data["status"] = this.status;
-        data["detail"] = this.detail;
-        data["instance"] = this.instance;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['type'] = this.type;
+		data['title'] = this.title;
+		data['status'] = this.status;
+		data['detail'] = this.detail;
+		data['instance'] = this.instance;
+		return data;
+	}
 }
 
 export interface IProblemDetails {
-    type?: string | undefined;
-    title?: string | undefined;
-    status?: number | undefined;
-    detail?: string | undefined;
-    instance?: string | undefined;
+	type?: string | undefined;
+	title?: string | undefined;
+	status?: number | undefined;
+	detail?: string | undefined;
+	instance?: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class RefreshRequest implements IRefreshRequest {
-    refreshToken!: string;
+	refreshToken!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IRefreshRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IRefreshRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.refreshToken = _data["refreshToken"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.refreshToken = _data['refreshToken'];
+		}
+	}
 
-    static fromJS(data: any): RefreshRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new RefreshRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): RefreshRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new RefreshRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["refreshToken"] = this.refreshToken;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['refreshToken'] = this.refreshToken;
+		return data;
+	}
 }
 
 export interface IRefreshRequest {
-    refreshToken: string;
+	refreshToken: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class ReorderRolesRequest implements IReorderRolesRequest {
-    roleIds!: string[];
+	roleIds!: string[];
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IReorderRolesRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.roleIds = [];
-        }
-    }
+	constructor(data?: IReorderRolesRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.roleIds = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            if (Array.isArray(_data["roleIds"])) {
-                this.roleIds = [] as any;
-                for (let item of _data["roleIds"])
-                    this.roleIds!.push(item);
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			if (Array.isArray(_data['roleIds'])) {
+				this.roleIds = [] as any;
+				for (let item of _data['roleIds']) this.roleIds!.push(item);
+			}
+		}
+	}
 
-    static fromJS(data: any): ReorderRolesRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new ReorderRolesRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ReorderRolesRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new ReorderRolesRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        if (Array.isArray(this.roleIds)) {
-            data["roleIds"] = [];
-            for (let item of this.roleIds)
-                data["roleIds"].push(item);
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		if (Array.isArray(this.roleIds)) {
+			data['roleIds'] = [];
+			for (let item of this.roleIds) data['roleIds'].push(item);
+		}
+		return data;
+	}
 }
 
 export interface IReorderRolesRequest {
-    roleIds: string[];
+	roleIds: string[];
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class SeasonDto implements ISeasonDto {
-    id!: string;
-    name!: string;
-    startDate!: Date;
-    endDate!: Date;
-    isCurrent!: boolean;
+	id!: string;
+	name!: string;
+	startDate!: Date;
+	endDate!: Date;
+	isCurrent!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: ISeasonDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: ISeasonDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.startDate = _data["startDate"] ? new Date(_data["startDate"].toString()) : undefined as any;
-            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : undefined as any;
-            this.isCurrent = _data["isCurrent"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.startDate = _data['startDate']
+				? new Date(_data['startDate'].toString())
+				: (undefined as any);
+			this.endDate = _data['endDate'] ? new Date(_data['endDate'].toString()) : (undefined as any);
+			this.isCurrent = _data['isCurrent'];
+		}
+	}
 
-    static fromJS(data: any): SeasonDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new SeasonDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): SeasonDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new SeasonDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["startDate"] = this.startDate ? formatDate(this.startDate) : undefined as any;
-        data["endDate"] = this.endDate ? formatDate(this.endDate) : undefined as any;
-        data["isCurrent"] = this.isCurrent;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['startDate'] = this.startDate ? formatDate(this.startDate) : (undefined as any);
+		data['endDate'] = this.endDate ? formatDate(this.endDate) : (undefined as any);
+		data['isCurrent'] = this.isCurrent;
+		return data;
+	}
 }
 
 export interface ISeasonDto {
-    id: string;
-    name: string;
-    startDate: Date;
-    endDate: Date;
-    isCurrent: boolean;
+	id: string;
+	name: string;
+	startDate: Date;
+	endDate: Date;
+	isCurrent: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpdateUserRequest implements IUpdateUserRequest {
-    userName!: string;
-    email!: string;
-    firstname!: string;
-    surnamePrefix!: string;
-    surname!: string;
-    phoneNumber!: string | undefined;
-    address!: BlueAddressDto;
-    emergencyAddress!: BlueAddressDto;
-    emergencyPhoneNumber!: string;
-    dateOfBirth!: Date;
-    gender!: BlueUserSex;
+	userName!: string;
+	email!: string;
+	firstname!: string;
+	surnamePrefix!: string;
+	surname!: string;
+	phoneNumber!: string | undefined;
+	address!: BlueAddressDto;
+	emergencyAddress!: BlueAddressDto;
+	emergencyPhoneNumber!: string;
+	dateOfBirth!: Date;
+	gender!: BlueUserSex;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpdateUserRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.address = new BlueAddressDto();
-            this.emergencyAddress = new BlueAddressDto();
-        }
-    }
+	constructor(data?: IUpdateUserRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.address = new BlueAddressDto();
+			this.emergencyAddress = new BlueAddressDto();
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.userName = _data["userName"];
-            this.email = _data["email"];
-            this.firstname = _data["firstname"];
-            this.surnamePrefix = _data["surnamePrefix"];
-            this.surname = _data["surname"];
-            this.phoneNumber = _data["phoneNumber"];
-            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
-            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
-            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
-            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
-            this.gender = _data["gender"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.userName = _data['userName'];
+			this.email = _data['email'];
+			this.firstname = _data['firstname'];
+			this.surnamePrefix = _data['surnamePrefix'];
+			this.surname = _data['surname'];
+			this.phoneNumber = _data['phoneNumber'];
+			this.address = _data['address']
+				? BlueAddressDto.fromJS(_data['address'])
+				: new BlueAddressDto();
+			this.emergencyAddress = _data['emergencyAddress']
+				? BlueAddressDto.fromJS(_data['emergencyAddress'])
+				: new BlueAddressDto();
+			this.emergencyPhoneNumber = _data['emergencyPhoneNumber'];
+			this.dateOfBirth = _data['dateOfBirth']
+				? new Date(_data['dateOfBirth'].toString())
+				: (undefined as any);
+			this.gender = _data['gender'];
+		}
+	}
 
-    static fromJS(data: any): UpdateUserRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpdateUserRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpdateUserRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpdateUserRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["userName"] = this.userName;
-        data["email"] = this.email;
-        data["firstname"] = this.firstname;
-        data["surnamePrefix"] = this.surnamePrefix;
-        data["surname"] = this.surname;
-        data["phoneNumber"] = this.phoneNumber;
-        data["address"] = this.address ? this.address.toJSON() : undefined as any;
-        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
-        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
-        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
-        data["gender"] = this.gender;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['userName'] = this.userName;
+		data['email'] = this.email;
+		data['firstname'] = this.firstname;
+		data['surnamePrefix'] = this.surnamePrefix;
+		data['surname'] = this.surname;
+		data['phoneNumber'] = this.phoneNumber;
+		data['address'] = this.address ? this.address.toJSON() : (undefined as any);
+		data['emergencyAddress'] = this.emergencyAddress
+			? this.emergencyAddress.toJSON()
+			: (undefined as any);
+		data['emergencyPhoneNumber'] = this.emergencyPhoneNumber;
+		data['dateOfBirth'] = this.dateOfBirth ? formatDate(this.dateOfBirth) : (undefined as any);
+		data['gender'] = this.gender;
+		return data;
+	}
 }
 
 export interface IUpdateUserRequest {
-    userName: string;
-    email: string;
-    firstname: string;
-    surnamePrefix: string;
-    surname: string;
-    phoneNumber: string | undefined;
-    address: BlueAddressDto;
-    emergencyAddress: BlueAddressDto;
-    emergencyPhoneNumber: string;
-    dateOfBirth: Date;
-    gender: BlueUserSex;
+	userName: string;
+	email: string;
+	firstname: string;
+	surnamePrefix: string;
+	surname: string;
+	phoneNumber: string | undefined;
+	address: BlueAddressDto;
+	emergencyAddress: BlueAddressDto;
+	emergencyPhoneNumber: string;
+	dateOfBirth: Date;
+	gender: BlueUserSex;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertAgendaItemRequest implements IUpsertAgendaItemRequest {
-    date!: Date;
-    time!: string | undefined;
-    title!: string;
-    description!: string;
-    endDate!: Date | undefined;
-    endTime!: string | undefined;
+	date!: Date;
+	time!: string | undefined;
+	title!: string;
+	description!: string;
+	endDate!: Date | undefined;
+	endTime!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertAgendaItemRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertAgendaItemRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.date = _data["date"] ? new Date(_data["date"].toString()) : undefined as any;
-            this.time = _data["time"];
-            this.title = _data["title"];
-            this.description = _data["description"];
-            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : undefined as any;
-            this.endTime = _data["endTime"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.date = _data['date'] ? new Date(_data['date'].toString()) : (undefined as any);
+			this.time = _data['time'];
+			this.title = _data['title'];
+			this.description = _data['description'];
+			this.endDate = _data['endDate'] ? new Date(_data['endDate'].toString()) : (undefined as any);
+			this.endTime = _data['endTime'];
+		}
+	}
 
-    static fromJS(data: any): UpsertAgendaItemRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertAgendaItemRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertAgendaItemRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertAgendaItemRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["date"] = this.date ? formatDate(this.date) : undefined as any;
-        data["time"] = this.time;
-        data["title"] = this.title;
-        data["description"] = this.description;
-        data["endDate"] = this.endDate ? formatDate(this.endDate) : undefined as any;
-        data["endTime"] = this.endTime;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['date'] = this.date ? formatDate(this.date) : (undefined as any);
+		data['time'] = this.time;
+		data['title'] = this.title;
+		data['description'] = this.description;
+		data['endDate'] = this.endDate ? formatDate(this.endDate) : (undefined as any);
+		data['endTime'] = this.endTime;
+		return data;
+	}
 }
 
 export interface IUpsertAgendaItemRequest {
-    date: Date;
-    time: string | undefined;
-    title: string;
-    description: string;
-    endDate: Date | undefined;
-    endTime: string | undefined;
+	date: Date;
+	time: string | undefined;
+	title: string;
+	description: string;
+	endDate: Date | undefined;
+	endTime: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertEquipmentRequest implements IUpsertEquipmentRequest {
-    name!: string;
-    description!: string | undefined;
-    equipmentTypeId!: string | undefined;
-    manufacturerId!: string | undefined;
-    oarSetId!: string | undefined;
-    requiredExamTypeId!: string | undefined;
-    freeFleet!: boolean;
-    outOfOrder!: boolean;
-    rowersWeight!: number | undefined;
-    rowersWeightMax!: number | undefined;
-    dateBuild!: Date | undefined;
-    dateBought!: Date | undefined;
-    dateSold!: Date | undefined;
+	name!: string;
+	description!: string | undefined;
+	equipmentTypeId!: string | undefined;
+	manufacturerId!: string | undefined;
+	oarSetId!: string | undefined;
+	requiredExamTypeId!: string | undefined;
+	freeFleet!: boolean;
+	outOfOrder!: boolean;
+	rowersWeight!: number | undefined;
+	rowersWeightMax!: number | undefined;
+	dateBuild!: Date | undefined;
+	dateBought!: Date | undefined;
+	dateSold!: Date | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertEquipmentRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertEquipmentRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.equipmentTypeId = _data["equipmentTypeId"];
-            this.manufacturerId = _data["manufacturerId"];
-            this.oarSetId = _data["oarSetId"];
-            this.requiredExamTypeId = _data["requiredExamTypeId"];
-            this.freeFleet = _data["freeFleet"];
-            this.outOfOrder = _data["outOfOrder"];
-            this.rowersWeight = _data["rowersWeight"];
-            this.rowersWeightMax = _data["rowersWeightMax"];
-            this.dateBuild = _data["dateBuild"] ? new Date(_data["dateBuild"].toString()) : undefined as any;
-            this.dateBought = _data["dateBought"] ? new Date(_data["dateBought"].toString()) : undefined as any;
-            this.dateSold = _data["dateSold"] ? new Date(_data["dateSold"].toString()) : undefined as any;
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.description = _data['description'];
+			this.equipmentTypeId = _data['equipmentTypeId'];
+			this.manufacturerId = _data['manufacturerId'];
+			this.oarSetId = _data['oarSetId'];
+			this.requiredExamTypeId = _data['requiredExamTypeId'];
+			this.freeFleet = _data['freeFleet'];
+			this.outOfOrder = _data['outOfOrder'];
+			this.rowersWeight = _data['rowersWeight'];
+			this.rowersWeightMax = _data['rowersWeightMax'];
+			this.dateBuild = _data['dateBuild']
+				? new Date(_data['dateBuild'].toString())
+				: (undefined as any);
+			this.dateBought = _data['dateBought']
+				? new Date(_data['dateBought'].toString())
+				: (undefined as any);
+			this.dateSold = _data['dateSold']
+				? new Date(_data['dateSold'].toString())
+				: (undefined as any);
+		}
+	}
 
-    static fromJS(data: any): UpsertEquipmentRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertEquipmentRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertEquipmentRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertEquipmentRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["equipmentTypeId"] = this.equipmentTypeId;
-        data["manufacturerId"] = this.manufacturerId;
-        data["oarSetId"] = this.oarSetId;
-        data["requiredExamTypeId"] = this.requiredExamTypeId;
-        data["freeFleet"] = this.freeFleet;
-        data["outOfOrder"] = this.outOfOrder;
-        data["rowersWeight"] = this.rowersWeight;
-        data["rowersWeightMax"] = this.rowersWeightMax;
-        data["dateBuild"] = this.dateBuild ? formatDate(this.dateBuild) : undefined as any;
-        data["dateBought"] = this.dateBought ? formatDate(this.dateBought) : undefined as any;
-        data["dateSold"] = this.dateSold ? formatDate(this.dateSold) : undefined as any;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['description'] = this.description;
+		data['equipmentTypeId'] = this.equipmentTypeId;
+		data['manufacturerId'] = this.manufacturerId;
+		data['oarSetId'] = this.oarSetId;
+		data['requiredExamTypeId'] = this.requiredExamTypeId;
+		data['freeFleet'] = this.freeFleet;
+		data['outOfOrder'] = this.outOfOrder;
+		data['rowersWeight'] = this.rowersWeight;
+		data['rowersWeightMax'] = this.rowersWeightMax;
+		data['dateBuild'] = this.dateBuild ? formatDate(this.dateBuild) : (undefined as any);
+		data['dateBought'] = this.dateBought ? formatDate(this.dateBought) : (undefined as any);
+		data['dateSold'] = this.dateSold ? formatDate(this.dateSold) : (undefined as any);
+		return data;
+	}
 }
 
 export interface IUpsertEquipmentRequest {
-    name: string;
-    description: string | undefined;
-    equipmentTypeId: string | undefined;
-    manufacturerId: string | undefined;
-    oarSetId: string | undefined;
-    requiredExamTypeId: string | undefined;
-    freeFleet: boolean;
-    outOfOrder: boolean;
-    rowersWeight: number | undefined;
-    rowersWeightMax: number | undefined;
-    dateBuild: Date | undefined;
-    dateBought: Date | undefined;
-    dateSold: Date | undefined;
+	name: string;
+	description: string | undefined;
+	equipmentTypeId: string | undefined;
+	manufacturerId: string | undefined;
+	oarSetId: string | undefined;
+	requiredExamTypeId: string | undefined;
+	freeFleet: boolean;
+	outOfOrder: boolean;
+	rowersWeight: number | undefined;
+	rowersWeightMax: number | undefined;
+	dateBuild: Date | undefined;
+	dateBought: Date | undefined;
+	dateSold: Date | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertEquipmentTypeRequest implements IUpsertEquipmentTypeRequest {
-    code!: string;
-    name!: string;
-    scull!: boolean;
-    coxed!: boolean;
-    rowersCount!: number;
-    isBoat!: boolean;
+	code!: string;
+	name!: string;
+	scull!: boolean;
+	coxed!: boolean;
+	rowersCount!: number;
+	isBoat!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertEquipmentTypeRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertEquipmentTypeRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.code = _data["code"];
-            this.name = _data["name"];
-            this.scull = _data["scull"];
-            this.coxed = _data["coxed"];
-            this.rowersCount = _data["rowersCount"];
-            this.isBoat = _data["isBoat"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.code = _data['code'];
+			this.name = _data['name'];
+			this.scull = _data['scull'];
+			this.coxed = _data['coxed'];
+			this.rowersCount = _data['rowersCount'];
+			this.isBoat = _data['isBoat'];
+		}
+	}
 
-    static fromJS(data: any): UpsertEquipmentTypeRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertEquipmentTypeRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertEquipmentTypeRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertEquipmentTypeRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["code"] = this.code;
-        data["name"] = this.name;
-        data["scull"] = this.scull;
-        data["coxed"] = this.coxed;
-        data["rowersCount"] = this.rowersCount;
-        data["isBoat"] = this.isBoat;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['code'] = this.code;
+		data['name'] = this.name;
+		data['scull'] = this.scull;
+		data['coxed'] = this.coxed;
+		data['rowersCount'] = this.rowersCount;
+		data['isBoat'] = this.isBoat;
+		return data;
+	}
 }
 
 export interface IUpsertEquipmentTypeRequest {
-    code: string;
-    name: string;
-    scull: boolean;
-    coxed: boolean;
-    rowersCount: number;
-    isBoat: boolean;
+	code: string;
+	name: string;
+	scull: boolean;
+	coxed: boolean;
+	rowersCount: number;
+	isBoat: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertExamTypeRequest implements IUpsertExamTypeRequest {
-    name!: string;
-    description!: string;
+	name!: string;
+	description!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertExamTypeRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertExamTypeRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-            this.description = _data["description"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.description = _data['description'];
+		}
+	}
 
-    static fromJS(data: any): UpsertExamTypeRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertExamTypeRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertExamTypeRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertExamTypeRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        data["description"] = this.description;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['description'] = this.description;
+		return data;
+	}
 }
 
 export interface IUpsertExamTypeRequest {
-    name: string;
-    description: string;
+	name: string;
+	description: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertManufacturerRequest implements IUpsertManufacturerRequest {
-    name!: string;
+	name!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertManufacturerRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertManufacturerRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+		}
+	}
 
-    static fromJS(data: any): UpsertManufacturerRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertManufacturerRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertManufacturerRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertManufacturerRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		return data;
+	}
 }
 
 export interface IUpsertManufacturerRequest {
-    name: string;
+	name: string;
 
-    [key: string]: any;
+	[key: string]: any;
+}
+
+export class UpsertMemberClusterRequest implements IUpsertMemberClusterRequest {
+	name!: string;
+	description!: string;
+
+	[key: string]: any;
+
+	constructor(data?: IUpsertMemberClusterRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.description = _data['description'];
+		}
+	}
+
+	static fromJS(data: any): UpsertMemberClusterRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertMemberClusterRequest();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['description'] = this.description;
+		return data;
+	}
+}
+
+export interface IUpsertMemberClusterRequest {
+	name: string;
+	description: string;
+
+	[key: string]: any;
 }
 
 export class UpsertNewsPostRequest implements IUpsertNewsPostRequest {
-    title!: string;
-    shortText!: string;
-    additionalText!: string | undefined;
-    membersOnly!: boolean;
-    iconId!: string | undefined;
+	title!: string;
+	shortText!: string;
+	additionalText!: string | undefined;
+	membersOnly!: boolean;
+	iconId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertNewsPostRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertNewsPostRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.title = _data["title"];
-            this.shortText = _data["shortText"];
-            this.additionalText = _data["additionalText"];
-            this.membersOnly = _data["membersOnly"];
-            this.iconId = _data["iconId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.title = _data['title'];
+			this.shortText = _data['shortText'];
+			this.additionalText = _data['additionalText'];
+			this.membersOnly = _data['membersOnly'];
+			this.iconId = _data['iconId'];
+		}
+	}
 
-    static fromJS(data: any): UpsertNewsPostRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertNewsPostRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertNewsPostRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertNewsPostRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["title"] = this.title;
-        data["shortText"] = this.shortText;
-        data["additionalText"] = this.additionalText;
-        data["membersOnly"] = this.membersOnly;
-        data["iconId"] = this.iconId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['title'] = this.title;
+		data['shortText'] = this.shortText;
+		data['additionalText'] = this.additionalText;
+		data['membersOnly'] = this.membersOnly;
+		data['iconId'] = this.iconId;
+		return data;
+	}
 }
 
 export interface IUpsertNewsPostRequest {
-    title: string;
-    shortText: string;
-    additionalText: string | undefined;
-    membersOnly: boolean;
-    iconId: string | undefined;
+	title: string;
+	shortText: string;
+	additionalText: string | undefined;
+	membersOnly: boolean;
+	iconId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertOarSetRequest implements IUpsertOarSetRequest {
-    name!: string;
-    manufacturerId!: string | undefined;
-    scull!: boolean;
+	name!: string;
+	manufacturerId!: string | undefined;
+	scull!: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertOarSetRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertOarSetRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-            this.manufacturerId = _data["manufacturerId"];
-            this.scull = _data["scull"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.manufacturerId = _data['manufacturerId'];
+			this.scull = _data['scull'];
+		}
+	}
 
-    static fromJS(data: any): UpsertOarSetRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertOarSetRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertOarSetRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertOarSetRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        data["manufacturerId"] = this.manufacturerId;
-        data["scull"] = this.scull;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['manufacturerId'] = this.manufacturerId;
+		data['scull'] = this.scull;
+		return data;
+	}
 }
 
 export interface IUpsertOarSetRequest {
-    name: string;
-    manufacturerId: string | undefined;
-    scull: boolean;
+	name: string;
+	manufacturerId: string | undefined;
+	scull: boolean;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertUserGroupCategoryRequest implements IUpsertUserGroupCategoryRequest {
-    name!: string;
-    description!: string;
+	name!: string;
+	description!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertUserGroupCategoryRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertUserGroupCategoryRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-            this.description = _data["description"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.description = _data['description'];
+		}
+	}
 
-    static fromJS(data: any): UpsertUserGroupCategoryRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertUserGroupCategoryRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertUserGroupCategoryRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertUserGroupCategoryRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        data["description"] = this.description;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['description'] = this.description;
+		return data;
+	}
 }
 
 export interface IUpsertUserGroupCategoryRequest {
-    name: string;
-    description: string;
+	name: string;
+	description: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertUserGroupCategoryRoleRequest implements IUpsertUserGroupCategoryRoleRequest {
-    namePlural!: string;
-    nameMasculine!: string | undefined;
-    nameFeminine!: string | undefined;
+	namePlural!: string;
+	nameMasculine!: string | undefined;
+	nameFeminine!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertUserGroupCategoryRoleRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertUserGroupCategoryRoleRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.namePlural = _data["namePlural"];
-            this.nameMasculine = _data["nameMasculine"];
-            this.nameFeminine = _data["nameFeminine"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.namePlural = _data['namePlural'];
+			this.nameMasculine = _data['nameMasculine'];
+			this.nameFeminine = _data['nameFeminine'];
+		}
+	}
 
-    static fromJS(data: any): UpsertUserGroupCategoryRoleRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertUserGroupCategoryRoleRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertUserGroupCategoryRoleRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertUserGroupCategoryRoleRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["namePlural"] = this.namePlural;
-        data["nameMasculine"] = this.nameMasculine;
-        data["nameFeminine"] = this.nameFeminine;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['namePlural'] = this.namePlural;
+		data['nameMasculine'] = this.nameMasculine;
+		data['nameFeminine'] = this.nameFeminine;
+		return data;
+	}
 }
 
 export interface IUpsertUserGroupCategoryRoleRequest {
-    namePlural: string;
-    nameMasculine: string | undefined;
-    nameFeminine: string | undefined;
+	namePlural: string;
+	nameMasculine: string | undefined;
+	nameFeminine: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
-    name!: string;
-    description!: string;
-    userGroupCategoryId!: string;
+	name!: string;
+	description!: string;
+	userGroupCategoryId!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUpsertUserGroupRequest) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUpsertUserGroupRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.userGroupCategoryId = _data["userGroupCategoryId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.name = _data['name'];
+			this.description = _data['description'];
+			this.userGroupCategoryId = _data['userGroupCategoryId'];
+		}
+	}
 
-    static fromJS(data: any): UpsertUserGroupRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new UpsertUserGroupRequest();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UpsertUserGroupRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpsertUserGroupRequest();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["userGroupCategoryId"] = this.userGroupCategoryId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['name'] = this.name;
+		data['description'] = this.description;
+		data['userGroupCategoryId'] = this.userGroupCategoryId;
+		return data;
+	}
 }
 
 export interface IUpsertUserGroupRequest {
-    name: string;
-    description: string;
-    userGroupCategoryId: string;
+	name: string;
+	description: string;
+	userGroupCategoryId: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserDto implements IUserDto {
-    id!: string;
-    userName!: string;
-    email!: string;
-    firstname!: string;
-    surnamePrefix!: string;
-    surname!: string;
-    fullname!: string;
-    phoneNumber!: string | undefined;
-    address!: BlueAddressDto;
-    emergencyAddress!: BlueAddressDto;
-    emergencyPhoneNumber!: string;
-    dateOfBirth!: Date;
-    gender!: BlueUserSex;
-    profilePictureFileId!: string | undefined;
+	id!: string;
+	userName!: string;
+	email!: string;
+	firstname!: string;
+	surnamePrefix!: string;
+	surname!: string;
+	fullname!: string;
+	phoneNumber!: string | undefined;
+	address!: BlueAddressDto;
+	emergencyAddress!: BlueAddressDto;
+	emergencyPhoneNumber!: string;
+	dateOfBirth!: Date;
+	gender!: BlueUserSex;
+	profilePictureFileId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.address = new BlueAddressDto();
-            this.emergencyAddress = new BlueAddressDto();
-        }
-    }
+	constructor(data?: IUserDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.address = new BlueAddressDto();
+			this.emergencyAddress = new BlueAddressDto();
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.userName = _data["userName"];
-            this.email = _data["email"];
-            this.firstname = _data["firstname"];
-            this.surnamePrefix = _data["surnamePrefix"];
-            this.surname = _data["surname"];
-            this.fullname = _data["fullname"];
-            this.phoneNumber = _data["phoneNumber"];
-            this.address = _data["address"] ? BlueAddressDto.fromJS(_data["address"]) : new BlueAddressDto();
-            this.emergencyAddress = _data["emergencyAddress"] ? BlueAddressDto.fromJS(_data["emergencyAddress"]) : new BlueAddressDto();
-            this.emergencyPhoneNumber = _data["emergencyPhoneNumber"];
-            this.dateOfBirth = _data["dateOfBirth"] ? new Date(_data["dateOfBirth"].toString()) : undefined as any;
-            this.gender = _data["gender"];
-            this.profilePictureFileId = _data["profilePictureFileId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.userName = _data['userName'];
+			this.email = _data['email'];
+			this.firstname = _data['firstname'];
+			this.surnamePrefix = _data['surnamePrefix'];
+			this.surname = _data['surname'];
+			this.fullname = _data['fullname'];
+			this.phoneNumber = _data['phoneNumber'];
+			this.address = _data['address']
+				? BlueAddressDto.fromJS(_data['address'])
+				: new BlueAddressDto();
+			this.emergencyAddress = _data['emergencyAddress']
+				? BlueAddressDto.fromJS(_data['emergencyAddress'])
+				: new BlueAddressDto();
+			this.emergencyPhoneNumber = _data['emergencyPhoneNumber'];
+			this.dateOfBirth = _data['dateOfBirth']
+				? new Date(_data['dateOfBirth'].toString())
+				: (undefined as any);
+			this.gender = _data['gender'];
+			this.profilePictureFileId = _data['profilePictureFileId'];
+		}
+	}
 
-    static fromJS(data: any): UserDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["userName"] = this.userName;
-        data["email"] = this.email;
-        data["firstname"] = this.firstname;
-        data["surnamePrefix"] = this.surnamePrefix;
-        data["surname"] = this.surname;
-        data["fullname"] = this.fullname;
-        data["phoneNumber"] = this.phoneNumber;
-        data["address"] = this.address ? this.address.toJSON() : undefined as any;
-        data["emergencyAddress"] = this.emergencyAddress ? this.emergencyAddress.toJSON() : undefined as any;
-        data["emergencyPhoneNumber"] = this.emergencyPhoneNumber;
-        data["dateOfBirth"] = this.dateOfBirth ? formatDate(this.dateOfBirth) : undefined as any;
-        data["gender"] = this.gender;
-        data["profilePictureFileId"] = this.profilePictureFileId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['userName'] = this.userName;
+		data['email'] = this.email;
+		data['firstname'] = this.firstname;
+		data['surnamePrefix'] = this.surnamePrefix;
+		data['surname'] = this.surname;
+		data['fullname'] = this.fullname;
+		data['phoneNumber'] = this.phoneNumber;
+		data['address'] = this.address ? this.address.toJSON() : (undefined as any);
+		data['emergencyAddress'] = this.emergencyAddress
+			? this.emergencyAddress.toJSON()
+			: (undefined as any);
+		data['emergencyPhoneNumber'] = this.emergencyPhoneNumber;
+		data['dateOfBirth'] = this.dateOfBirth ? formatDate(this.dateOfBirth) : (undefined as any);
+		data['gender'] = this.gender;
+		data['profilePictureFileId'] = this.profilePictureFileId;
+		return data;
+	}
 }
 
 export interface IUserDto {
-    id: string;
-    userName: string;
-    email: string;
-    firstname: string;
-    surnamePrefix: string;
-    surname: string;
-    fullname: string;
-    phoneNumber: string | undefined;
-    address: BlueAddressDto;
-    emergencyAddress: BlueAddressDto;
-    emergencyPhoneNumber: string;
-    dateOfBirth: Date;
-    gender: BlueUserSex;
-    profilePictureFileId: string | undefined;
+	id: string;
+	userName: string;
+	email: string;
+	firstname: string;
+	surnamePrefix: string;
+	surname: string;
+	fullname: string;
+	phoneNumber: string | undefined;
+	address: BlueAddressDto;
+	emergencyAddress: BlueAddressDto;
+	emergencyPhoneNumber: string;
+	dateOfBirth: Date;
+	gender: BlueUserSex;
+	profilePictureFileId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserExamDto implements IUserExamDto {
-    id!: string;
-    userId!: string;
-    userFullname!: string;
-    examTypeId!: string;
-    examTypeName!: string;
-    obtainedAt!: Date;
+	id!: string;
+	userId!: string;
+	userFullname!: string;
+	examTypeId!: string;
+	examTypeName!: string;
+	obtainedAt!: Date;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserExamDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserExamDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.userId = _data["userId"];
-            this.userFullname = _data["userFullname"];
-            this.examTypeId = _data["examTypeId"];
-            this.examTypeName = _data["examTypeName"];
-            this.obtainedAt = _data["obtainedAt"] ? new Date(_data["obtainedAt"].toString()) : undefined as any;
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.userId = _data['userId'];
+			this.userFullname = _data['userFullname'];
+			this.examTypeId = _data['examTypeId'];
+			this.examTypeName = _data['examTypeName'];
+			this.obtainedAt = _data['obtainedAt']
+				? new Date(_data['obtainedAt'].toString())
+				: (undefined as any);
+		}
+	}
 
-    static fromJS(data: any): UserExamDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserExamDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserExamDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserExamDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["userId"] = this.userId;
-        data["userFullname"] = this.userFullname;
-        data["examTypeId"] = this.examTypeId;
-        data["examTypeName"] = this.examTypeName;
-        data["obtainedAt"] = this.obtainedAt ? formatDate(this.obtainedAt) : undefined as any;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['userId'] = this.userId;
+		data['userFullname'] = this.userFullname;
+		data['examTypeId'] = this.examTypeId;
+		data['examTypeName'] = this.examTypeName;
+		data['obtainedAt'] = this.obtainedAt ? formatDate(this.obtainedAt) : (undefined as any);
+		return data;
+	}
 }
 
 export interface IUserExamDto {
-    id: string;
-    userId: string;
-    userFullname: string;
-    examTypeId: string;
-    examTypeName: string;
-    obtainedAt: Date;
+	id: string;
+	userId: string;
+	userFullname: string;
+	examTypeId: string;
+	examTypeName: string;
+	obtainedAt: Date;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupCategoryDto implements IUserGroupCategoryDto {
-    id!: string;
-    name!: string;
-    description!: string;
+	id!: string;
+	name!: string;
+	description!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupCategoryDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserGroupCategoryDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+		}
+	}
 
-    static fromJS(data: any): UserGroupCategoryDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupCategoryDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupCategoryDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupCategoryDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		return data;
+	}
 }
 
 export interface IUserGroupCategoryDto {
-    id: string;
-    name: string;
-    description: string;
+	id: string;
+	name: string;
+	description: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupCategoryOverviewDto implements IUserGroupCategoryOverviewDto {
-    id!: string;
-    name!: string;
-    description!: string;
-    groupCount!: number;
-    groups!: UserGroupOverviewDto[];
+	id!: string;
+	name!: string;
+	description!: string;
+	groupCount!: number;
+	groups!: UserGroupOverviewDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupCategoryOverviewDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.groups = [];
-        }
-    }
+	constructor(data?: IUserGroupCategoryOverviewDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.groups = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.groupCount = _data["groupCount"];
-            if (Array.isArray(_data["groups"])) {
-                this.groups = [] as any;
-                for (let item of _data["groups"])
-                    this.groups!.push(UserGroupOverviewDto.fromJS(item));
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+			this.groupCount = _data['groupCount'];
+			if (Array.isArray(_data['groups'])) {
+				this.groups = [] as any;
+				for (let item of _data['groups']) this.groups!.push(UserGroupOverviewDto.fromJS(item));
+			}
+		}
+	}
 
-    static fromJS(data: any): UserGroupCategoryOverviewDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupCategoryOverviewDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupCategoryOverviewDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupCategoryOverviewDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["groupCount"] = this.groupCount;
-        if (Array.isArray(this.groups)) {
-            data["groups"] = [];
-            for (let item of this.groups)
-                data["groups"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		data['groupCount'] = this.groupCount;
+		if (Array.isArray(this.groups)) {
+			data['groups'] = [];
+			for (let item of this.groups) data['groups'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
 }
 
 export interface IUserGroupCategoryOverviewDto {
-    id: string;
-    name: string;
-    description: string;
-    groupCount: number;
-    groups: UserGroupOverviewDto[];
+	id: string;
+	name: string;
+	description: string;
+	groupCount: number;
+	groups: UserGroupOverviewDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupCategoryRoleDto implements IUserGroupCategoryRoleDto {
-    id!: string;
-    userGroupCategoryId!: string;
-    namePlural!: string;
-    nameMasculine!: string | undefined;
-    nameFeminine!: string | undefined;
+	id!: string;
+	userGroupCategoryId!: string;
+	namePlural!: string;
+	nameMasculine!: string | undefined;
+	nameFeminine!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupCategoryRoleDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserGroupCategoryRoleDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.userGroupCategoryId = _data["userGroupCategoryId"];
-            this.namePlural = _data["namePlural"];
-            this.nameMasculine = _data["nameMasculine"];
-            this.nameFeminine = _data["nameFeminine"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.userGroupCategoryId = _data['userGroupCategoryId'];
+			this.namePlural = _data['namePlural'];
+			this.nameMasculine = _data['nameMasculine'];
+			this.nameFeminine = _data['nameFeminine'];
+		}
+	}
 
-    static fromJS(data: any): UserGroupCategoryRoleDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupCategoryRoleDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupCategoryRoleDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupCategoryRoleDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["userGroupCategoryId"] = this.userGroupCategoryId;
-        data["namePlural"] = this.namePlural;
-        data["nameMasculine"] = this.nameMasculine;
-        data["nameFeminine"] = this.nameFeminine;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['userGroupCategoryId'] = this.userGroupCategoryId;
+		data['namePlural'] = this.namePlural;
+		data['nameMasculine'] = this.nameMasculine;
+		data['nameFeminine'] = this.nameFeminine;
+		return data;
+	}
 }
 
 export interface IUserGroupCategoryRoleDto {
-    id: string;
-    userGroupCategoryId: string;
-    namePlural: string;
-    nameMasculine: string | undefined;
-    nameFeminine: string | undefined;
+	id: string;
+	userGroupCategoryId: string;
+	namePlural: string;
+	nameMasculine: string | undefined;
+	nameFeminine: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupDto implements IUserGroupDto {
-    id!: string;
-    name!: string;
-    description!: string;
-    userGroupCategoryId!: string;
-    userGroupCategoryName!: string;
-    permissions!: UserGroupPermissionDto[];
+	id!: string;
+	name!: string;
+	description!: string;
+	userGroupCategoryId!: string;
+	userGroupCategoryName!: string;
+	permissions!: UserGroupPermissionDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.permissions = [];
-        }
-    }
+	constructor(data?: IUserGroupDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.permissions = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.description = _data["description"];
-            this.userGroupCategoryId = _data["userGroupCategoryId"];
-            this.userGroupCategoryName = _data["userGroupCategoryName"];
-            if (Array.isArray(_data["permissions"])) {
-                this.permissions = [] as any;
-                for (let item of _data["permissions"])
-                    this.permissions!.push(UserGroupPermissionDto.fromJS(item));
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.description = _data['description'];
+			this.userGroupCategoryId = _data['userGroupCategoryId'];
+			this.userGroupCategoryName = _data['userGroupCategoryName'];
+			if (Array.isArray(_data['permissions'])) {
+				this.permissions = [] as any;
+				for (let item of _data['permissions'])
+					this.permissions!.push(UserGroupPermissionDto.fromJS(item));
+			}
+		}
+	}
 
-    static fromJS(data: any): UserGroupDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        data["userGroupCategoryId"] = this.userGroupCategoryId;
-        data["userGroupCategoryName"] = this.userGroupCategoryName;
-        if (Array.isArray(this.permissions)) {
-            data["permissions"] = [];
-            for (let item of this.permissions)
-                data["permissions"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['description'] = this.description;
+		data['userGroupCategoryId'] = this.userGroupCategoryId;
+		data['userGroupCategoryName'] = this.userGroupCategoryName;
+		if (Array.isArray(this.permissions)) {
+			data['permissions'] = [];
+			for (let item of this.permissions)
+				data['permissions'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
 }
 
 export interface IUserGroupDto {
-    id: string;
-    name: string;
-    description: string;
-    userGroupCategoryId: string;
-    userGroupCategoryName: string;
-    permissions: UserGroupPermissionDto[];
+	id: string;
+	name: string;
+	description: string;
+	userGroupCategoryId: string;
+	userGroupCategoryName: string;
+	permissions: UserGroupPermissionDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupInstanceDto implements IUserGroupInstanceDto {
-    id!: string;
-    userGroupId!: string;
-    userGroupName!: string;
-    userGroupCategoryId!: string;
-    seasonId!: string;
-    seasonName!: string;
-    permissions!: UserGroupPermissionDto[];
-    members!: InstanceMemberDto[];
+	id!: string;
+	userGroupId!: string;
+	userGroupName!: string;
+	userGroupCategoryId!: string;
+	seasonId!: string;
+	seasonName!: string;
+	permissions!: UserGroupPermissionDto[];
+	members!: InstanceMemberDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupInstanceDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.permissions = [];
-            this.members = [];
-        }
-    }
+	constructor(data?: IUserGroupInstanceDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.permissions = [];
+			this.members = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.userGroupId = _data["userGroupId"];
-            this.userGroupName = _data["userGroupName"];
-            this.userGroupCategoryId = _data["userGroupCategoryId"];
-            this.seasonId = _data["seasonId"];
-            this.seasonName = _data["seasonName"];
-            if (Array.isArray(_data["permissions"])) {
-                this.permissions = [] as any;
-                for (let item of _data["permissions"])
-                    this.permissions!.push(UserGroupPermissionDto.fromJS(item));
-            }
-            if (Array.isArray(_data["members"])) {
-                this.members = [] as any;
-                for (let item of _data["members"])
-                    this.members!.push(InstanceMemberDto.fromJS(item));
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.userGroupId = _data['userGroupId'];
+			this.userGroupName = _data['userGroupName'];
+			this.userGroupCategoryId = _data['userGroupCategoryId'];
+			this.seasonId = _data['seasonId'];
+			this.seasonName = _data['seasonName'];
+			if (Array.isArray(_data['permissions'])) {
+				this.permissions = [] as any;
+				for (let item of _data['permissions'])
+					this.permissions!.push(UserGroupPermissionDto.fromJS(item));
+			}
+			if (Array.isArray(_data['members'])) {
+				this.members = [] as any;
+				for (let item of _data['members']) this.members!.push(InstanceMemberDto.fromJS(item));
+			}
+		}
+	}
 
-    static fromJS(data: any): UserGroupInstanceDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupInstanceDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupInstanceDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupInstanceDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["userGroupId"] = this.userGroupId;
-        data["userGroupName"] = this.userGroupName;
-        data["userGroupCategoryId"] = this.userGroupCategoryId;
-        data["seasonId"] = this.seasonId;
-        data["seasonName"] = this.seasonName;
-        if (Array.isArray(this.permissions)) {
-            data["permissions"] = [];
-            for (let item of this.permissions)
-                data["permissions"].push(item ? item.toJSON() : undefined as any);
-        }
-        if (Array.isArray(this.members)) {
-            data["members"] = [];
-            for (let item of this.members)
-                data["members"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['userGroupId'] = this.userGroupId;
+		data['userGroupName'] = this.userGroupName;
+		data['userGroupCategoryId'] = this.userGroupCategoryId;
+		data['seasonId'] = this.seasonId;
+		data['seasonName'] = this.seasonName;
+		if (Array.isArray(this.permissions)) {
+			data['permissions'] = [];
+			for (let item of this.permissions)
+				data['permissions'].push(item ? item.toJSON() : (undefined as any));
+		}
+		if (Array.isArray(this.members)) {
+			data['members'] = [];
+			for (let item of this.members)
+				data['members'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
 }
 
 export interface IUserGroupInstanceDto {
-    id: string;
-    userGroupId: string;
-    userGroupName: string;
-    userGroupCategoryId: string;
-    seasonId: string;
-    seasonName: string;
-    permissions: UserGroupPermissionDto[];
-    members: InstanceMemberDto[];
+	id: string;
+	userGroupId: string;
+	userGroupName: string;
+	userGroupCategoryId: string;
+	seasonId: string;
+	seasonName: string;
+	permissions: UserGroupPermissionDto[];
+	members: InstanceMemberDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupMembershipDto implements IUserGroupMembershipDto {
-    groupId!: string;
-    seasonDisplayName!: string;
-    groupCategoryName!: string;
-    groupName!: string;
+	groupId!: string;
+	seasonDisplayName!: string;
+	groupCategoryName!: string;
+	groupName!: string;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupMembershipDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserGroupMembershipDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.groupId = _data["groupId"];
-            this.seasonDisplayName = _data["seasonDisplayName"];
-            this.groupCategoryName = _data["groupCategoryName"];
-            this.groupName = _data["groupName"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.groupId = _data['groupId'];
+			this.seasonDisplayName = _data['seasonDisplayName'];
+			this.groupCategoryName = _data['groupCategoryName'];
+			this.groupName = _data['groupName'];
+		}
+	}
 
-    static fromJS(data: any): UserGroupMembershipDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupMembershipDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupMembershipDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupMembershipDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["groupId"] = this.groupId;
-        data["seasonDisplayName"] = this.seasonDisplayName;
-        data["groupCategoryName"] = this.groupCategoryName;
-        data["groupName"] = this.groupName;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['groupId'] = this.groupId;
+		data['seasonDisplayName'] = this.seasonDisplayName;
+		data['groupCategoryName'] = this.groupCategoryName;
+		data['groupName'] = this.groupName;
+		return data;
+	}
 }
 
 export interface IUserGroupMembershipDto {
-    groupId: string;
-    seasonDisplayName: string;
-    groupCategoryName: string;
-    groupName: string;
+	groupId: string;
+	seasonDisplayName: string;
+	groupCategoryName: string;
+	groupName: string;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupOverviewDto implements IUserGroupOverviewDto {
-    id!: string;
-    name!: string;
-    instanceId!: string | undefined;
-    memberCount!: number | undefined;
-    permissionCount!: number | undefined;
+	id!: string;
+	name!: string;
+	instanceId!: string | undefined;
+	memberCount!: number | undefined;
+	permissionCount!: number | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupOverviewDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserGroupOverviewDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.instanceId = _data["instanceId"];
-            this.memberCount = _data["memberCount"];
-            this.permissionCount = _data["permissionCount"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.name = _data['name'];
+			this.instanceId = _data['instanceId'];
+			this.memberCount = _data['memberCount'];
+			this.permissionCount = _data['permissionCount'];
+		}
+	}
 
-    static fromJS(data: any): UserGroupOverviewDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupOverviewDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupOverviewDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupOverviewDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["instanceId"] = this.instanceId;
-        data["memberCount"] = this.memberCount;
-        data["permissionCount"] = this.permissionCount;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['name'] = this.name;
+		data['instanceId'] = this.instanceId;
+		data['memberCount'] = this.memberCount;
+		data['permissionCount'] = this.permissionCount;
+		return data;
+	}
 }
 
 export interface IUserGroupOverviewDto {
-    id: string;
-    name: string;
-    instanceId: string | undefined;
-    memberCount: number | undefined;
-    permissionCount: number | undefined;
+	id: string;
+	name: string;
+	instanceId: string | undefined;
+	memberCount: number | undefined;
+	permissionCount: number | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserGroupPermissionDto implements IUserGroupPermissionDto {
-    permission!: BluePermission;
-    userGroupCategoryRoleId!: string | undefined;
+	permission!: BluePermission;
+	userGroupCategoryRoleId!: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserGroupPermissionDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IUserGroupPermissionDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.permission = _data["permission"];
-            this.userGroupCategoryRoleId = _data["userGroupCategoryRoleId"];
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.permission = _data['permission'];
+			this.userGroupCategoryRoleId = _data['userGroupCategoryRoleId'];
+		}
+	}
 
-    static fromJS(data: any): UserGroupPermissionDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserGroupPermissionDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserGroupPermissionDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserGroupPermissionDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["permission"] = this.permission;
-        data["userGroupCategoryRoleId"] = this.userGroupCategoryRoleId;
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['permission'] = this.permission;
+		data['userGroupCategoryRoleId'] = this.userGroupCategoryRoleId;
+		return data;
+	}
 }
 
 export interface IUserGroupPermissionDto {
-    permission: BluePermission;
-    userGroupCategoryRoleId: string | undefined;
+	permission: BluePermission;
+	userGroupCategoryRoleId: string | undefined;
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class UserProfileDto implements IUserProfileDto {
-    id!: string;
-    firstname!: string;
-    surnamePrefix!: string;
-    surname!: string;
-    fullname!: string;
-    groups!: UserGroupMembershipDto[];
+	id!: string;
+	firstname!: string;
+	surnamePrefix!: string;
+	surname!: string;
+	fullname!: string;
+	groups!: UserGroupMembershipDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IUserProfileDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-        if (!data) {
-            this.groups = [];
-        }
-    }
+	constructor(data?: IUserProfileDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.groups = [];
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.id = _data["id"];
-            this.firstname = _data["firstname"];
-            this.surnamePrefix = _data["surnamePrefix"];
-            this.surname = _data["surname"];
-            this.fullname = _data["fullname"];
-            if (Array.isArray(_data["groups"])) {
-                this.groups = [] as any;
-                for (let item of _data["groups"])
-                    this.groups!.push(UserGroupMembershipDto.fromJS(item));
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.firstname = _data['firstname'];
+			this.surnamePrefix = _data['surnamePrefix'];
+			this.surname = _data['surname'];
+			this.fullname = _data['fullname'];
+			if (Array.isArray(_data['groups'])) {
+				this.groups = [] as any;
+				for (let item of _data['groups']) this.groups!.push(UserGroupMembershipDto.fromJS(item));
+			}
+		}
+	}
 
-    static fromJS(data: any): UserProfileDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserProfileDto();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): UserProfileDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new UserProfileDto();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["id"] = this.id;
-        data["firstname"] = this.firstname;
-        data["surnamePrefix"] = this.surnamePrefix;
-        data["surname"] = this.surname;
-        data["fullname"] = this.fullname;
-        if (Array.isArray(this.groups)) {
-            data["groups"] = [];
-            for (let item of this.groups)
-                data["groups"].push(item ? item.toJSON() : undefined as any);
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['firstname'] = this.firstname;
+		data['surnamePrefix'] = this.surnamePrefix;
+		data['surname'] = this.surname;
+		data['fullname'] = this.fullname;
+		if (Array.isArray(this.groups)) {
+			data['groups'] = [];
+			for (let item of this.groups) data['groups'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
 }
 
 export interface IUserProfileDto {
-    id: string;
-    firstname: string;
-    surnamePrefix: string;
-    surname: string;
-    fullname: string;
-    groups: UserGroupMembershipDto[];
+	id: string;
+	firstname: string;
+	surnamePrefix: string;
+	surname: string;
+	fullname: string;
+	groups: UserGroupMembershipDto[];
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 export class ValidationProblemDetails implements IValidationProblemDetails {
-    type?: string | undefined;
-    title?: string | undefined;
-    status?: number | undefined;
-    detail?: string | undefined;
-    instance?: string | undefined;
-    errors?: { [key: string]: string[]; };
+	type?: string | undefined;
+	title?: string | undefined;
+	status?: number | undefined;
+	detail?: string | undefined;
+	instance?: string | undefined;
+	errors?: { [key: string]: string[] };
 
-    [key: string]: any;
+	[key: string]: any;
 
-    constructor(data?: IValidationProblemDetails) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (this as any)[property] = (data as any)[property];
-            }
-        }
-    }
+	constructor(data?: IValidationProblemDetails) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
 
-    init(_data?: any) {
-        if (_data) {
-            for (var property in _data) {
-                if (_data.hasOwnProperty(property))
-                    this[property] = _data[property];
-            }
-            this.type = _data["type"];
-            this.title = _data["title"];
-            this.status = _data["status"];
-            this.detail = _data["detail"];
-            this.instance = _data["instance"];
-            if (_data["errors"]) {
-                this.errors = {} as any;
-                for (let key in _data["errors"]) {
-                    if (_data["errors"].hasOwnProperty(key))
-                        (this.errors as any)![key] = _data["errors"][key] !== undefined ? _data["errors"][key] : [];
-                }
-            }
-        }
-    }
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.type = _data['type'];
+			this.title = _data['title'];
+			this.status = _data['status'];
+			this.detail = _data['detail'];
+			this.instance = _data['instance'];
+			if (_data['errors']) {
+				this.errors = {} as any;
+				for (let key in _data['errors']) {
+					if (_data['errors'].hasOwnProperty(key))
+						(this.errors as any)![key] =
+							_data['errors'][key] !== undefined ? _data['errors'][key] : [];
+				}
+			}
+		}
+	}
 
-    static fromJS(data: any): ValidationProblemDetails {
-        data = typeof data === 'object' ? data : {};
-        let result = new ValidationProblemDetails();
-        result.init(data);
-        return result;
-    }
+	static fromJS(data: any): ValidationProblemDetails {
+		data = typeof data === 'object' ? data : {};
+		let result = new ValidationProblemDetails();
+		result.init(data);
+		return result;
+	}
 
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        for (var property in this) {
-            if (this.hasOwnProperty(property))
-                data[property] = this[property];
-        }
-        data["type"] = this.type;
-        data["title"] = this.title;
-        data["status"] = this.status;
-        data["detail"] = this.detail;
-        data["instance"] = this.instance;
-        if (this.errors) {
-            data["errors"] = {};
-            for (let key in this.errors) {
-                if (this.errors.hasOwnProperty(key))
-                    (data["errors"] as any)[key] = (this.errors as any)[key];
-            }
-        }
-        return data;
-    }
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['type'] = this.type;
+		data['title'] = this.title;
+		data['status'] = this.status;
+		data['detail'] = this.detail;
+		data['instance'] = this.instance;
+		if (this.errors) {
+			data['errors'] = {};
+			for (let key in this.errors) {
+				if (this.errors.hasOwnProperty(key))
+					(data['errors'] as any)[key] = (this.errors as any)[key];
+			}
+		}
+		return data;
+	}
 }
 
 export interface IValidationProblemDetails {
-    type?: string | undefined;
-    title?: string | undefined;
-    status?: number | undefined;
-    detail?: string | undefined;
-    instance?: string | undefined;
-    errors?: { [key: string]: string[]; };
+	type?: string | undefined;
+	title?: string | undefined;
+	status?: number | undefined;
+	detail?: string | undefined;
+	instance?: string | undefined;
+	errors?: { [key: string]: string[] };
 
-    [key: string]: any;
+	[key: string]: any;
 }
 
 function formatDate(d: Date) {
-    return d.getFullYear() + '-' + 
-        (d.getMonth() < 9 ? ('0' + (d.getMonth()+1)) : (d.getMonth()+1)) + '-' +
-        (d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate());
+	return (
+		d.getFullYear() +
+		'-' +
+		(d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) +
+		'-' +
+		(d.getDate() < 10 ? '0' + d.getDate() : d.getDate())
+	);
 }
 
 export interface FileParameter {
-    data: any;
-    fileName: string;
+	data: any;
+	fileName: string;
 }
 
 export interface FileResponse {
-    data: Blob;
-    status: number;
-    fileName?: string;
-    headers?: { [name: string]: any };
+	data: Blob;
+	status: number;
+	fileName?: string;
+	headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {
-    override message: string;
-    status: number;
-    response: string;
-    headers: { [key: string]: any; };
-    result: any;
+	override message: string;
+	status: number;
+	response: string;
+	headers: { [key: string]: any };
+	result: any;
 
-    constructor(message: string, status: number, response: string, headers: { [key: string]: any; }, result: any) {
-        super();
+	constructor(
+		message: string,
+		status: number,
+		response: string,
+		headers: { [key: string]: any },
+		result: any
+	) {
+		super();
 
-        this.message = message;
-        this.status = status;
-        this.response = response;
-        this.headers = headers;
-        this.result = result;
-    }
+		this.message = message;
+		this.status = status;
+		this.response = response;
+		this.headers = headers;
+		this.result = result;
+	}
 
-    protected isApiException = true;
+	protected isApiException = true;
 
-    static isApiException(obj: any): obj is ApiException {
-        return obj.isApiException === true;
-    }
+	static isApiException(obj: any): obj is ApiException {
+		return obj.isApiException === true;
+	}
 }
 
-function throwException(message: string, status: number, response: string, headers: { [key: string]: any; }, result?: any): any {
-    if (result !== null && result !== undefined)
-        throw result;
-    else
-        throw new ApiException(message, status, response, headers, null);
+function throwException(
+	message: string,
+	status: number,
+	response: string,
+	headers: { [key: string]: any },
+	result?: any
+): any {
+	if (result !== null && result !== undefined) throw result;
+	else throw new ApiException(message, status, response, headers, null);
 }

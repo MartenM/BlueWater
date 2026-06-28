@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.png';
-	import { Breadcrumbs, Footer, NavBar, session } from '$lib';
+	import { Breadcrumbs, Footer, NavBar, NavigationProgress, session } from '$lib';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
@@ -12,6 +12,7 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<NavigationProgress />
 <div class="flex min-h-screen flex-col">
 	<NavBar />
 	<Breadcrumbs />

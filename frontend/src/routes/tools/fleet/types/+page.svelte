@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { HasPermission, Spinner } from '$lib';
+	import { DataTable, HasPermission } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { EquipmentTypeDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
@@ -36,28 +36,58 @@
 	</HasPermission>
 </div>
 
-{#if loading}
-	<Spinner />
-{:else if error}
-	<p class="mt-4 text-sm text-gray-600">Materiaaltypen konden niet worden geladen.</p>
-{:else}
-	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">
-		{#each items as item (item.id)}
-			<a
-				href={resolve('/tools/fleet/types/[id]', { id: item.id })}
-				class="flex items-center justify-between py-3 hover:bg-gray-50"
-			>
-				<div>
-					<p class="font-medium text-gray-900">{item.name}</p>
-					<p class="text-sm text-gray-500">
-						{item.code} · {item.rowersCount} roeier{item.rowersCount !== 1 ? 's' : ''}{item.scull
-							? ' · scull'
-							: ''}{item.coxed ? ' · met stuurman' : ''}{item.isBoat ? '' : ' · geen boot'}
-					</p>
-				</div>
-			</a>
-		{:else}
-			<p class="py-6 text-sm text-gray-500">Geen materiaaltypen gevonden.</p>
-		{/each}
-	</div>
-{/if}
+{#snippet nameCell(item: EquipmentTypeDto)}
+	<span class="font-medium text-gray-900">{item.name}</span>
+{/snippet}
+{#snippet codeCell(item: EquipmentTypeDto)}
+	<span class="text-gray-600">{item.code}</span>
+{/snippet}
+{#snippet rowersCell(item: EquipmentTypeDto)}
+	<span class="text-gray-600">{item.rowersCount}</span>
+{/snippet}
+{#snippet scullCell(item: EquipmentTypeDto)}
+	{#if item.scull}
+		<span
+			class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+			>Ja</span
+		>
+	{:else}
+		<span class="text-gray-400">Nee</span>
+	{/if}
+{/snippet}
+{#snippet coxedCell(item: EquipmentTypeDto)}
+	{#if item.coxed}
+		<span
+			class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+			>Ja</span
+		>
+	{:else}
+		<span class="text-gray-400">Nee</span>
+	{/if}
+{/snippet}
+{#snippet isBoatCell(item: EquipmentTypeDto)}
+	{#if item.isBoat}
+		<span
+			class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
+			>Ja</span
+		>
+	{:else}
+		<span class="text-gray-400">Nee</span>
+	{/if}
+{/snippet}
+
+<DataTable
+	columns={[
+		{ header: 'Naam', cell: nameCell },
+		{ header: 'Code', cell: codeCell },
+		{ header: 'Roeiers', cell: rowersCell },
+		{ header: 'Scull', cell: scullCell },
+		{ header: 'Stuurman', cell: coxedCell },
+		{ header: 'Boot', cell: isBoatCell }
+	]}
+	{items}
+	{loading}
+	error={error ? 'Materiaaltypen konden niet worden geladen.' : undefined}
+	emptyMessage="Geen materiaaltypen gevonden."
+	rowHref={(item) => resolve('/tools/fleet/types/[id]', { id: item.id })}
+/>

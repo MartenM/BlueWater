@@ -3,7 +3,7 @@
 	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
-	import { HasPermission, Pagination, Spinner } from '$lib';
+	import { DataTable, HasPermission, Pagination } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { UserDto } from '$lib/api/apiClient';
 
@@ -64,25 +64,23 @@
 	/>
 </form>
 
-{#if loading}
-	<Spinner />
-{:else if error}
-	<p class="mt-4 text-sm text-gray-600">Gebruikers konden niet worden geladen.</p>
-{:else}
-	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">
-		{#each items as item (item.id)}
-			<a
-				href={resolve('/tools/users/[id]', { id: item.id })}
-				class="flex items-center justify-between py-3 hover:bg-gray-50"
-			>
-				<div>
-					<p class="font-medium text-gray-900">{item.fullname}</p>
-					<p class="text-sm text-gray-500">{item.userName} &middot; {item.email}</p>
-				</div>
-			</a>
-		{:else}
-			<p class="py-6 text-sm text-gray-500">Geen gebruikers gevonden.</p>
-		{/each}
-	</div>
-	<Pagination page={currentPage} {totalPages} onPageChange={reload} />
-{/if}
+{#snippet nameCell(item: UserDto)}
+	<span class="font-medium text-gray-900">{item.fullname}</span>
+{/snippet}
+
+{#snippet accountCell(item: UserDto)}
+	<span class="text-sm text-gray-500">{item.userName} &middot; {item.email}</span>
+{/snippet}
+
+<DataTable
+	columns={[
+		{ header: 'Naam', cell: nameCell },
+		{ header: 'Account', cell: accountCell }
+	]}
+	{items}
+	{loading}
+	error={error ? 'Gebruikers konden niet worden geladen.' : undefined}
+	emptyMessage="Geen gebruikers gevonden."
+	rowHref={(item) => resolve('/tools/users/[id]', { id: item.id })}
+/>
+<Pagination page={currentPage} {totalPages} onPageChange={reload} />

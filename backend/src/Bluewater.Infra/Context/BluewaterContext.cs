@@ -4,6 +4,7 @@ using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Agenda;
 using Bluewater.Domain.Models.Auth;
+using Bluewater.Domain.Models.Clusters;
 using Bluewater.Domain.Models.Exams;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Fleet;
@@ -46,6 +47,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<EquipmentType> EquipmentTypes => Set<EquipmentType>();
     public DbSet<OarSet> OarSets => Set<OarSet>();
     public DbSet<Equipment> Equipment => Set<Equipment>();
+    public DbSet<MemberCluster> MemberClusters => Set<MemberCluster>();
+    public DbSet<MemberClusterCriterion> MemberClusterCriteria => Set<MemberClusterCriterion>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -286,6 +289,43 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasOne(x => x.RequiredExamType)
                 .WithMany()
                 .HasForeignKey(x => x.RequiredExamTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+        });
+
+        builder.Entity<MemberCluster>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<MemberClusterCriterion>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasQueryFilter(x => x.MemberCluster.DeletedAt == null);
+
+            e.Property(x => x.Type).HasConversion<string>();
+
+            e.HasOne(x => x.MemberCluster)
+                .WithMany(x => x.Criteria)
+                .HasForeignKey(x => x.MemberClusterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.UserGroupCategory)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupCategoryId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            e.HasOne(x => x.UserGroupCategoryRole)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupCategoryRoleId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
+            e.HasOne(x => x.UserGroup)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
         });

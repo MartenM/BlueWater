@@ -40,7 +40,8 @@ export const navItems: NavItem[] = [
 			{ label: 'Materiaal / Vloot', href: '/tools/fleet' },
 			{ label: 'Gebruikers', href: '/tools/users' },
 			{ label: 'Groepen', href: '/tools/groups' },
-			{ label: 'Examens', href: '/tools/exams' }
+			{ label: 'Examens', href: '/tools/exams' },
+			{ label: 'Clusters', href: '/tools/clusters' }
 		]
 	},
 	{ label: 'Contact', href: '/contact' }

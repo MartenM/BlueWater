@@ -28,7 +28,8 @@
 <BlueForm
 	{form}
 	{submitLabel}
-	onsubmit={() => onSubmit(new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId }))}
+	onsubmit={() =>
+		onSubmit(new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId }))}
 >
 	<div>
 		<span class="text-sm font-medium text-gray-700">Categorie</span>

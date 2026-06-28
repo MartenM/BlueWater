@@ -35,6 +35,7 @@ export { default as DataTable } from './components/common/DataTable.svelte';
 export { default as BlueAlert } from './components/BlueAlert.svelte';
 export { default as FormField } from './components/FormField.svelte';
 export { default as Breadcrumbs } from './components/Breadcrumbs.svelte';
+export { default as NavigationProgress } from './components/NavigationProgress.svelte';
 export * from './navigation';
 export * from './breadcrumbs.svelte';
 export * from './footer';

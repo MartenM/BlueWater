@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { HasPermission, Spinner } from '$lib';
+	import { DataTable, HasPermission } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { OarSetDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
@@ -36,28 +36,25 @@
 	</HasPermission>
 </div>
 
-{#if loading}
-	<Spinner />
-{:else if error}
-	<p class="mt-4 text-sm text-gray-600">Riemstellen konden niet worden geladen.</p>
-{:else}
-	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">
-		{#each items as item (item.id)}
-			<a
-				href={resolve('/tools/fleet/oar-sets/[id]', { id: item.id })}
-				class="flex items-center justify-between py-3 hover:bg-gray-50"
-			>
-				<div>
-					<p class="font-medium text-gray-900">{item.name}</p>
-					<p class="text-sm text-gray-500">
-						{item.scull ? 'Scull' : 'Sweep'}{item.manufacturerName
-							? ` · ${item.manufacturerName}`
-							: ''}
-					</p>
-				</div>
-			</a>
-		{:else}
-			<p class="py-6 text-sm text-gray-500">Geen riemstellen gevonden.</p>
-		{/each}
-	</div>
-{/if}
+{#snippet nameCell(item: OarSetDto)}
+	<span class="font-medium text-gray-900">{item.name}</span>
+{/snippet}
+{#snippet typeCell(item: OarSetDto)}
+	<span class="text-gray-600">{item.scull ? 'Scull' : 'Sweep'}</span>
+{/snippet}
+{#snippet manufacturerCell(item: OarSetDto)}
+	<span class="text-gray-600">{item.manufacturerName ?? '—'}</span>
+{/snippet}
+
+<DataTable
+	columns={[
+		{ header: 'Naam', cell: nameCell },
+		{ header: 'Type', cell: typeCell },
+		{ header: 'Fabrikant', cell: manufacturerCell }
+	]}
+	{items}
+	{loading}
+	error={error ? 'Riemstellen konden niet worden geladen.' : undefined}
+	emptyMessage="Geen riemstellen gevonden."
+	rowHref={(item) => resolve('/tools/fleet/oar-sets/[id]', { id: item.id })}
+/>

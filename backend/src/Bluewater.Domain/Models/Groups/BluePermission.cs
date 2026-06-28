@@ -20,4 +20,6 @@ public enum BluePermission
     ExamsAssign = 16,
     FleetView = 17,
     FleetModify = 18,
+    ClustersView = 19,
+    ClustersModify = 20,
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { HasPermission, Spinner } from '$lib';
+	import { DataTable, HasPermission } from '$lib';
 	import { BluePermission } from '$lib/api/apiClient';
 	import type { ManufacturerDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
@@ -36,21 +36,15 @@
 	</HasPermission>
 </div>
 
-{#if loading}
-	<Spinner />
-{:else if error}
-	<p class="mt-4 text-sm text-gray-600">Fabrikanten konden niet worden geladen.</p>
-{:else}
-	<div class="mt-6 divide-y divide-gray-200 border-t border-gray-200">
-		{#each items as item (item.id)}
-			<a
-				href={resolve('/tools/fleet/manufacturers/[id]', { id: item.id })}
-				class="flex items-center justify-between py-3 hover:bg-gray-50"
-			>
-				<p class="font-medium text-gray-900">{item.name}</p>
-			</a>
-		{:else}
-			<p class="py-6 text-sm text-gray-500">Geen fabrikanten gevonden.</p>
-		{/each}
-	</div>
-{/if}
+{#snippet nameCell(item: ManufacturerDto)}
+	<span class="font-medium text-gray-900">{item.name}</span>
+{/snippet}
+
+<DataTable
+	columns={[{ header: 'Naam', cell: nameCell }]}
+	{items}
+	{loading}
+	error={error ? 'Fabrikanten konden niet worden geladen.' : undefined}
+	emptyMessage="Geen fabrikanten gevonden."
+	rowHref={(item) => resolve('/tools/fleet/manufacturers/[id]', { id: item.id })}
+/>

@@ -21,7 +21,11 @@
 	const form = new FormState();
 </script>
 
-<BlueForm {form} {submitLabel} onsubmit={() => onSubmit(new UpsertExamTypeRequest({ name, description }))}>
+<BlueForm
+	{form}
+	{submitLabel}
+	onsubmit={() => onSubmit(new UpsertExamTypeRequest({ name, description }))}
+>
 	<FormField label="Naam" errors={form.errorsFor('name')}>
 		{#snippet children(invalid)}
 			<input

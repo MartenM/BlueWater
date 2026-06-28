@@ -130,6 +130,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IFleetEquipmentTypeService, FleetEquipmentTypeService>();
         builder.Services.AddScoped<IOarSetService, OarSetService>();
         builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+        builder.Services.AddScoped<IMemberClusterService, MemberClusterService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
         builder.Services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 
