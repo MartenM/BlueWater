@@ -55,61 +55,53 @@
 	{:else if items.length === 0}
 		<p class="mt-4 text-sm text-gray-600">Geen inschrijvingen beschikbaar.</p>
 	{:else}
-		<table class="mt-6 w-full text-sm">
-			<tbody>
-				{#each grouped as [category, catItems] (category)}
-					<tr>
-						<td colspan="4" class="pb-1 pt-6 first:pt-0">
-							<h2 class="border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">
-								{category}
-							</h2>
-						</td>
-					</tr>
+		{#each grouped as [category, catItems] (category)}
+			<section class="mt-8 first:mt-6">
+				<h2 class="border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">
+					{category}
+				</h2>
+				<ul class="text-sm">
 					{#each catItems as item (item.id)}
-						<tr class="hover:bg-gray-50">
-							<td class="py-2 pr-3">
-								<a
-									href={resolve('/signup/[id]', { id: item.id })}
-									class="font-medium text-gray-900 hover:text-primary-hover"
-								>
-									{item.title}
-								</a>
-							</td>
-							<td class="py-2 pr-3 text-xs text-gray-400 whitespace-nowrap">
+						<li class="flex items-center gap-3 py-2 hover:bg-gray-50">
+							<a
+								href={resolve('/signup/[id]', { id: item.id })}
+								class="min-w-0 flex-1 font-medium text-gray-900 hover:text-primary-hover"
+							>
+								{item.title}
+							</a>
+							<span class="w-24 shrink-0 text-right text-xs text-gray-400">
 								{#if item.endDate}
 									{isOpen(item) ? 'tot' : 'gesloten'}
 									{formatDate(item.endDate)}
 								{/if}
-							</td>
-							<td class="py-2 pr-3 text-xs text-gray-500 whitespace-nowrap">
+							</span>
+							<span class="w-24 shrink-0 text-right text-xs text-gray-500">
 								{#if item.maxSignups != null}
 									{item.validResponses}/{item.maxSignups}
 								{:else}
 									{item.validResponses} aangemeld
 								{/if}
-							</td>
-							<td class="py-2 text-right whitespace-nowrap">
-								<div class="flex items-center justify-end gap-1.5">
-									{#if !isOpen(item)}
-										<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-											Gesloten
-										</span>
-									{/if}
-									{#if item.myResponseStatus === 'valid' || item.myResponseStatus === 'reservation'}
-										<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-											Aangemeld
-										</span>
-									{:else if item.myResponseStatus === 'waitlist'}
-										<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-											Wachtlijst
-										</span>
-									{/if}
-								</div>
-							</td>
-						</tr>
+							</span>
+							<div class="flex w-28 shrink-0 items-center justify-end gap-1.5">
+								{#if !isOpen(item)}
+									<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+										Gesloten
+									</span>
+								{/if}
+								{#if item.myResponseStatus === 'valid' || item.myResponseStatus === 'reservation'}
+									<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+										Aangemeld
+									</span>
+								{:else if item.myResponseStatus === 'waitlist'}
+									<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+										Wachtlijst
+									</span>
+								{/if}
+							</div>
+						</li>
 					{/each}
-				{/each}
-			</tbody>
-		</table>
+				</ul>
+			</section>
+		{/each}
 	{/if}
 </div>

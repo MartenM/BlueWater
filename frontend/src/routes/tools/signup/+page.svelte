@@ -16,7 +16,7 @@
 		BluePermission,
 		UpsertSignupRequest
 	} from '$lib/api/apiClient';
-	import type { SignupListItemDto, SignupCategoryDto } from '$lib/api/apiClient';
+	import type { SignupListItemDto, SignupCategoryDto, SignupArchiveSeasonDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import { FormState } from '$lib/forms/formState.svelte';
 
@@ -24,6 +24,11 @@
 	let categories = $state<SignupCategoryDto[]>([]);
 	let error = $state(false);
 	let loading = $state(true);
+
+	let showArchived = $state(false);
+	let archivedSeasons = $state<SignupArchiveSeasonDto[]>([]);
+	let archivedLoading = $state(false);
+	let archivedError = $state(false);
 
 	let createModal = $state<HTMLDialogElement>();
 	const createForm = new FormState();
@@ -66,6 +71,24 @@
 		}
 	});
 
+	async function toggleArchived() {
+		if (showArchived) {
+			showArchived = false;
+			return;
+		}
+		showArchived = true;
+		if (archivedSeasons.length > 0) return;
+		archivedLoading = true;
+		archivedError = false;
+		try {
+			archivedSeasons = await apiClient.archive();
+		} catch {
+			archivedError = true;
+		} finally {
+			archivedLoading = false;
+		}
+	}
+
 	async function handleCreate() {
 		await createForm.submit(async () => {
 			const created = await apiClient.signupsPOST(
@@ -101,6 +124,9 @@
 		<a href={resolve('/tools/signup/categories')} class="self-center text-sm text-gray-500 hover:underline">
 			Categorieën
 		</a>
+		<Button variant="secondary" size="sm" onclick={toggleArchived}>
+			{showArchived ? 'Verberg oude' : 'Oude inschrijvingen'}
+		</Button>
 		<HasPermission permission={BluePermission.AdminSignupModify}>
 			<Button variant="primary" size="sm" onclick={() => createModal?.showModal()}>
 				Nieuwe inschrijving
@@ -138,6 +164,42 @@
 	emptyMessage="Geen inschrijvingen gevonden."
 	rowHref={(item) => resolve('/tools/signup/[id]', { id: item.id })}
 />
+
+{#if showArchived}
+	<div class="mt-8">
+		<h2 class="mb-4 text-lg font-semibold text-gray-700">Oude inschrijvingen</h2>
+		{#if archivedLoading}
+			<p class="text-sm text-gray-500">Laden…</p>
+		{:else if archivedError}
+			<p class="text-sm text-red-600">Oude inschrijvingen konden niet worden geladen.</p>
+		{:else if archivedSeasons.length === 0}
+			<p class="text-sm text-gray-500">Geen oude inschrijvingen gevonden.</p>
+		{:else}
+			{#each archivedSeasons as season (season.seasonName)}
+				<details class="mb-4 rounded-lg border border-gray-200">
+					<summary class="cursor-pointer select-none rounded-lg bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100">
+						{season.seasonName}
+						<span class="ml-1 font-normal text-gray-400">({season.signups?.length ?? 0})</span>
+					</summary>
+					<div class="p-2">
+						<DataTable
+							columns={[
+								{ header: 'Titel', cell: titleCell },
+								{ header: 'Categorie', cell: categoryCell },
+								{ header: 'Einddatum', cell: endDateCell },
+								{ header: 'Aanmeldingen', cell: responsesCell }
+							]}
+							items={season.signups ?? []}
+							loading={false}
+							emptyMessage="Geen inschrijvingen."
+							rowHref={(item) => resolve('/tools/signup/[id]', { id: item.id })}
+						/>
+					</div>
+				</details>
+			{/each}
+		{/if}
+	</div>
+{/if}
 
 <Modal bind:dialog={createModal}>
 	<div class="p-6 max-w-lg w-full">

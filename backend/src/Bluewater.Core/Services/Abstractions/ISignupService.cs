@@ -14,6 +14,7 @@ public interface ISignupService
 
     // Admin
     Task<List<SignupListItemDto>> AdminListAsync();
+    Task<List<SignupArchiveSeasonDto>> AdminListArchivedAsync();
     Task<SignupAdminDetailDto> AdminGetAsync(Guid signupId);
     Task<SignupAdminDetailDto> AdminCreateAsync(UpsertSignupRequest request);
     Task<SignupAdminDetailDto> AdminUpdateAsync(Guid id, UpsertSignupRequest request);

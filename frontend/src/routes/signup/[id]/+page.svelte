@@ -23,6 +23,7 @@
 	let loadError = $state(false);
 	let deleteDialog = $state<HTMLDialogElement>();
 	let aanmeldenModal = $state<HTMLDialogElement>();
+	let isEditing = $state(false);
 
 	onMount(async () => {
 		try {
@@ -64,6 +65,16 @@
 		return new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 	}
 
+	function openAanmelden() {
+		isEditing = false;
+		aanmeldenModal?.showModal();
+	}
+
+	function openEdit() {
+		isEditing = true;
+		aanmeldenModal?.showModal();
+	}
+
 	async function handleSubmit() {
 		if (!detail) return;
 		const fvList = detail.fields.map(
@@ -91,6 +102,7 @@
 				new UpdateResponseRequest({ fieldValues: fvList })
 			);
 			detail = await apiClient.signupsGET2(signupId);
+			aanmeldenModal?.close();
 		});
 	}
 
@@ -101,6 +113,10 @@
 			detail = await apiClient.signupsGET2(signupId);
 		});
 	}
+
+	const hasRowActions = $derived(
+		!!detail?.myResponse && isOpen && (!!detail?.allowUpdate || !!detail?.allowDelete)
+	);
 </script>
 
 {#if loadError}
@@ -133,7 +149,7 @@
 			<HasPermission permission={BluePermission.SignupRespond}>
 				{#if isOpen && !detail.myResponse}
 					<div class="shrink-0 mt-6">
-						<Button variant="primary" onclick={() => aanmeldenModal?.showModal()}>
+						<Button variant="primary" onclick={openAanmelden}>
 							Aanmelden
 						</Button>
 					</div>
@@ -159,13 +175,19 @@
 									{#each detail.fields as field (field.id)}
 										<th class="py-2 pr-4 font-medium">{field.title}</th>
 									{/each}
+									{#if hasRowActions}
+										<th class="py-2 font-medium"></th>
+									{/if}
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-gray-100">
 								{#each detail.responses as r (r.id)}
-									<tr>
+									{@const isOwn = r.id === detail.myResponse?.id}
+									<tr class:bg-blue-50={isOwn}>
 										{#if !detail.anonymous}
-											<td class="py-2 pr-4 text-gray-900">{r.userFullname ?? 'Anoniem'}</td>
+											<td class="py-2 pr-4" class:font-medium={isOwn} class:text-gray-900={isOwn} class:text-gray-700={!isOwn}>
+												{r.userFullname ?? 'Anoniem'}
+											</td>
 										{/if}
 										<td class="py-2 pr-4">
 											{#if r.status === 'reservation'}
@@ -181,6 +203,36 @@
 												{r.fieldValues.find((v) => v.fieldId === field.id)?.value ?? '—'}
 											</td>
 										{/each}
+										{#if hasRowActions}
+											<td class="py-2 pl-2 whitespace-nowrap">
+												{#if isOwn}
+													<div class="flex items-center gap-1">
+														{#if detail.allowUpdate}
+															<button
+																onclick={openEdit}
+																title="Bewerken"
+																class="rounded p-1 text-gray-400 hover:bg-blue-100 hover:text-blue-600"
+															>
+																<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+																	<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+																</svg>
+															</button>
+														{/if}
+														{#if detail.allowDelete}
+															<button
+																onclick={() => deleteDialog?.showModal()}
+																title="Afmelden"
+																class="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
+															>
+																<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+																	<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+																</svg>
+															</button>
+														{/if}
+													</div>
+												{/if}
+											</td>
+										{/if}
 									</tr>
 								{/each}
 							</tbody>
@@ -188,79 +240,60 @@
 					</div>
 				{/if}
 			</div>
-		{/if}
-
-		<!-- My response (existing) -->
-		<HasPermission permission={BluePermission.SignupRespond}>
-			{#if detail.myResponse}
-				<div class="border border-gray-200 rounded-lg p-6">
-					<h2 class="text-lg font-semibold text-gray-800">Mijn aanmelding</h2>
-					<p class="mt-1 text-sm text-gray-500">
-						Status:
-						{#if detail.myResponse.status === 'reservation'}
-							<span class="text-blue-600">Reservering</span>
-						{:else if detail.myResponse.status === 'waitlist'}
-							<span class="text-amber-600">Wachtlijst</span>
-						{:else}
-							<span class="text-green-600">Aangemeld</span>
-						{/if}
-					</p>
-
-					{#if detail.allowUpdate && isOpen}
-						<form
-							onsubmit={(e) => { e.preventDefault(); handleUpdate(); }}
-							class="mt-4 space-y-4"
-						>
-							{#each detail.fields as field (field.id)}
-								<FormField label={field.title} errors={responseForm.errorsFor(field.id)}>
-									{#snippet children(invalid)}
-										<input
-											type="text"
-											bind:value={fieldValues[field.id]}
-											class="w-full rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"
-										/>
-									{/snippet}
-								</FormField>
-							{/each}
-							{#if responseForm.formError}
-								<p class="text-sm text-red-600">{responseForm.formError}</p>
-							{/if}
-							<Button type="submit" variant="primary" size="sm" loading={responseForm.submitting}>
-								Opslaan
-							</Button>
-						</form>
+		{:else if detail.hideSignups && detail.myResponse}
+			<!-- Compact own-response indicator when the full list is hidden -->
+			<HasPermission permission={BluePermission.SignupRespond}>
+				<div class="flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-3 text-sm">
+					<span class="font-medium text-gray-700">Jouw aanmelding:</span>
+					{#if detail.myResponse.status === 'reservation'}
+						<span class="text-blue-600">Reservering</span>
+					{:else if detail.myResponse.status === 'waitlist'}
+						<span class="text-amber-600">Wachtlijst</span>
+					{:else}
+						<span class="text-green-600">Aangemeld</span>
 					{/if}
-
-					{#if detail.allowDelete && isOpen}
-						<div class="mt-4">
-							<Button
-								variant="danger"
-								size="sm"
-								onclick={() => deleteDialog?.showModal?.()}
-								loading={deleteForm.submitting}
+					{#if isOpen}
+						{#if detail.allowUpdate}
+							<button
+								onclick={openEdit}
+								title="Bewerken"
+								class="rounded p-1 text-gray-400 hover:bg-blue-100 hover:text-blue-600"
 							>
-								Afmelden
-							</Button>
-							{#if deleteForm.formError}
-								<p class="mt-1 text-sm text-red-600">{deleteForm.formError}</p>
-							{/if}
-						</div>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								</svg>
+							</button>
+						{/if}
+						{#if detail.allowDelete}
+							<button
+								onclick={() => deleteDialog?.showModal()}
+								title="Afmelden"
+								class="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+									<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+								</svg>
+							</button>
+						{/if}
 					{/if}
 				</div>
-			{:else if !isOpen}
-				<p class="text-sm text-gray-500">Deze inschrijving is gesloten.</p>
-			{/if}
-		</HasPermission>
+			</HasPermission>
+		{:else if !isOpen}
+			<p class="text-sm text-gray-500">Deze inschrijving is gesloten.</p>
+		{/if}
 	</div>
 
-	<!-- Aanmelden dialog -->
+	<!-- Aanmelden / Bewerken dialog -->
 	<Modal bind:dialog={aanmeldenModal}>
 		<div class="p-6">
+			<h2 class="text-lg font-semibold text-gray-800 mb-4">
+				{isEditing ? 'Aanmelding bewerken' : 'Aanmelden'}
+			</h2>
 			<form
-				onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+				onsubmit={(e) => { e.preventDefault(); isEditing ? handleUpdate() : handleSubmit(); }}
 				class="space-y-4"
 			>
-				{#if detail.fields.length === 0}
+				{#if detail.fields.length === 0 && !isEditing}
 					<p class="text-sm text-gray-600">Bevestig je aanmelding.</p>
 				{/if}
 				{#each detail.fields as field (field.id)}
@@ -290,7 +323,7 @@
 									class="w-full rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"
 								/>
 							{:else if field.type === SignupInputFieldType.RadioList && field.options}
-								{#each JSON.parse(field.options) as opt (opt)}
+								{#each field.options.split(',').map(s => s.trim()).filter(Boolean) as opt (opt)}
 									<label class="flex items-center gap-2">
 										<input
 											type="radio"
@@ -320,7 +353,7 @@
 						Annuleren
 					</Button>
 					<Button type="submit" variant="primary" loading={responseForm.submitting}>
-						Aanmelden
+						{isEditing ? 'Opslaan' : 'Aanmelden'}
 					</Button>
 				</div>
 			</form>

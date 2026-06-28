@@ -64,10 +64,10 @@ public class BluewaterContextSeeder
         CreateGroupInstances(season, adminUser, memberUsers, membersGroup, maintainersGroup, seniorsGroup, juniorsGroup, faker);
 
         CreateUserExams(faker, memberUsers, examTypes);
-        CreateMemberClusters(generalCategory, trainingCategory, membersGroup, seniorsGroup, juniorsGroup);
+        var alleLedenCluster = CreateMemberClusters(generalCategory, trainingCategory, membersGroup, seniorsGroup, juniorsGroup);
         await CreateNewsAsync();
         CreateAgendaItems();
-        CreateSignups(faker, adminUser, memberUsers);
+        CreateSignups(faker, adminUser, memberUsers, alleLedenCluster);
 
         await _context.SaveChangesAsync();
     }
@@ -456,29 +456,31 @@ public class BluewaterContextSeeder
         _context.UserExams.AddRange(exams);
     }
 
-    private void CreateMemberClusters(
+    private MemberCluster CreateMemberClusters(
         UserGroupCategory generalCategory,
         UserGroupCategory trainingCategory,
         UserGroup membersGroup,
         UserGroup seniorsGroup,
         UserGroup juniorsGroup)
     {
+        var alleLeden = new MemberCluster
+        {
+            Id = Guid.NewGuid(),
+            Name = "Alle leden",
+            Description = "Alle actieve leden van de vereniging.",
+            Criteria =
+            [
+                new MemberClusterCriterion
+                {
+                    Id = Guid.NewGuid(),
+                    Type = ClusterCriterionType.Group,
+                    UserGroupId = membersGroup.Id,
+                },
+            ],
+        };
+
         _context.MemberClusters.AddRange(
-            new MemberCluster
-            {
-                Id = Guid.NewGuid(),
-                Name = "Alle leden",
-                Description = "Alle actieve leden van de vereniging.",
-                Criteria =
-                [
-                    new MemberClusterCriterion
-                    {
-                        Id = Guid.NewGuid(),
-                        Type = ClusterCriterionType.Group,
-                        UserGroupId = membersGroup.Id,
-                    },
-                ],
-            },
+            alleLeden,
             new MemberCluster
             {
                 Id = Guid.NewGuid(),
@@ -525,33 +527,43 @@ public class BluewaterContextSeeder
                 ],
             }
         );
+
+        return alleLeden;
     }
 
-    private void CreateSignups(Faker faker, BlueUser adminUser, List<BlueUser> memberUsers)
+    private void CreateSignups(Faker faker, BlueUser adminUser, List<BlueUser> memberUsers, MemberCluster alleLedenCluster)
     {
         var today = DateTime.UtcNow;
 
-        var eventsCategory = _context.SignupCategories.Add(new SignupCategory
+        var activiteitenCategory = _context.SignupCategories.Add(new SignupCategory
         {
             Id = Guid.NewGuid(),
-            Title = "Evenementen",
+            Title = "Activiteiten",
             SortOrder = 1,
         }).Entity;
 
-        var trainingCategory = _context.SignupCategories.Add(new SignupCategory
+        var sollicitatiesCategory = _context.SignupCategories.Add(new SignupCategory
         {
             Id = Guid.NewGuid(),
-            Title = "Training",
+            Title = "Sollicitaties",
             SortOrder = 2,
         }).Entity;
 
+        var overigCategory = _context.SignupCategories.Add(new SignupCategory
+        {
+            Id = Guid.NewGuid(),
+            Title = "Overig",
+            SortOrder = 3,
+        }).Entity;
+
         // Open dag — simple signup with a meal-choice radio list
+        var mealFieldId = Guid.NewGuid();
         var openDag = new Domain.Models.Signup.Signup
         {
             Id = Guid.NewGuid(),
             Title = "Open dag",
             Description = "Schrijf je in voor de open dag van de vereniging.",
-            CategoryId = eventsCategory.Id,
+            CategoryId = activiteitenCategory.Id,
             EndDate = today.AddDays(5),
             AllowMultiple = false,
             AllowDelete = true,
@@ -563,11 +575,11 @@ public class BluewaterContextSeeder
             {
                 new()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = mealFieldId,
                     Title = "Maaltijdkeuze",
                     Note = "We verzorgen een eenvoudige lunch na afloop.",
                     Type = SignupInputFieldType.RadioList,
-                    Options = "Vegetarisch\nVlees\nVis",
+                    Options = "Vegetarisch,Vlees,Vis",
                     Visible = true,
                     SortOrder = 1,
                 },
@@ -580,7 +592,7 @@ public class BluewaterContextSeeder
             Id = Guid.NewGuid(),
             Title = "Trainingsweekend Friesland",
             Description = "Jaarlijks meerdaags trainingskamp. Geef je op voor het volledige weekend.",
-            CategoryId = eventsCategory.Id,
+            CategoryId = activiteitenCategory.Id,
             EndDate = today.AddDays(14),
             AllowMultiple = false,
             AllowDelete = true,
@@ -610,42 +622,104 @@ public class BluewaterContextSeeder
             },
         };
 
-        // Reguliere training dinsdag — no extra fields
-        var trainingDinsdag = new Domain.Models.Signup.Signup
+        // Bestuurslid gezocht — sollicitatie signup
+        var motivatieFieldId = Guid.NewGuid();
+        var bestuurslid = new Domain.Models.Signup.Signup
         {
             Id = Guid.NewGuid(),
-            Title = "Training dinsdag 8 juli",
-            CategoryId = trainingCategory.Id,
-            EndDate = today.AddDays(3),
+            Title = "Bestuurslid gezocht: penningmeester",
+            Description = "Ben jij financieel onderlegd en wil je de vereniging helpen? Solliciteer hier.",
+            CategoryId = sollicitatiesCategory.Id,
+            EndDate = today.AddDays(21),
+            AllowMultiple = false,
+            AllowDelete = true,
+            AllowUpdate = true,
+            HideSignups = true,
+            Anonymous = false,
+            InputFields = new List<SignupInputField>
+            {
+                new()
+                {
+                    Id = motivatieFieldId,
+                    Title = "Motivatie",
+                    Note = "Leg kort uit waarom je je kandidaat stelt.",
+                    Type = SignupInputFieldType.Textarea,
+                    Visible = false,
+                    SortOrder = 1,
+                },
+            },
+        };
+
+        // Materiaalcommissie — overig signup, no extra fields
+        var materiaalcommissie = new Domain.Models.Signup.Signup
+        {
+            Id = Guid.NewGuid(),
+            Title = "Materiaalcommissie onderhoudsochtend",
+            Description = "Help mee met het seizoensonderhoud van de boten op zaterdag 12 juli.",
+            CategoryId = overigCategory.Id,
+            EndDate = today.AddDays(10),
             AllowMultiple = false,
             AllowDelete = true,
             AllowUpdate = false,
-            MaxSignups = 16,
+            MaxSignups = 12,
             HideSignups = false,
             Anonymous = false,
         };
 
-        _context.Signups.AddRange(openDag, trainingsweekend, trainingDinsdag);
+        _context.Signups.AddRange(openDag, trainingsweekend, bestuurslid, materiaalcommissie);
 
-        // Seed a handful of responses on the open dag signup
-        var respondents = faker.Random.ListItems(memberUsers, Math.Min(8, memberUsers.Count));
-        foreach (var user in respondents)
+        foreach (var signup in new[] { openDag, trainingsweekend, bestuurslid, materiaalcommissie })
+            signup.Clusters.Add(new SignupCluster { MemberClusterId = alleLedenCluster.Id });
+
+        var mealOptions = new[] { "Vegetarisch", "Vlees", "Vis" };
+
+        // 8 random members sign up for open dag
+        foreach (var user in faker.Random.ListItems(memberUsers, Math.Min(8, memberUsers.Count)))
         {
-            var mealOptions = new[] { "Vegetarisch", "Vlees", "Vis" };
-            var mealField = openDag.InputFields.First();
             openDag.Responses.Add(new SignupResponse
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 FieldValues = new List<SignupResponseFieldValue>
                 {
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        FieldId = mealField.Id,
-                        Value = faker.PickRandom(mealOptions),
-                    },
+                    new() { Id = Guid.NewGuid(), FieldId = mealFieldId, Value = faker.PickRandom(mealOptions) },
                 },
+            });
+        }
+
+        // 5 random members sign up for trainingsweekend
+        foreach (var user in faker.Random.ListItems(memberUsers, Math.Min(5, memberUsers.Count)))
+        {
+            trainingsweekend.Responses.Add(new SignupResponse
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                FieldValues = new List<SignupResponseFieldValue>(),
+            });
+        }
+
+        // 2 members apply for bestuurslid
+        foreach (var user in faker.Random.ListItems(memberUsers, Math.Min(2, memberUsers.Count)))
+        {
+            bestuurslid.Responses.Add(new SignupResponse
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                FieldValues = new List<SignupResponseFieldValue>
+                {
+                    new() { Id = Guid.NewGuid(), FieldId = motivatieFieldId, Value = "Ik wil graag een bijdrage leveren aan de vereniging." },
+                },
+            });
+        }
+
+        // 4 members sign up for materiaalcommissie
+        foreach (var user in faker.Random.ListItems(memberUsers, Math.Min(4, memberUsers.Count)))
+        {
+            materiaalcommissie.Responses.Add(new SignupResponse
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                FieldValues = new List<SignupResponseFieldValue>(),
             });
         }
     }

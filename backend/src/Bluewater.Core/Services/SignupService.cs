@@ -179,10 +179,22 @@ public class SignupService : ISignupService
         if (!signup.AllowUpdate)
             throw new BlueValidationException("Updates to this signup are not allowed.");
 
-        _db.SignupResponseFieldValues.RemoveRange(response.FieldValues);
-        response.FieldValues = MapFieldValues(request.FieldValues, signup.InputFields);
+        // Remove old values first; do NOT replace the navigation property afterwards —
+        // doing so would trigger EF's orphan detection and generate a second DELETE for the
+        // same rows, causing a DbUpdateConcurrencyException (0 rows affected on the second pass).
+        _db.SignupResponseFieldValues.RemoveRange(response.FieldValues.ToList());
+
+        var newValues = MapFieldValues(request.FieldValues, signup.InputFields);
+        foreach (var v in newValues)
+            v.ResponseId = response.Id;
+        _db.SignupResponseFieldValues.AddRange(newValues);
 
         await _db.SaveChangesAsync();
+
+        // Reload field values with Field navigation so ToResponseDto can read Field.Title/SortOrder.
+        await _db.Entry(response).Collection(r => r.FieldValues).Query()
+            .Include(v => v.Field)
+            .LoadAsync();
 
         var allResponses = OrderResponses(signup.Responses.ToList());
         return ToResponseDto(response, allResponses, signup.MaxSignups, signupId);
@@ -206,9 +218,12 @@ public class SignupService : ISignupService
 
     public async Task<List<SignupListItemDto>> AdminListAsync()
     {
+        var cutoff = DateTime.UtcNow.AddDays(-_options.HideAfterDays);
+
         var query = _db.Signups
             .Include(s => s.Category)
             .Include(s => s.Responses)
+            .Where(s => s.EndDate == null || s.EndDate.Value > cutoff)
             .AsQueryable();
 
         if (!_currentUser.HasPermission(BluePermission.AdminSignupModifyOthers))
@@ -219,6 +234,40 @@ public class SignupService : ISignupService
             .ToListAsync();
 
         return signups.Select(s => ToListItemDto(s, null)).ToList();
+    }
+
+    public async Task<List<SignupArchiveSeasonDto>> AdminListArchivedAsync()
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-_options.HideAfterDays);
+
+        var query = _db.Signups
+            .Include(s => s.Category)
+            .Include(s => s.Responses)
+            .Where(s => s.EndDate != null && s.EndDate.Value <= cutoff)
+            .AsQueryable();
+
+        if (!_currentUser.HasPermission(BluePermission.AdminSignupModifyOthers))
+            query = query.Where(s => s.CreatedByUserId == _currentUser.Id);
+
+        var signups = await query
+            .OrderByDescending(s => s.EndDate)
+            .ToListAsync();
+
+        var seasons = await _db.Seasons
+            .OrderByDescending(s => s.StartDate)
+            .ToListAsync();
+
+        var groups = signups
+            .GroupBy(s =>
+            {
+                var createdDate = DateOnly.FromDateTime(s.CreatedAt);
+                var season = seasons.FirstOrDefault(se => createdDate >= se.StartDate && createdDate <= se.EndDate);
+                return season?.Name ?? s.CreatedAt.Year.ToString();
+            })
+            .Select(g => new SignupArchiveSeasonDto(g.Key, g.Select(s => ToListItemDto(s, null)).ToList()))
+            .ToList();
+
+        return groups;
     }
 
     public async Task<SignupAdminDetailDto> AdminGetAsync(Guid signupId)

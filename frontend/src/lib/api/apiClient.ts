@@ -209,6 +209,72 @@ export class Client {
     /**
      * @return OK
      */
+    archive(): Promise<SignupArchiveSeasonDto[]> {
+        let url_ = this.baseUrl + "/api/admin/signups/archive";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processArchive(_response);
+        });
+    }
+
+    protected processArchive(response: Response): Promise<SignupArchiveSeasonDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SignupArchiveSeasonDto.fromJS(item));
+            }
+            else {
+                result200 = null as any;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<SignupArchiveSeasonDto[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     signupsGET(id: string): Promise<SignupAdminDetailDto> {
         let url_ = this.baseUrl + "/api/admin/signups/{id}";
         if (id === undefined || id === null)
@@ -10403,6 +10469,69 @@ export interface ISignupAdminDetailDto {
     clusterIds: string[];
     fields: SignupInputFieldDto[];
     responses: SignupResponseDto[];
+
+    [key: string]: any;
+}
+
+export class SignupArchiveSeasonDto implements ISignupArchiveSeasonDto {
+    seasonName!: string;
+    signups!: SignupListItemDto[];
+
+    [key: string]: any;
+
+    constructor(data?: ISignupArchiveSeasonDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+        if (!data) {
+            this.signups = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.seasonName = _data["seasonName"];
+            if (Array.isArray(_data["signups"])) {
+                this.signups = [] as any;
+                for (let item of _data["signups"])
+                    this.signups!.push(SignupListItemDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SignupArchiveSeasonDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SignupArchiveSeasonDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["seasonName"] = this.seasonName;
+        if (Array.isArray(this.signups)) {
+            data["signups"] = [];
+            for (let item of this.signups)
+                data["signups"].push(item ? item.toJSON() : undefined as any);
+        }
+        return data;
+    }
+}
+
+export interface ISignupArchiveSeasonDto {
+    seasonName: string;
+    signups: SignupListItemDto[];
 
     [key: string]: any;
 }

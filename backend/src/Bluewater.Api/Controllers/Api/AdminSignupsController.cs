@@ -22,6 +22,10 @@ public class AdminSignupsController : ControllerBase
     public Task<List<SignupListItemDto>> List() => _service.AdminListAsync();
 
     [BlueAuthorize(BluePermission.AdminSignupView, BluePermission.AdminSignupModify)]
+    [HttpGet("archive")]
+    public Task<List<SignupArchiveSeasonDto>> ListArchived() => _service.AdminListArchivedAsync();
+
+    [BlueAuthorize(BluePermission.AdminSignupView, BluePermission.AdminSignupModify)]
     [HttpGet("{id:guid}")]
     public Task<SignupAdminDetailDto> Get(Guid id) => _service.AdminGetAsync(id);
 

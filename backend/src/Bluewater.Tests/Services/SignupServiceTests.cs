@@ -381,6 +381,37 @@ public class SignupServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task UpdateMyResponseAsync_ReplacesFieldValues_WhenExistingValuesPresent()
+    {
+        var (signup, _) = await SetupAccessibleSignupAsync();
+        var field = await AddFieldToSignupAsync(signup.Id);
+
+        var response = await _sut.SubmitResponseAsync(signup.Id, new SubmitResponseRequest(
+            [new FieldValueRequest(field.Id, "Vegetarisch")]));
+
+        var updated = await _sut.UpdateMyResponseAsync(signup.Id, response.Id, new UpdateResponseRequest(
+            [new FieldValueRequest(field.Id, "Veganistisch")]));
+
+        updated.FieldValues.ShouldHaveSingleItem();
+        updated.FieldValues[0].Value.ShouldBe("Veganistisch");
+    }
+
+    [Fact]
+    public async Task UpdateMyResponseAsync_AddsFieldValues_WhenNoExistingValues()
+    {
+        var (signup, _) = await SetupAccessibleSignupAsync();
+        var field = await AddFieldToSignupAsync(signup.Id);
+
+        var response = await _sut.SubmitResponseAsync(signup.Id, new SubmitResponseRequest([]));
+
+        var updated = await _sut.UpdateMyResponseAsync(signup.Id, response.Id, new UpdateResponseRequest(
+            [new FieldValueRequest(field.Id, "Vegetarisch")]));
+
+        updated.FieldValues.ShouldHaveSingleItem();
+        updated.FieldValues[0].Value.ShouldBe("Vegetarisch");
+    }
+
+    [Fact]
     public async Task DeleteMyResponseAsync_Throws_WhenDeleteNotAllowed()
     {
         var (signup, _) = await SetupAccessibleSignupAsync(allowDelete: false);
@@ -593,6 +624,22 @@ public class SignupServiceTests : SqliteServiceTestBase
         Db.SignupCategories.Add(cat);
         await Db.SaveChangesAsync();
         return cat;
+    }
+
+    private async Task<SignupInputField> AddFieldToSignupAsync(Guid signupId)
+    {
+        var field = new SignupInputField
+        {
+            Id = Guid.NewGuid(),
+            SignupId = signupId,
+            Title = "Dieet",
+            Type = SignupInputFieldType.Textbox,
+            Visible = true,
+            SortOrder = 0,
+        };
+        Db.SignupInputFields.Add(field);
+        await Db.SaveChangesAsync();
+        return field;
     }
 
     private static UpsertSignupRequest CreateUpsertRequest(List<Guid> clusterIds, Guid categoryId) =>
