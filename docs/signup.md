@@ -1,15 +1,8 @@
-# Sign-up List Feature — Functional Specification
-
-> Written from source-code analysis of the existing GYAS site implementation.
-> Intended for use by an implementing team rebuilding the application.
-
----
+# Sign-up List Feature
 
 ## 1. Overview
 
 The sign-up list feature lets administrators create registration forms for activities or events. Members browse available sign-ups, register themselves (and optionally others), fill in custom fields, and can later update or cancel their registration. Administrators control access, capacity, deadlines, and form structure.
-
----
 
 ## 2. Core Concepts
 
@@ -74,27 +67,22 @@ Inputs marked `public=false` are only visible to admins and to the registrant th
 Accesses is defined using clusters. A signup links to one or more cluster. If a user in one the clusters he/she has access to the signup and can view, and respond in the public facing part.
 
 
-### 2.7 SignupCategory
+### 2.5 SignupCategory
 
 Signups are grouped into categories for display. Each category has a title and an optional `hidden` flag. Categories have a `sort_order` controlling their display sequence.
 
 
-## 4. Capacity and Waitlist Logic
+## 3. Capacity and Waitlist Logic
 
-```
-Total spots = max_signups + max_waitlist
-If signups or waitlist is unlimted that means there is no max.
-```
+Based on the reservation status and entry date signups should be order:
+ - reservations on top
+ - after that response date ASC (so newest is lastest in list)
 
-- Entries 1 … max_signups → type `Ingeschreven`
-- Entries max_signups+1 … max_signups+max_waitlist → type `Wachtlijst`
-- When all spots including spares are taken, new registrations are blocked (if there is max ofcourse)
+ When viewing each repsonse should have a status based on this order:
+  - reservation
+  - no status (valid response within the max)
+  - waitlist (if the max has been reached and this response is on the waitlist)
 
-When a member cancels, entries shift up automatically in display order (they are sorted by creation date).
-
-The `reservation` flag on an entry is a manual admin override (separate from the automatic reserve queue) used to mark entries that were pre-allocated outside the normal flow. These should be on the top of the list when ordering the list (so order by reserved, then entry date)
-
----
 
 ## UI
 There should be two frontend UI's for signsup. 
