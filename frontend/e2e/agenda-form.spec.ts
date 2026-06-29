@@ -1,14 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-async function login(page: import('@playwright/test').Page) {
-	await page.goto('/login');
-	await page.waitForLoadState('networkidle');
-	await page.getByLabel('E-mailadres').fill('admin@example.com');
-	await page.getByLabel('Wachtwoord').fill('admin');
-	await page.getByRole('button', { name: 'Inloggen' }).click();
-	await expect(page).toHaveURL('/');
-}
-
 function futureDateInputValue(daysAhead: number): string {
 	const date = new Date();
 	date.setDate(date.getDate() + daysAhead);
@@ -16,8 +7,6 @@ function futureDateInputValue(daysAhead: number): string {
 }
 
 test('agenda creation shows field-level validation errors from the API', async ({ page }) => {
-	await login(page);
-
 	await page.goto('/agenda/new');
 	await page.waitForLoadState('networkidle');
 
@@ -34,8 +23,6 @@ test('agenda creation shows field-level validation errors from the API', async (
 });
 
 test('agenda creation succeeds with valid input', async ({ page }) => {
-	await login(page);
-
 	await page.goto('/agenda/new');
 	await page.waitForLoadState('networkidle');
 
@@ -52,8 +39,6 @@ test('agenda creation succeeds with valid input', async ({ page }) => {
 });
 
 test('agenda item can be edited and deleted', async ({ page }) => {
-	await login(page);
-
 	await page.goto('/agenda/new');
 	await page.waitForLoadState('networkidle');
 
@@ -75,7 +60,7 @@ test('agenda item can be edited and deleted', async ({ page }) => {
 	await expect(page).toHaveURL(/\/agenda\/[0-9a-f-]+$/);
 	await expect(page.getByRole('heading', { name: updatedTitle })).toBeVisible();
 
-	page.once('dialog', (dialog) => dialog.accept());
 	await page.getByRole('button', { name: 'Verwijderen' }).click();
+	await page.getByRole('dialog').getByRole('button', { name: 'Verwijderen' }).click();
 	await expect(page).toHaveURL('/agenda');
 });

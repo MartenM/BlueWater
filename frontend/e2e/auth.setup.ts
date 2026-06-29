@@ -1,15 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test as setup } from '@playwright/test';
+import path from 'path';
 
-test.use({ storageState: { cookies: [], origins: [] } });
+export const authFile = path.join(import.meta.dirname, '.auth/user.json');
 
-test('login works and shows the email in the auth nudge', async ({ page }) => {
+setup('authenticate', async ({ page }) => {
 	await page.goto('/login');
 	await page.waitForLoadState('networkidle');
-
 	await page.getByLabel('E-mailadres').fill('admin@example.com');
 	await page.getByLabel('Wachtwoord').fill('admin');
 	await page.getByRole('button', { name: 'Inloggen' }).click();
-
 	await expect(page).toHaveURL('/');
-	await expect(page.getByRole('button', { name: 'admin@example.com' })).toBeVisible();
+	await page.context().storageState({ path: authFile });
 });

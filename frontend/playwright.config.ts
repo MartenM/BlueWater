@@ -5,6 +5,17 @@ export default defineConfig({
 	use: {
 		baseURL: 'http://localhost:5174'
 	},
+	projects: [
+		{
+			name: 'setup',
+			testMatch: /auth\.setup\.ts/
+		},
+		{
+			name: 'chromium',
+			use: { storageState: 'e2e/.auth/user.json' },
+			dependencies: ['setup']
+		}
+	],
 	webServer: {
 		command: 'pnpm dev',
 		url: 'http://localhost:5174',

@@ -1,14 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 
-async function login(page: Page) {
-	await page.goto('/login');
-	await page.waitForLoadState('networkidle');
-	await page.getByLabel('E-mailadres').fill('admin@example.com');
-	await page.getByLabel('Wachtwoord').fill('admin');
-	await page.getByRole('button', { name: 'Inloggen' }).click();
-	await expect(page).toHaveURL('/');
-}
-
 async function goToAdminUserDetail(page: Page) {
 	await page.goto('/tools/users');
 	await page.waitForLoadState('networkidle');
@@ -36,7 +27,6 @@ async function generatePng(page: Page, width: number, height: number): Promise<B
 test("admin uploads a profile picture for a user, and it then shows on that user's own profile", async ({
 	page
 }) => {
-	await login(page);
 	await goToAdminUserDetail(page);
 
 	const picture = await generatePng(page, 75, 100);
@@ -55,7 +45,6 @@ test("admin uploads a profile picture for a user, and it then shows on that user
 test('shows a graceful validation error when the uploaded picture has the wrong dimensions', async ({
 	page
 }) => {
-	await login(page);
 	await goToAdminUserDetail(page);
 
 	const wrongSize = await generatePng(page, 50, 50);
