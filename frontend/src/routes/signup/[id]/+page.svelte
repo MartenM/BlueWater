@@ -12,6 +12,7 @@
 	import type { SignupDetailDto } from '$lib/api/apiClient';
 	import { HasPermission, Button, ConfirmDialog, Modal, breadcrumbs } from '$lib';
 	import { FormField } from '$lib';
+	import MemberPicker from '$lib/components/MemberPicker.svelte';
 	import { FormState } from '$lib/forms/formState.svelte';
 	import type { PageProps } from './$types';
 
@@ -25,18 +26,40 @@
 	let aanmeldenModal = $state<HTMLDialogElement>();
 	let isEditing = $state(false);
 
-	onMount(async () => {
-		try {
-			detail = await apiClient.signupsGET2(signupId);
-		} catch {
-			loadError = true;
-		}
-	});
-
 	const responseForm = new FormState();
 	const deleteForm = new FormState();
 
 	let fieldValues = $state<Record<string, string>>({});
+	let memberValues = $state<Record<string, string | null>>({});
+
+	function initFieldStates(d: SignupDetailDto) {
+		const mv: Record<string, string | null> = {};
+		for (const f of d.fields) {
+			if (f.type === SignupInputFieldType.OtherMember) {
+				mv[f.id] = null;
+			}
+		}
+		if (d.myResponse) {
+			const vals: Record<string, string> = {};
+			for (const fv of d.myResponse.fieldValues) {
+				vals[fv.fieldId] = fv.value ?? '';
+				if (Object.prototype.hasOwnProperty.call(mv, fv.fieldId)) {
+					mv[fv.fieldId] = fv.value ?? null;
+				}
+			}
+			fieldValues = vals;
+		}
+		memberValues = mv;
+	}
+
+	onMount(async () => {
+		try {
+			detail = await apiClient.signupsGET2(signupId);
+			initFieldStates(detail);
+		} catch {
+			loadError = true;
+		}
+	});
 
 	$effect(() => {
 		if (detail) {
@@ -46,16 +69,6 @@
 			]);
 		}
 		return () => breadcrumbs.clear();
-	});
-
-	$effect(() => {
-		if (detail?.myResponse) {
-			const vals: Record<string, string> = {};
-			for (const fv of detail.myResponse.fieldValues) {
-				vals[fv.fieldId] = fv.value ?? '';
-			}
-			fieldValues = vals;
-		}
 	});
 
 	const isOpen = $derived(!detail?.endDate || new Date(detail.endDate) >= new Date());
@@ -78,7 +91,12 @@
 	async function handleSubmit() {
 		if (!detail) return;
 		const fvList = detail.fields.map(
-			(f) => new FieldValueRequest({ fieldId: f.id, value: fieldValues[f.id] ?? null })
+			(f) => new FieldValueRequest({
+				fieldId: f.id,
+				value: f.type === SignupInputFieldType.OtherMember
+					? memberValues[f.id] ?? undefined
+					: fieldValues[f.id] ?? undefined,
+			})
 		);
 		await responseForm.submit(async () => {
 			await apiClient.responsesPOST(
@@ -86,6 +104,7 @@
 				new SubmitResponseRequest({ fieldValues: fvList })
 			);
 			detail = await apiClient.signupsGET2(signupId);
+			initFieldStates(detail);
 			aanmeldenModal?.close();
 		});
 	}
@@ -93,7 +112,12 @@
 	async function handleUpdate() {
 		if (!detail?.myResponse) return;
 		const fvList = detail.fields.map(
-			(f) => new FieldValueRequest({ fieldId: f.id, value: fieldValues[f.id] ?? null })
+			(f) => new FieldValueRequest({
+				fieldId: f.id,
+				value: f.type === SignupInputFieldType.OtherMember
+					? memberValues[f.id] ?? undefined
+					: fieldValues[f.id] ?? undefined,
+			})
 		);
 		await responseForm.submit(async () => {
 			await apiClient.responsesPUT(
@@ -102,6 +126,7 @@
 				new UpdateResponseRequest({ fieldValues: fvList })
 			);
 			detail = await apiClient.signupsGET2(signupId);
+			initFieldStates(detail);
 			aanmeldenModal?.close();
 		});
 	}
@@ -335,6 +360,8 @@
 										{opt}
 									</label>
 								{/each}
+							{:else if field.type === SignupInputFieldType.OtherMember}
+								<MemberPicker bind:value={memberValues[field.id]} {invalid} />
 							{:else}
 								<input
 									type="text"
