@@ -36,7 +36,7 @@ public class BluewaterContextSeeder
     private readonly IFileStorageService _fileStorageService;
     private readonly ILogger<BluewaterContextSeeder> _logger;
 
-    public async Task SeedAsync()
+    public async Task SeedDevelopmentAsync()
     {
         if (_context.Users.Any())
         {
@@ -72,6 +72,54 @@ public class BluewaterContextSeeder
         await _context.SaveChangesAsync();
     }
 
+    public async Task SeedProductionAsync()
+    {
+        if (_context.Users.Any())
+        {
+            _logger.LogInformation("No production database seeding. A user already exists.");
+            await EnsureAllPermissionsSeededAsync();
+            return;
+        }
+
+        _logger.LogInformation("Seeding production database...");
+
+        var adminUser = await CreateAdminUserAsync();
+        var season = CreateSeason();
+
+        var generalCategory = _context.UserGroupCategories.Add(new UserGroupCategory
+        {
+            Name = "General",
+            Description = "General group category.",
+        }).Entity;
+
+        var administratorsGroup = _context.UserGroups.Add(new UserGroup
+        {
+            Name = "Administrators",
+            Description = "Administrators with access to all site functionality.",
+            UserGroupCategoryId = generalCategory.Id,
+            Permissions = Enum.GetValues<BluePermission>()
+                .Select(p => new UserGroupPermission { Id = Guid.NewGuid(), Permission = p })
+                .ToList(),
+        }).Entity;
+
+        _context.UserGroupInstances.Add(new UserGroupInstance
+        {
+            UserGroupId = administratorsGroup.Id,
+            SeasonId = season.Id,
+            Members = [new UserGroupInstanceMember { UserId = adminUser.Id }],
+        });
+
+        _context.NewsPosts.Add(new NewsPost
+        {
+            Id = Guid.NewGuid(),
+            Title = "Welcome",
+            ShortText = "Welcome to your new installation. This news item confirms that the site has been set up successfully.",
+            MembersOnly = false,
+        });
+
+        await _context.SaveChangesAsync();
+    }
+
     // Ensures the "all permissions" group always has every BluePermission value.
     // Runs on every startup so new enum values are picked up without a DB reset.
     private async Task EnsureAllPermissionsSeededAsync()
@@ -80,7 +128,7 @@ public class BluewaterContextSeeder
 
         var groups = await _context.UserGroups
             .Include(g => g.Permissions)
-            .Where(g => g.Name == "Beheerders")
+            .Where(g => g.Name == "Beheerders" || g.Name == "Administrators")
             .ToListAsync();
 
         if (groups.Count == 0) return;

@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bluewater
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: registry.hoesoe.nl/library/bluewater-api:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      Database__Host: postgres
+      Database__Port: 5432
+      Database__Database: bluewater
+      Database__Username: postgres
+      Database__Password: example
+      Jwt__Secret: dev-only-secret-key-change-me-please-32-chars-min
+      Jwt__Issuer: Bluewater
+      Jwt__Audience: Bluewater
+      Jwt__ExpireTime: "12:00:00"
+      Cors__AllowedOrigins__0: http://localhost:8080
+      Cookie__Secure: "false"
+    ports:
+      - "8081:8080"
+
+  client:
+    image: registry.hoesoe.nl/library/bluewater-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      PORT: 3000
+      PUBLIC_API_BASE_URL: http://localhost:8081
+      API_BASE_URL_INTERNAL: http://api:8080
+    ports:
+      - "8080:3000"
+
+volumes:
+  postgres-data:

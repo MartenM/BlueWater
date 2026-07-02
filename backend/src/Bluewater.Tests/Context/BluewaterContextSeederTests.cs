@@ -1,3 +1,4 @@
+using Bluewater.Domain.Models.Groups;
 using Bluewater.Infra.Context;
 using Bluewater.Infra.Services.Abstractions;
 using Bluewater.Tests.TestSupport;
@@ -12,7 +13,7 @@ public class BluewaterContextSeederTests : SqliteServiceTestBase
     {
         var seeder = GetService<BluewaterContextSeeder>();
 
-        await seeder.SeedAsync();
+        await seeder.SeedDevelopmentAsync();
 
         var admin = await Db.Users.FirstAsync(x => x.UserName == "admin");
         admin.ProfilePictureFileId.ShouldNotBeNull();
@@ -41,8 +42,41 @@ public class BluewaterContextSeederTests : SqliteServiceTestBase
         await CreateUserAsync();
 
         var seeder = GetService<BluewaterContextSeeder>();
-        await seeder.SeedAsync();
+        await seeder.SeedDevelopmentAsync();
 
         (await Db.Seasons.CountAsync()).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task SeedProductionAsync_CreatesMinimalEnvironment()
+    {
+        var seeder = GetService<BluewaterContextSeeder>();
+
+        await seeder.SeedProductionAsync();
+
+        var admin = await Db.Users.SingleAsync(x => x.UserName == "admin");
+
+        var category = await Db.UserGroupCategories.SingleAsync();
+        category.Name.ShouldBe("General");
+
+        var group = await Db.UserGroups
+            .Include(g => g.Permissions)
+            .SingleAsync();
+        group.Name.ShouldBe("Administrators");
+        group.UserGroupCategoryId.ShouldBe(category.Id);
+        group.Permissions.Select(p => p.Permission).ToHashSet()
+            .ShouldBe(Enum.GetValues<BluePermission>().ToHashSet());
+
+        var season = await Db.Seasons.SingleAsync();
+
+        var instance = await Db.UserGroupInstances
+            .Include(i => i.Members)
+            .SingleAsync();
+        instance.UserGroupId.ShouldBe(group.Id);
+        instance.SeasonId.ShouldBe(season.Id);
+        instance.Members.ShouldHaveSingleItem().UserId.ShouldBe(admin.Id);
+
+        var news = await Db.NewsPosts.SingleAsync();
+        news.IconId.ShouldBeNull();
     }
 }

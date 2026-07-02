@@ -16,7 +16,14 @@ public static class WebApplicationExtensions
             using var scope =  app.Services.CreateScope();
             var seeder = scope.ServiceProvider.GetRequiredService<BluewaterContextSeeder>();
             
-            await seeder.SeedAsync();
+            await seeder.SeedDevelopmentAsync();
+        }
+        else
+        {
+            using var scope =  app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<BluewaterContextSeeder>();
+            
+            await seeder.SeedProductionAsync();
         }
         
         return app;
