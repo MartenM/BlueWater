@@ -138,6 +138,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IMemberClusterService, MemberClusterService>();
         builder.Services.AddScoped<ISignupCategoryService, SignupCategoryService>();
         builder.Services.AddScoped<ISignupService, SignupService>();
+        builder.Services.AddScoped<IOutingService, OutingService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
         builder.Services.AddOptions<SignupOptions>()
             .Bind(builder.Configuration.GetSection("Signup"))

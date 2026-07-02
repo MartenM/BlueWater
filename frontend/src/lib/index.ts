@@ -20,6 +20,9 @@ export { default as ManufacturerForm } from './components/ManufacturerForm.svelt
 export { default as EquipmentTypeForm } from './components/EquipmentTypeForm.svelte';
 export { default as OarSetForm } from './components/OarSetForm.svelte';
 export { default as EquipmentForm } from './components/EquipmentForm.svelte';
+export { default as OutingForm } from './components/OutingForm.svelte';
+export { default as OutingRosterManager } from './components/OutingRosterManager.svelte';
+export { default as OutingChangelogList } from './components/OutingChangelogList.svelte';
 export { default as MemberPicker } from './components/MemberPicker.svelte';
 export { default as ClusterPicker } from './components/ClusterPicker.svelte';
 export { default as GroupForm } from './components/GroupForm.svelte';

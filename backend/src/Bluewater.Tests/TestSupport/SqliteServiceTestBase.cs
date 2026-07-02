@@ -118,6 +118,7 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<ISignupCategoryService, SignupCategoryService>();
         services.AddScoped<ISignupService, SignupService>();
         services.Configure<SignupOptions>(o => o.HideAfterDays = 14);
+        services.AddScoped<IOutingService, OutingService>();
         services.AddScoped<IExamTypeService, ExamTypeService>();
         services.AddScoped<IUserExamService, UserExamService>();
         services.AddScoped<BluewaterContextSeeder>();

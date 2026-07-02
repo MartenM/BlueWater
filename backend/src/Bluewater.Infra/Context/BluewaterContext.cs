@@ -11,6 +11,7 @@ using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.News;
+using Bluewater.Domain.Models.Outings;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,9 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<SignupInputField> SignupInputFields => Set<SignupInputField>();
     public DbSet<SignupResponse> SignupResponses => Set<SignupResponse>();
     public DbSet<SignupResponseFieldValue> SignupResponseFieldValues => Set<SignupResponseFieldValue>();
+    public DbSet<Outing> Outings => Set<Outing>();
+    public DbSet<OutingParticipant> OutingParticipants => Set<OutingParticipant>();
+    public DbSet<OutingChangelogEntry> OutingChangelogEntries => Set<OutingChangelogEntry>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -409,6 +413,63 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasOne(x => x.Field)
                 .WithMany(x => x.FieldValues)
                 .HasForeignKey(x => x.FieldId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Outing>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => x.UserGroupInstanceId);
+            e.HasIndex(x => x.OutingDate);
+
+            e.HasOne(x => x.UserGroupInstance)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupInstanceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.BoatType)
+                .WithMany()
+                .HasForeignKey(x => x.BoatTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            e.HasOne(x => x.Boat)
+                .WithMany()
+                .HasForeignKey(x => x.BoatId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+        });
+
+        builder.Entity<OutingParticipant>(e =>
+        {
+            e.HasKey(x => new { x.OutingId, x.UserId });
+
+            e.Property(x => x.Role).HasConversion<string>();
+
+            e.HasOne(x => x.Outing)
+                .WithMany(x => x.Participants)
+                .HasForeignKey(x => x.OutingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<OutingChangelogEntry>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => x.OutingId);
+
+            e.Property(x => x.Type).HasConversion<string>();
+            e.Property(x => x.Fields).HasColumnType("jsonb");
+
+            e.HasOne(x => x.Outing)
+                .WithMany(x => x.ChangelogEntries)
+                .HasForeignKey(x => x.OutingId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

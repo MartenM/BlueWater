@@ -12,6 +12,8 @@ public class EnumSchemaTransformer : IOpenApiSchemaTransformer
         CancellationToken cancellationToken)
     {
         var type = context.JsonTypeInfo?.Type;
+        if (type is not null)
+            type = Nullable.GetUnderlyingType(type) ?? type;
 
         if (type is null || !type.IsEnum)
             return Task.CompletedTask;

@@ -152,7 +152,7 @@ public class BluewaterContextSeeder
             await _context.SaveChangesAsync();
     }
 
-    private async Task<BlueUser> CreateAdminUserAsync(string password)
+    private async Task<BlueUser> CrlocaleateAdminUserAsync(string password)
     {
         var user = new BlueUser
         {
