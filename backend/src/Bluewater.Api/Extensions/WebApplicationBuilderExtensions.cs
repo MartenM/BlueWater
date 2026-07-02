@@ -45,6 +45,10 @@ public static class WebApplicationBuilderExtensions
             .Bind(builder.Configuration.GetSection("FileStorage:Local"))
             .ValidateOnStart();
 
+        builder.Services.AddOptions<SeedingOptions>()
+            .Bind(builder.Configuration.GetSection("Seeding"))
+            .ValidateOnStart();
+
         builder.AddDatabase();
         builder.AddBlueCors();
 

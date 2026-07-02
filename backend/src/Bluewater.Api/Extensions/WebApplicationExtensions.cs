@@ -1,5 +1,7 @@
 using Bluewater.Infra.Context;
+using Bluewater.Infra.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Bluewater.Api.Extensions;
 
@@ -10,22 +12,16 @@ public static class WebApplicationExtensions
         // Migrations
         Migrate(app);
 
-        // Development seeding:
-        if (app.Environment.IsDevelopment())
-        {
-            using var scope =  app.Services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<BluewaterContextSeeder>();
-            
+        using var scope = app.Services.CreateScope();
+        var seeder = scope.ServiceProvider.GetRequiredService<BluewaterContextSeeder>();
+        var seedingOptions = scope.ServiceProvider.GetRequiredService<IOptions<SeedingOptions>>().Value;
+
+        // Development seeding, or forced via config (e.g. for demo environments):
+        if (app.Environment.IsDevelopment() || seedingOptions.ForceDevelopmentSeed)
             await seeder.SeedDevelopmentAsync();
-        }
         else
-        {
-            using var scope =  app.Services.CreateScope();
-            var seeder = scope.ServiceProvider.GetRequiredService<BluewaterContextSeeder>();
-            
             await seeder.SeedProductionAsync();
-        }
-        
+
         return app;
     }
 
