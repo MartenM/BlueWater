@@ -4,7 +4,7 @@
 
 <section>
 	<h2 class="text-lg font-semibold text-gray-900">Uitgelicht</h2>
-	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is data-driven (will come from an API), not a static route literal resolve() can check -->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -- href is data-driven (will come from an API), not a static route literal resolve() can check -->
 	<a
 		href={featuredItem.href}
 		class="mt-4 flex flex-col overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
@@ -17,4 +17,5 @@
 			<p class="mt-3 text-sm text-gray-600">{featuredItem.summary}</p>
 		</div>
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 </section>

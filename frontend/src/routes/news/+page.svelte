@@ -20,6 +20,7 @@
 
 	function handlePageChange(next: number) {
 		currentPage = next;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- query string on the current route, not a literal resolve() can check
 		pushState(`?page=${next}`, {});
 		apiClient
 			.newsGET(next, NEWS_PAGE_SIZE)

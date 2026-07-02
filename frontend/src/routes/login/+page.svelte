@@ -19,6 +19,7 @@
 			// Only redirect to an internal path - never let an attacker-supplied
 			// redirectTo send the user to an external site after login.
 			const target = redirectTo?.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/';
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- target is a validated redirect param, not a static route literal resolve() can check
 			goto(target);
 		} catch (e) {
 			error =

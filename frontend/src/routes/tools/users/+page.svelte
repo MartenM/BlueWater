@@ -21,6 +21,7 @@
 	async function reload(page: number) {
 		currentPage = page;
 		const query = `page=${page}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- query string on the current route, not a literal resolve() can check
 		pushState(`?${query}`, {});
 		try {
 			const result = await apiClient.listUsers(page, USERS_PAGE_SIZE, search || undefined);

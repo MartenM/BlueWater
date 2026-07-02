@@ -41,6 +41,7 @@
 		{#if !loading && !error}
 			<tbody class="divide-y divide-gray-200 bg-white">
 				{#each items as item, i (i)}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- rowHref is caller-supplied (a resolve() result), not a static route literal -->
 					<tr
 						class="hover:bg-gray-50"
 						class:cursor-pointer={!!rowHref}
@@ -48,6 +49,7 @@
 						onkeydown={rowHref ? (e) => e.key === 'Enter' && goto(rowHref(item)) : undefined}
 						tabindex={rowHref ? 0 : undefined}
 					>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						{#each columns as col (col.header)}
 							<td class={col.tdClass ?? 'px-4 py-1'}>{@render col.cell(item)}</td>
 						{/each}

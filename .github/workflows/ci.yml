@@ -33,12 +33,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Log in to Harbor
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: registry.hoesoe.nl
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: backend
-          push: false
-          tags: bluewater-api:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            registry.hoesoe.nl/library/bluewater-api:${{ github.sha }}
+            registry.hoesoe.nl/library/bluewater-api:latest
 
   frontend:
     name: Frontend
@@ -76,9 +86,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Log in to Harbor
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: registry.hoesoe.nl
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: frontend
-          push: false
-          tags: bluewater-frontend:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            registry.hoesoe.nl/library/bluewater-frontend:${{ github.sha }}
+            registry.hoesoe.nl/library/bluewater-frontend:latest
