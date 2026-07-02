@@ -8,7 +8,6 @@
 		Modal,
 		Button,
 		FormField,
-		ConfirmDialog,
 		ClusterPicker,
 		breadcrumbs
 	} from '$lib';

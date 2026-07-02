@@ -32,7 +32,6 @@
 
 	function navigate(next: YearMonth) {
 		yearMonth = next;
-		// eslint-disable-next-line svelte/no-navigation-without-resolve -- query-only browsing state, not a static route resolve() can check
 		pushState(`?month=${formatYearMonth(next)}`, {});
 		const { start, end } = monthRangeDates(next, MONTHS_SHOWN);
 		apiClient

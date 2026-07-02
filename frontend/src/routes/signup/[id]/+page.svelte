@@ -359,7 +359,11 @@
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
-					isEditing ? handleUpdate() : handleSubmit();
+					if (isEditing) {
+						handleUpdate();
+					} else {
+						handleSubmit();
+					}
 				}}
 				class="space-y-4"
 			>
