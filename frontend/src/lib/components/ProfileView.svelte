@@ -8,6 +8,7 @@
 		groupId: string;
 		category: string;
 		groupName: string;
+		roleName: string | undefined;
 		showCategory: boolean;
 	}
 
@@ -33,6 +34,7 @@
 				groupId: group.groupId,
 				category: group.groupCategoryName,
 				groupName: group.groupName,
+				roleName: group.roleName,
 				showCategory: previous?.category !== group.groupCategoryName
 			});
 		}
@@ -94,7 +96,10 @@
 											<td class="w-1/3 py-2 pr-4 align-top text-black font-medium">
 												{row.showCategory ? row.category : ''}
 											</td>
-											<td class="py-2 text-gray-900">{row.groupName}</td>
+											<td class="w-full py-2 text-gray-900">{row.groupName}</td>
+											<td class="py-2 pl-4 text-right whitespace-nowrap text-gray-500">
+												{row.roleName ?? ''}
+											</td>
 										</tr>
 									{/each}
 								</tbody>

@@ -13948,6 +13948,7 @@ export class UserGroupMembershipDto implements IUserGroupMembershipDto {
 	seasonDisplayName!: string;
 	groupCategoryName!: string;
 	groupName!: string;
+	roleName!: string | undefined;
 
 	[key: string]: any;
 
@@ -13968,6 +13969,7 @@ export class UserGroupMembershipDto implements IUserGroupMembershipDto {
 			this.seasonDisplayName = _data['seasonDisplayName'];
 			this.groupCategoryName = _data['groupCategoryName'];
 			this.groupName = _data['groupName'];
+			this.roleName = _data['roleName'];
 		}
 	}
 
@@ -13987,6 +13989,7 @@ export class UserGroupMembershipDto implements IUserGroupMembershipDto {
 		data['seasonDisplayName'] = this.seasonDisplayName;
 		data['groupCategoryName'] = this.groupCategoryName;
 		data['groupName'] = this.groupName;
+		data['roleName'] = this.roleName;
 		return data;
 	}
 }
@@ -13996,6 +13999,7 @@ export interface IUserGroupMembershipDto {
 	seasonDisplayName: string;
 	groupCategoryName: string;
 	groupName: string;
+	roleName: string | undefined;
 
 	[key: string]: any;
 }

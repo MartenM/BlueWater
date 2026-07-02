@@ -21,6 +21,7 @@ public class UserGroupMembershipService : IUserGroupMembershipService
             .Where(x => x.Members.Any(m => m.UserId == userId))
             .Include(x => x.UserGroup).ThenInclude(g => g.UserGroupCategory)
             .Include(x => x.Season)
+            .Include(x => x.Members.Where(m => m.UserId == userId)).ThenInclude(m => m.UserGroupCategoryRole)
             .ToListAsync();
 
         return instances
@@ -28,7 +29,8 @@ public class UserGroupMembershipService : IUserGroupMembershipService
                 x.UserGroupId,
                 x.Season.Name,
                 x.UserGroup.UserGroupCategory.Name,
-                x.UserGroup.Name))
+                x.UserGroup.Name,
+                x.Members.FirstOrDefault(m => m.UserId == userId)?.UserGroupCategoryRole?.NamePlural))
             .ToList();
     }
 }

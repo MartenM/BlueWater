@@ -45,6 +45,35 @@ public class UserGroupMembershipServiceTests : SqliteServiceTestBase
         result[0].GroupName.ShouldBe(group.Name);
         result[0].GroupCategoryName.ShouldBe(category.Name);
         result[0].SeasonDisplayName.ShouldBe(season.Name);
+        result[0].RoleName.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetGroupsForUserAsync_ReturnsRoleName_WhenMemberHasARole()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Members", Description = "Active members", UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
+        var role = new UserGroupCategoryRole { Id = Guid.NewGuid(), UserGroupCategoryId = category.Id, NamePlural = "Captains" };
+        var user = await CreateUserAsync();
+
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.Add(group);
+        Db.UserGroupInstances.Add(instance);
+        Db.UserGroupCategoryRoles.Add(role);
+        Db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember
+        {
+            UserGroupInstanceId = instance.Id,
+            UserId = user.Id,
+            UserGroupCategoryRoleId = role.Id
+        });
+        await Db.SaveChangesAsync();
+
+        var result = await _sut.GetGroupsForUserAsync(user.Id);
+
+        result.Count.ShouldBe(1);
+        result[0].RoleName.ShouldBe("Captains");
     }
 
     [Fact]

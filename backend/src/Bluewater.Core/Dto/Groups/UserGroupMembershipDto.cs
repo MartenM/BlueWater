@@ -4,4 +4,5 @@ public record UserGroupMembershipDto(
     Guid GroupId,
     string SeasonDisplayName,
     string GroupCategoryName,
-    string GroupName);
+    string GroupName,
+    string? RoleName);

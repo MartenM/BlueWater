@@ -47,7 +47,15 @@
 </script>
 
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-	<h1 class="text-2xl font-bold text-gray-900">Inschrijvingen</h1>
+	<div class="flex items-center justify-between">
+		<h1 class="text-2xl font-bold text-gray-900">Inschrijvingen</h1>
+		<a
+			href={resolve('/signup/my')}
+			class="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-content hover:bg-primary-hover"
+		>
+			Mijn inschrijvingen
+		</a>
+	</div>
 
 	{#if loading}
 		<p class="mt-4 text-sm text-gray-600">Laden…</p>
