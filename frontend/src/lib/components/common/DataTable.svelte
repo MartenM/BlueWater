@@ -31,7 +31,7 @@
 	<table class="min-w-full divide-y divide-gray-200 text-sm">
 		<thead class="bg-gray-50">
 			<tr>
-				{#each columns as col}
+				{#each columns as col (col.header)}
 					<th class={col.thClass ?? 'px-4 py-1 text-left font-medium text-gray-500'}>
 						{col.header}
 					</th>
@@ -40,7 +40,7 @@
 		</thead>
 		{#if !loading && !error}
 			<tbody class="divide-y divide-gray-200 bg-white">
-				{#each items as item}
+				{#each items as item, i (i)}
 					<tr
 						class="hover:bg-gray-50"
 						class:cursor-pointer={!!rowHref}
@@ -48,7 +48,7 @@
 						onkeydown={rowHref ? (e) => e.key === 'Enter' && goto(rowHref(item)) : undefined}
 						tabindex={rowHref ? 0 : undefined}
 					>
-						{#each columns as col}
+						{#each columns as col (col.header)}
 							<td class={col.tdClass ?? 'px-4 py-1'}>{@render col.cell(item)}</td>
 						{/each}
 					</tr>

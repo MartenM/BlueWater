@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import type { SignupListItemDto } from '$lib/api/apiClient';
@@ -25,7 +26,7 @@
 	});
 
 	const grouped = $derived.by(() => {
-		const map = new Map<string, SignupListItemDto[]>();
+		const map = new SvelteMap<string, SignupListItemDto[]>();
 		for (const item of items) {
 			const key = item.categoryTitle ?? 'Overig';
 			if (!map.has(key)) map.set(key, []);
