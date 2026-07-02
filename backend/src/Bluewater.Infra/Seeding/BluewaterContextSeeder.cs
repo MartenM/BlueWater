@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Bogus;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Agenda;
@@ -49,7 +50,7 @@ public class BluewaterContextSeeder
 
         var faker = new Faker("nl") { Random = new Randomizer(FakerSeed) };
 
-        var adminUser = await CreateAdminUserAsync();
+        var adminUser = await CreateAdminUserAsync("admin");
         var memberUsers = await CreateMemberUsersAsync(faker, count: 20);
 
         var season = CreateSeason();
@@ -83,7 +84,10 @@ public class BluewaterContextSeeder
 
         _logger.LogInformation("Seeding production database...");
 
-        var adminUser = await CreateAdminUserAsync();
+        var adminPassword = GenerateSecurePassword();
+        var adminUser = await CreateAdminUserAsync(adminPassword);
+        Console.WriteLine($"Generated admin password: {adminPassword}");
+
         var season = CreateSeason();
 
         var generalCategory = _context.UserGroupCategories.Add(new UserGroupCategory
@@ -148,7 +152,7 @@ public class BluewaterContextSeeder
             await _context.SaveChangesAsync();
     }
 
-    private async Task<BlueUser> CreateAdminUserAsync()
+    private async Task<BlueUser> CreateAdminUserAsync(string password)
     {
         var user = new BlueUser
         {
@@ -162,7 +166,7 @@ public class BluewaterContextSeeder
             Gender = BlueUserSex.Unknown,
             PhoneNumber = "+31612345678",
         };
-        VerifyResult(await _userManager.CreateAsync(user, "admin"));
+        VerifyResult(await _userManager.CreateAsync(user, password));
 
         var saved = await _userManager.FindByNameAsync("admin") ?? throw new Exception("Admin user not found");
 
@@ -877,6 +881,37 @@ public class BluewaterContextSeeder
         var icon = new NewsIcon { Id = Guid.NewGuid(), Name = name, FileId = storedFile.Id };
         _context.NewsIcons.Add(icon);
         return icon;
+    }
+
+    // Meets the default ASP.NET Core Identity password policy (min 6 chars, upper, lower,
+    // digit, and non-alphanumeric) regardless of environment-specific relaxations.
+    private static string GenerateSecurePassword()
+    {
+        const string uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        const string lowercase = "abcdefghijkmnopqrstuvwxyz";
+        const string digits = "23456789";
+        const string special = "!@#$%^&*-_=+";
+        const string all = uppercase + lowercase + digits + special;
+
+        var chars = new List<char>
+        {
+            uppercase[RandomNumberGenerator.GetInt32(uppercase.Length)],
+            lowercase[RandomNumberGenerator.GetInt32(lowercase.Length)],
+            digits[RandomNumberGenerator.GetInt32(digits.Length)],
+            special[RandomNumberGenerator.GetInt32(special.Length)],
+        };
+
+        for (var i = chars.Count; i < 16; i++)
+            chars.Add(all[RandomNumberGenerator.GetInt32(all.Length)]);
+
+        // Fisher-Yates shuffle so the required-class characters aren't always in the first positions.
+        for (var i = chars.Count - 1; i > 0; i--)
+        {
+            var j = RandomNumberGenerator.GetInt32(i + 1);
+            (chars[i], chars[j]) = (chars[j], chars[i]);
+        }
+
+        return new string(chars.ToArray());
     }
 
     private static byte[] LoadSeedImage(string fileName) =>
