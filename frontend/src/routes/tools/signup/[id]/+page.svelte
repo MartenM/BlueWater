@@ -124,9 +124,7 @@
 		settingsTitle = detail.title;
 		settingsDescription = detail.description ?? '';
 		settingsCategoryId = detail.categoryId;
-		settingsEndDate = detail.endDate
-			? new Date(detail.endDate).toISOString().slice(0, 16)
-			: '';
+		settingsEndDate = detail.endDate ? new Date(detail.endDate).toISOString().slice(0, 16) : '';
 		settingsMaxSignups = detail.maxSignups != null ? String(detail.maxSignups) : '';
 		settingsMaxWaitlist = detail.maxWaitlist != null ? String(detail.maxWaitlist) : '';
 		settingsAllowMultiple = detail.allowMultiple;
@@ -331,7 +329,7 @@
 		<!-- Tabs -->
 		<div class="border-b border-gray-200">
 			<nav class="-mb-px flex gap-6">
-				{#each ([['settings', 'Instellingen'], ['fields', 'Velden'], ['responses', 'Aanmeldingen']] as const) as [tab, label] (tab)}
+				{#each [['settings', 'Instellingen'], ['fields', 'Velden'], ['responses', 'Aanmeldingen']] as const as [tab, label] (tab)}
 					<button
 						class="py-2 text-sm font-medium border-b-2 {activeTab === tab
 							? 'border-blue-600 text-blue-600'
@@ -351,7 +349,10 @@
 		{#if activeTab === 'settings'}
 			<HasPermission permission={BluePermission.AdminSignupModify}>
 				<form
-					onsubmit={(e) => { e.preventDefault(); handleSaveSettings(); }}
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleSaveSettings();
+					}}
 					class="max-w-lg space-y-4"
 				>
 					<FormField label="Titel" errors={settingsForm.errorsFor('title')}>
@@ -370,8 +371,7 @@
 							<textarea
 								bind:value={settingsDescription}
 								rows="3"
-								class="rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"
-							></textarea>
+								class="rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"></textarea>
 						{/snippet}
 					</FormField>
 
@@ -424,7 +424,7 @@
 
 					<FormField label="Clusters" errors={settingsForm.errorsFor('clusterIds')}>
 						{#snippet children(invalid)}
-							<ClusterPicker clusters={clusters} bind:selectedIds={settingsClusterIds} {invalid} />
+							<ClusterPicker {clusters} bind:selectedIds={settingsClusterIds} {invalid} />
 						{/snippet}
 					</FormField>
 
@@ -519,9 +519,7 @@
 							&middot; {detail.responses?.filter((r) => r.status === 'waitlist').length} wachtlijst
 						{/if}
 					</p>
-					<Button variant="secondary" size="sm" onclick={handleExport}>
-						Exporteren (CSV)
-					</Button>
+					<Button variant="secondary" size="sm" onclick={handleExport}>Exporteren (CSV)</Button>
 				</div>
 
 				{#if !detail.responses || detail.responses.length === 0}
@@ -592,7 +590,10 @@
 		<div class="p-6 max-w-sm w-full">
 			<h2 class="text-lg font-semibold text-gray-900">Veld toevoegen</h2>
 			<form
-				onsubmit={(e) => { e.preventDefault(); handleAddField(); }}
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleAddField();
+				}}
 				class="mt-4 flex flex-col gap-4"
 			>
 				<FormField label="Naam" errors={addFieldForm.errorsFor('title')}>
@@ -676,7 +677,10 @@
 		<div class="p-6 max-w-sm w-full">
 			<h2 class="text-lg font-semibold text-gray-900">Veld bewerken</h2>
 			<form
-				onsubmit={(e) => { e.preventDefault(); handleEditField(); }}
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleEditField();
+				}}
 				class="mt-4 flex flex-col gap-4"
 			>
 				<FormField label="Naam" errors={editFieldForm.errorsFor('title')}>
@@ -702,10 +706,7 @@
 					{/snippet}
 				</FormField>
 				{#if editHasOptions}
-					<FormField
-						label="Opties (kommagescheiden)"
-						errors={editFieldForm.errorsFor('options')}
-					>
+					<FormField label="Opties (kommagescheiden)" errors={editFieldForm.errorsFor('options')}>
 						{#snippet children(invalid)}
 							<input
 								type="text"

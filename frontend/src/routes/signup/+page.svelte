@@ -57,7 +57,9 @@
 	{:else}
 		{#each grouped as [category, catItems] (category)}
 			<section class="mt-8 first:mt-6">
-				<h2 class="border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500">
+				<h2
+					class="border-b border-gray-200 pb-1 text-sm font-semibold uppercase tracking-wide text-gray-500"
+				>
 					{category}
 				</h2>
 				<ul class="text-sm">
@@ -84,16 +86,22 @@
 							</span>
 							<div class="flex w-28 shrink-0 items-center justify-end gap-1.5">
 								{#if !isOpen(item)}
-									<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+									<span
+										class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+									>
 										Gesloten
 									</span>
 								{/if}
 								{#if item.myResponseStatus === 'valid' || item.myResponseStatus === 'reservation'}
-									<span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+									<span
+										class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+									>
 										Aangemeld
 									</span>
 								{:else if item.myResponseStatus === 'waitlist'}
-									<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+									<span
+										class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700"
+									>
 										Wachtlijst
 									</span>
 								{/if}

@@ -12,11 +12,12 @@
 		ClusterPicker,
 		breadcrumbs
 	} from '$lib';
-	import {
-		BluePermission,
-		UpsertSignupRequest
+	import { BluePermission, UpsertSignupRequest } from '$lib/api/apiClient';
+	import type {
+		SignupListItemDto,
+		SignupCategoryDto,
+		SignupArchiveSeasonDto
 	} from '$lib/api/apiClient';
-	import type { SignupListItemDto, SignupCategoryDto, SignupArchiveSeasonDto } from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import { FormState } from '$lib/forms/formState.svelte';
 
@@ -114,14 +115,21 @@
 
 	function formatDate(d: Date | undefined) {
 		if (!d) return '—';
-		return new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+		return new Date(d).toLocaleDateString('nl-NL', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 </script>
 
 <div class="flex items-center justify-between">
 	<h1 class="text-2xl font-bold text-gray-900">Inschrijvingen</h1>
 	<div class="flex gap-2">
-		<a href={resolve('/tools/signup/categories')} class="self-center text-sm text-gray-500 hover:underline">
+		<a
+			href={resolve('/tools/signup/categories')}
+			class="self-center text-sm text-gray-500 hover:underline"
+		>
 			Categorieën
 		</a>
 		<Button variant="secondary" size="sm" onclick={toggleArchived}>
@@ -148,7 +156,9 @@
 {/snippet}
 
 {#snippet responsesCell(item: SignupListItemDto)}
-	<span class="text-gray-600">{item.validResponses}{item.maxSignups != null ? `/${item.maxSignups}` : ''}</span>
+	<span class="text-gray-600"
+		>{item.validResponses}{item.maxSignups != null ? `/${item.maxSignups}` : ''}</span
+	>
 {/snippet}
 
 <DataTable
@@ -177,7 +187,9 @@
 		{:else}
 			{#each archivedSeasons as season (season.seasonName)}
 				<details class="mb-4 rounded-lg border border-gray-200">
-					<summary class="cursor-pointer select-none rounded-lg bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100">
+					<summary
+						class="cursor-pointer select-none rounded-lg bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
+					>
 						{season.seasonName}
 						<span class="ml-1 font-normal text-gray-400">({season.signups?.length ?? 0})</span>
 					</summary>
@@ -205,7 +217,10 @@
 	<div class="p-6 max-w-lg w-full">
 		<h2 class="text-lg font-semibold text-gray-900">Nieuwe inschrijving</h2>
 		<form
-			onsubmit={(e) => { e.preventDefault(); handleCreate(); }}
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleCreate();
+			}}
 			class="mt-4 flex flex-col gap-4"
 		>
 			<FormField label="Titel" errors={createForm.errorsFor('title')}>
@@ -224,8 +239,7 @@
 					<textarea
 						bind:value={newDescription}
 						rows="2"
-						class="rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"
-					></textarea>
+						class="rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"></textarea>
 				{/snippet}
 			</FormField>
 
@@ -279,7 +293,7 @@
 
 			<FormField label="Clusters" errors={createForm.errorsFor('clusterIds')}>
 				{#snippet children(invalid)}
-					<ClusterPicker clusters={clusters} bind:selectedIds={newClusterIds} {invalid} />
+					<ClusterPicker {clusters} bind:selectedIds={newClusterIds} {invalid} />
 				{/snippet}
 			</FormField>
 

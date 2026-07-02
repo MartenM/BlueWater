@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 test('news creation shows field-level validation errors from the API', async ({ page }) => {
-
 	await page.goto('/news/new');
 	await page.waitForLoadState('networkidle');
 
@@ -17,7 +16,6 @@ test('news creation shows field-level validation errors from the API', async ({ 
 });
 
 test('news creation succeeds with valid input', async ({ page }) => {
-
 	await page.goto('/news/new');
 	await page.waitForLoadState('networkidle');
 

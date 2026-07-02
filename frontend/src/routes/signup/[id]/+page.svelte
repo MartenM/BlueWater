@@ -75,7 +75,11 @@
 
 	function formatDate(d: Date | string | undefined) {
 		if (!d) return null;
-		return new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+		return new Date(d).toLocaleDateString('nl-NL', {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		});
 	}
 
 	function openAanmelden() {
@@ -91,18 +95,17 @@
 	async function handleSubmit() {
 		if (!detail) return;
 		const fvList = detail.fields.map(
-			(f) => new FieldValueRequest({
-				fieldId: f.id,
-				value: f.type === SignupInputFieldType.OtherMember
-					? memberValues[f.id] ?? undefined
-					: fieldValues[f.id] ?? undefined,
-			})
+			(f) =>
+				new FieldValueRequest({
+					fieldId: f.id,
+					value:
+						f.type === SignupInputFieldType.OtherMember
+							? (memberValues[f.id] ?? undefined)
+							: (fieldValues[f.id] ?? undefined)
+				})
 		);
 		await responseForm.submit(async () => {
-			await apiClient.responsesPOST(
-				signupId,
-				new SubmitResponseRequest({ fieldValues: fvList })
-			);
+			await apiClient.responsesPOST(signupId, new SubmitResponseRequest({ fieldValues: fvList }));
 			detail = await apiClient.signupsGET2(signupId);
 			initFieldStates(detail);
 			aanmeldenModal?.close();
@@ -112,12 +115,14 @@
 	async function handleUpdate() {
 		if (!detail?.myResponse) return;
 		const fvList = detail.fields.map(
-			(f) => new FieldValueRequest({
-				fieldId: f.id,
-				value: f.type === SignupInputFieldType.OtherMember
-					? memberValues[f.id] ?? undefined
-					: fieldValues[f.id] ?? undefined,
-			})
+			(f) =>
+				new FieldValueRequest({
+					fieldId: f.id,
+					value:
+						f.type === SignupInputFieldType.OtherMember
+							? (memberValues[f.id] ?? undefined)
+							: (fieldValues[f.id] ?? undefined)
+				})
 		);
 		await responseForm.submit(async () => {
 			await apiClient.responsesPUT(
@@ -153,7 +158,9 @@
 		<!-- Header -->
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex-1 min-w-0">
-				<a href={resolve('/signup')} class="text-sm text-gray-500 hover:underline">← Inschrijvingen</a>
+				<a href={resolve('/signup')} class="text-sm text-gray-500 hover:underline"
+					>← Inschrijvingen</a
+				>
 				<h1 class="mt-2 text-2xl font-bold text-gray-900">{detail.title}</h1>
 				{#if detail.description}
 					<p class="mt-2 text-gray-600">{detail.description}</p>
@@ -174,9 +181,7 @@
 			<HasPermission permission={BluePermission.SignupRespond}>
 				{#if isOpen && !detail.myResponse}
 					<div class="shrink-0 mt-6">
-						<Button variant="primary" onclick={openAanmelden}>
-							Aanmelden
-						</Button>
+						<Button variant="primary" onclick={openAanmelden}>Aanmelden</Button>
 					</div>
 				{/if}
 			</HasPermission>
@@ -210,7 +215,12 @@
 									{@const isOwn = r.id === detail.myResponse?.id}
 									<tr class:bg-blue-50={isOwn}>
 										{#if !detail.anonymous}
-											<td class="py-2 pr-4" class:font-medium={isOwn} class:text-gray-900={isOwn} class:text-gray-700={!isOwn}>
+											<td
+												class="py-2 pr-4"
+												class:font-medium={isOwn}
+												class:text-gray-900={isOwn}
+												class:text-gray-700={!isOwn}
+											>
 												{r.userFullname ?? 'Anoniem'}
 											</td>
 										{/if}
@@ -238,8 +248,15 @@
 																title="Bewerken"
 																class="rounded p-1 text-gray-400 hover:bg-blue-100 hover:text-blue-600"
 															>
-																<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-																	<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+																<svg
+																	xmlns="http://www.w3.org/2000/svg"
+																	class="h-4 w-4"
+																	viewBox="0 0 20 20"
+																	fill="currentColor"
+																>
+																	<path
+																		d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+																	/>
 																</svg>
 															</button>
 														{/if}
@@ -249,8 +266,17 @@
 																title="Afmelden"
 																class="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
 															>
-																<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-																	<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+																<svg
+																	xmlns="http://www.w3.org/2000/svg"
+																	class="h-4 w-4"
+																	viewBox="0 0 20 20"
+																	fill="currentColor"
+																>
+																	<path
+																		fill-rule="evenodd"
+																		d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+																		clip-rule="evenodd"
+																	/>
 																</svg>
 															</button>
 														{/if}
@@ -284,8 +310,15 @@
 								title="Bewerken"
 								class="rounded p-1 text-gray-400 hover:bg-blue-100 hover:text-blue-600"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-									<path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+									/>
 								</svg>
 							</button>
 						{/if}
@@ -295,8 +328,17 @@
 								title="Afmelden"
 								class="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-									<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+										clip-rule="evenodd"
+									/>
 								</svg>
 							</button>
 						{/if}
@@ -315,7 +357,10 @@
 				{isEditing ? 'Aanmelding bewerken' : 'Aanmelden'}
 			</h2>
 			<form
-				onsubmit={(e) => { e.preventDefault(); isEditing ? handleUpdate() : handleSubmit(); }}
+				onsubmit={(e) => {
+					e.preventDefault();
+					isEditing ? handleUpdate() : handleSubmit();
+				}}
 				class="space-y-4"
 			>
 				{#if detail.fields.length === 0 && !isEditing}
@@ -348,14 +393,19 @@
 									class="w-full rounded-md {invalid ? 'border-red-400' : 'border-gray-300'}"
 								/>
 							{:else if field.type === SignupInputFieldType.RadioList && field.options}
-								{#each field.options.split(',').map(s => s.trim()).filter(Boolean) as opt (opt)}
+								{#each field.options
+									.split(',')
+									.map((s) => s.trim())
+									.filter(Boolean) as opt (opt)}
 									<label class="flex items-center gap-2">
 										<input
 											type="radio"
 											name={field.id}
 											value={opt}
 											checked={fieldValues[field.id] === opt}
-											onchange={() => { fieldValues[field.id] = opt; }}
+											onchange={() => {
+												fieldValues[field.id] = opt;
+											}}
 										/>
 										{opt}
 									</label>

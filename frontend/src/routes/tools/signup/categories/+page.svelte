@@ -138,13 +138,19 @@
 		<div class="flex gap-2">
 			<button
 				class="text-sm text-blue-600 hover:underline"
-				onclick={(e) => { e.stopPropagation(); startEdit(item); }}
+				onclick={(e) => {
+					e.stopPropagation();
+					startEdit(item);
+				}}
 			>
 				Bewerken
 			</button>
 			<button
 				class="text-sm text-red-600 hover:underline"
-				onclick={(e) => { e.stopPropagation(); startDelete(item); }}
+				onclick={(e) => {
+					e.stopPropagation();
+					startDelete(item);
+				}}
 			>
 				Verwijderen
 			</button>
@@ -170,7 +176,10 @@
 	<div class="p-6">
 		<h2 class="text-lg font-semibold text-gray-900">Nieuwe categorie</h2>
 		<form
-			onsubmit={(e) => { e.preventDefault(); handleCreate(); }}
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleCreate();
+			}}
 			class="mt-4 flex flex-col gap-4"
 		>
 			<FormField label="Naam" errors={createForm.errorsFor('title')}>
@@ -216,7 +225,10 @@
 	<div class="p-6">
 		<h2 class="text-lg font-semibold text-gray-900">Categorie bewerken</h2>
 		<form
-			onsubmit={(e) => { e.preventDefault(); handleEdit(); }}
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleEdit();
+			}}
 			class="mt-4 flex flex-col gap-4"
 		>
 			<FormField label="Naam" errors={editForm.errorsFor('title')}>

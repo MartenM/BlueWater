@@ -29,7 +29,11 @@
 
 	function formatDate(d: Date | undefined) {
 		if (!d) return '—';
-		return new Date(d).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+		return new Date(d).toLocaleDateString('nl-NL', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 </script>
 
@@ -74,7 +78,7 @@
 					{ header: 'Sluitdatum', cell: endDateCell },
 					{ header: 'Status', cell: statusCell }
 				]}
-				items={items}
+				{items}
 				loading={false}
 				emptyMessage="Geen aanmeldingen."
 			/>

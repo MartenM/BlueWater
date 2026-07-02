@@ -163,7 +163,10 @@
 
 	async function handleRemoveCriterion(criterion: MemberClusterCriterionDto) {
 		await apiClient.criteriaDELETE(params.id, criterion.id);
-		cluster = { ...cluster!, criteria: cluster!.criteria.filter((c) => c.id !== criterion.id) } as MemberClusterDto;
+		cluster = {
+			...cluster!,
+			criteria: cluster!.criteria.filter((c) => c.id !== criterion.id)
+		} as MemberClusterDto;
 	}
 
 	$effect(() => {
