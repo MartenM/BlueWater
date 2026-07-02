@@ -1,4 +1,4 @@
-import { PUBLIC_API_BASE_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { Client, RefreshRequest } from './apiClient';
 import { session } from '$lib/auth/session.svelte';
 
@@ -10,7 +10,7 @@ function credentialedFetch(url: RequestInfo, init?: RequestInit): Promise<Respon
 
 async function refreshSession(): Promise<boolean> {
 	try {
-		const refreshClient = new Client(PUBLIC_API_BASE_URL, { fetch: credentialedFetch });
+		const refreshClient = new Client(env.PUBLIC_API_BASE_URL, { fetch: credentialedFetch });
 		const result = await refreshClient.refresh(new RefreshRequest({ refreshToken: '' }));
 		session.setUserFromAccessToken(result.accessToken);
 		return true;
@@ -33,4 +33,4 @@ async function authFetch(url: RequestInfo, init?: RequestInit): Promise<Response
 	return credentialedFetch(url, init);
 }
 
-export const apiClient = new Client(PUBLIC_API_BASE_URL, { fetch: authFetch });
+export const apiClient = new Client(env.PUBLIC_API_BASE_URL, { fetch: authFetch });

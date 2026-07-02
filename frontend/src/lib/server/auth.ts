@@ -1,6 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import { API_BASE_URL_INTERNAL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { BluePermission } from '$lib/api/apiClient';
 import { isExpiringSoon } from '$lib/auth/jwt';
 import { claimsToSessionUser, type SessionUser } from '$lib/auth/session.svelte';
@@ -40,7 +40,7 @@ async function refreshFromCookie(
 	const refreshToken = cookies.get(REFRESH_TOKEN_COOKIE);
 	if (!refreshToken) return null;
 
-	const response = await fetch(`${API_BASE_URL_INTERNAL}/api/Auth/refresh`, {
+	const response = await fetch(`${env.API_BASE_URL_INTERNAL}/api/Auth/refresh`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
