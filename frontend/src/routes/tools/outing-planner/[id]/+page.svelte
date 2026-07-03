@@ -164,25 +164,6 @@
 		</span>
 	{/if}
 
-	<dl class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-		<div>
-			<dt class="text-sm font-medium text-gray-500">Boottype</dt>
-			<dd class="mt-1 text-sm text-gray-900">
-				{outing.boatTypeName ?? outing.boatTypeDifferent ?? '—'}
-			</dd>
-		</div>
-		<div>
-			<dt class="text-sm font-medium text-gray-500">Boot</dt>
-			<dd class="mt-1 text-sm text-gray-900">{outing.boatName ?? '—'}</dd>
-		</div>
-		{#if outing.description}
-			<div class="sm:col-span-2">
-				<dt class="text-sm font-medium text-gray-500">Omschrijving</dt>
-				<dd class="mt-1 text-sm text-gray-900">{outing.description}</dd>
-			</div>
-		{/if}
-	</dl>
-
 	<div class="mt-6 flex flex-wrap gap-3">
 		{#if myParticipant && myParticipant.role !== OutingParticipantRole.None && !myParticipant.checkedIn}
 			<Button
@@ -213,12 +194,35 @@
 		<p class="mt-3 text-sm text-red-600">{actionError}</p>
 	{/if}
 
-	<div class="mt-8">
-		<OutingRosterManager {outing} onChanged={load} />
-	</div>
+	<div class="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
+		<div class="lg:col-span-1">
+			<dl class="grid grid-cols-1 gap-4">
+				<div>
+					<dt class="text-sm font-medium text-gray-500">Boottype</dt>
+					<dd class="mt-1 text-sm text-gray-900">
+						{outing.boatTypeName ?? outing.boatTypeDifferent ?? '—'}
+					</dd>
+				</div>
+				<div>
+					<dt class="text-sm font-medium text-gray-500">Boot</dt>
+					<dd class="mt-1 text-sm text-gray-900">{outing.boatName ?? '—'}</dd>
+				</div>
+				{#if outing.description}
+					<div>
+						<dt class="text-sm font-medium text-gray-500">Omschrijving</dt>
+						<dd class="mt-1 text-sm text-gray-900">{outing.description}</dd>
+					</div>
+				{/if}
+			</dl>
 
-	<div class="mt-8">
-		<OutingChangelogList entries={changelog} />
+			<div class="mt-8">
+				<OutingChangelogList entries={changelog} />
+			</div>
+		</div>
+
+		<div class="lg:col-span-2">
+			<OutingRosterManager {outing} onChanged={load} />
+		</div>
 	</div>
 
 	<ConfirmDialog
