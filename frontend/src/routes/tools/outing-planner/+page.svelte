@@ -1,22 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { Spinner, breadcrumbs } from '$lib';
-	import { OutingParticipantRole, type OutingOverviewGroupDto } from '$lib/api/apiClient';
+	import { DataTable, Spinner, breadcrumbs } from '$lib';
+	import {
+		OutingParticipantRole,
+		type OutingListItemDto,
+		type OutingOverviewGroupDto
+	} from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 
 	let groups = $state<OutingOverviewGroupDto[]>([]);
 	let error = $state(false);
 	let loading = $state(true);
-
-	const roleLabels: Record<OutingParticipantRole, string> = {
-		[OutingParticipantRole.None]: 'Geen status',
-		[OutingParticipantRole.Rower]: 'Roeier',
-		[OutingParticipantRole.Cox]: 'Stuurman/-vrouw',
-		[OutingParticipantRole.Coach]: 'Coach',
-		[OutingParticipantRole.Reserve]: 'Reserve',
-		[OutingParticipantRole.Unavailable]: 'Niet beschikbaar'
-	};
 
 	onMount(async () => {
 		try {
@@ -34,6 +29,28 @@
 		return () => breadcrumbs.clear();
 	});
 </script>
+
+{#snippet dateCell(item: OutingListItemDto)}
+	<a
+		href={resolve('/tools/outing-planner/[id]', { id: item.id })}
+		class="font-medium text-primary hover:underline"
+	>
+		{item.outingDate.toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}
+	</a>
+{/snippet}
+{#snippet boatCell(item: OutingListItemDto)}
+	<span class="text-gray-600">{item.boatTypeName ?? item.boatTypeDifferent ?? '—'}</span>
+{/snippet}
+{#snippet rowersCell(item: OutingListItemDto)}
+	<span class="text-gray-600">
+		{item.rowerCapacity ? `${item.rowerCount}/${item.rowerCapacity}` : item.rowerCount}
+	</span>
+{/snippet}
+{#snippet myRoleCell(item: OutingListItemDto)}
+	<span class="text-gray-600">
+		{item.myRole !== undefined && item.myRole !== OutingParticipantRole.None ? item.myRole : '—'}
+	</span>
+{/snippet}
 
 <div class="flex items-center justify-between">
 	<h1 class="text-2xl font-bold text-gray-900">Outing Planner</h1>
@@ -66,32 +83,16 @@
 						Alle outings
 					</a>
 				</div>
-				<div class="mt-2 divide-y divide-gray-200 border-t border-gray-200">
-					{#each group.outings as outing (outing.id)}
-						<a
-							href={resolve('/tools/outing-planner/[id]', { id: outing.id })}
-							class="flex items-center justify-between gap-4 py-3 hover:bg-gray-50"
-						>
-							<div>
-								<p class="text-sm font-medium text-gray-900">
-									{outing.outingDate.toLocaleString('nl-NL', {
-										dateStyle: 'medium',
-										timeStyle: 'short'
-									})}
-								</p>
-								<p class="text-sm text-gray-500">
-									{outing.boatTypeName ?? outing.boatTypeDifferent ?? '—'}
-									{#if outing.rowerCapacity}
-										· Roeiers {outing.rowerCount}/{outing.rowerCapacity}
-									{/if}
-								</p>
-							</div>
-							<span class="text-sm text-gray-600">
-								{outing.myRole !== undefined ? roleLabels[outing.myRole] : 'Geen status'}
-							</span>
-						</a>
-					{/each}
-				</div>
+				<DataTable
+					columns={[
+						{ header: 'Datum', cell: dateCell },
+						{ header: 'Boot', cell: boatCell },
+						{ header: 'Roeiers', cell: rowersCell },
+						{ header: 'Mijn rol', cell: myRoleCell }
+					]}
+					items={group.outings}
+					emptyMessage="Geen outings gevonden."
+				/>
 			</div>
 		{/each}
 	</div>

@@ -10878,6 +10878,7 @@ export class OutingListItemDto implements IOutingListItemDto {
     coxRequired!: boolean;
     myRole!: OutingParticipantRole | undefined;
     myCheckedIn!: boolean;
+    participants!: OutingParticipantDto[];
 
     [key: string]: any;
 
@@ -10887,6 +10888,9 @@ export class OutingListItemDto implements IOutingListItemDto {
                 if (data.hasOwnProperty(property))
                     (this as any)[property] = (data as any)[property];
             }
+        }
+        if (!data) {
+            this.participants = [];
         }
     }
 
@@ -10913,6 +10917,11 @@ export class OutingListItemDto implements IOutingListItemDto {
             this.coxRequired = _data["coxRequired"];
             this.myRole = _data["myRole"];
             this.myCheckedIn = _data["myCheckedIn"];
+            if (Array.isArray(_data["participants"])) {
+                this.participants = [] as any;
+                for (let item of _data["participants"])
+                    this.participants!.push(OutingParticipantDto.fromJS(item));
+            }
         }
     }
 
@@ -10946,6 +10955,11 @@ export class OutingListItemDto implements IOutingListItemDto {
         data["coxRequired"] = this.coxRequired;
         data["myRole"] = this.myRole;
         data["myCheckedIn"] = this.myCheckedIn;
+        if (Array.isArray(this.participants)) {
+            data["participants"] = [];
+            for (let item of this.participants)
+                data["participants"].push(item ? item.toJSON() : undefined as any);
+        }
         return data;
     }
 }
@@ -10968,6 +10982,7 @@ export interface IOutingListItemDto {
     coxRequired: boolean;
     myRole: OutingParticipantRole | undefined;
     myCheckedIn: boolean;
+    participants: OutingParticipantDto[];
 
     [key: string]: any;
 }

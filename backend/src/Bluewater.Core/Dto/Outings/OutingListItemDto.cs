@@ -19,4 +19,5 @@ public record OutingListItemDto(
     bool CoxAssigned,
     bool CoxRequired,
     OutingParticipantRole? MyRole,
-    bool MyCheckedIn);
+    bool MyCheckedIn,
+    IReadOnlyList<OutingParticipantDto> Participants);

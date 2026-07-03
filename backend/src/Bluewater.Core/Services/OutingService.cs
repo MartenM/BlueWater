@@ -518,7 +518,7 @@ public class OutingService : IOutingService
             .Include(o => o.UserGroupInstance).ThenInclude(i => i.Season)
             .Include(o => o.BoatType)
             .Include(o => o.Boat)
-            .Include(o => o.Participants);
+            .Include(o => o.Participants).ThenInclude(p => p.User);
     }
 
     private async Task<Outing> LoadOutingWithDetailsAsync(Guid outingId)
@@ -565,7 +565,18 @@ public class OutingService : IOutingService
             outing.Participants.Any(p => p.Role == OutingParticipantRole.Cox),
             outing.BoatType?.Coxed ?? false,
             myParticipant?.Role,
-            myParticipant?.CheckedIn ?? false);
+            myParticipant?.CheckedIn ?? false,
+            outing.Participants
+                .Where(p => p.Role != OutingParticipantRole.None)
+                .Select(p => new OutingParticipantDto(
+                    p.UserId,
+                    p.User?.Fullname ?? string.Empty,
+                    p.User?.ProfilePictureFileId != null,
+                    p.Role,
+                    p.Invited,
+                    p.CheckedIn,
+                    p.UpdatedAt))
+                .ToList());
     }
 
     private static OutingDetailDto ToDetailDto(Outing outing)
