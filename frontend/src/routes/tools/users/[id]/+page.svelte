@@ -95,7 +95,11 @@
 	<p class="text-sm text-gray-600">Gebruiker kon niet worden geladen.</p>
 {:else if user}
 	<div class="flex items-center gap-4">
-		<ProfilePicture load={() => apiClient.getUserPicture(user!.id)} version={pictureVersion} />
+		<ProfilePicture
+			userId={user!.id}
+			fetch={(id) => apiClient.getUserPicture(id)}
+			version={pictureVersion}
+		/>
 		<h1 class="text-2xl font-bold text-gray-900">{user.fullname}</h1>
 	</div>
 

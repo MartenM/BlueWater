@@ -16,7 +16,6 @@
 	import type { OutingChangelogEntryDto, OutingDetailDto } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
 	import { apiClient } from '$lib/api/client';
-	import { session } from '$lib/auth/session.svelte';
 	import type { PageProps } from './$types';
 
 	let { params }: PageProps = $props();
@@ -36,17 +35,7 @@
 	let inviteBusy = $state(false);
 	let inviteError = $state<string | null>(null);
 
-	const myParticipant = $derived(
-		outing?.participants.find((p) => p.userId === session.user?.id) ?? null
-	);
-
 	const outingHasPassed = $derived(!!outing && outing.outingDate.getTime() <= now.getTime());
-
-	const checkInWindowOpen = $derived(
-		!!outing &&
-			now.getTime() >= outing.outingDate.getTime() - 30 * 60000 &&
-			now.getTime() <= outing.outingDate.getTime() + 3 * 60 * 60000
-	);
 
 	async function load() {
 		loading = true;
@@ -82,19 +71,6 @@
 		}
 		return () => breadcrumbs.clear();
 	});
-
-	async function handleCheckIn() {
-		busy = true;
-		actionError = null;
-		try {
-			await apiClient.checkIn(params.id);
-			await load();
-		} catch {
-			actionError = 'Inchecken is mislukt. Probeer het later opnieuw.';
-		} finally {
-			busy = false;
-		}
-	}
 
 	async function handleConfirm() {
 		busy = true;
@@ -186,22 +162,13 @@
 		</span>
 	{/if}
 
-	<div class="mt-6 flex flex-wrap gap-3">
-		{#if myParticipant && myParticipant.role !== OutingParticipantRole.None && !myParticipant.checkedIn}
-			<Button
-				variant="secondary"
-				size="sm"
-				disabled={!checkInWindowOpen || busy}
-				onclick={handleCheckIn}
-			>
-				Inchecken
-			</Button>
-		{/if}
-		{#if outingHasPassed && !outing.confirmed}
-			<Button variant="success" size="sm" disabled={busy} onclick={handleConfirm}>
+	{#if outingHasPassed && !outing.confirmed}
+		<div class="mt-6 flex gap-3">
+			<Button class="flex-1" variant="success" size="sm" disabled={busy} onclick={handleConfirm}>
 				Bevestigen (heeft plaatsgevonden)
 			</Button>
 			<Button
+				class="flex-1"
 				variant="warning"
 				size="sm"
 				disabled={busy}
@@ -209,8 +176,8 @@
 			>
 				Niet doorgegaan
 			</Button>
-		{/if}
-	</div>
+		</div>
+	{/if}
 
 	{#if actionError}
 		<p class="mt-3 text-sm text-red-600">{actionError}</p>

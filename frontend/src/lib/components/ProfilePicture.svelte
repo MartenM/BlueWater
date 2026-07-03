@@ -1,11 +1,15 @@
 <script lang="ts">
+	import { apiClient } from '$lib/api/client';
+
 	let {
-		load,
+		userId,
+		fetch: fetchPicture = (id: string) => apiClient.getProfilePicture(id),
 		version = 0,
 		alt = 'Profielfoto',
 		class: className = 'h-[100px] w-[75px] shrink-0 rounded-lg object-cover'
 	}: {
-		load: () => Promise<{ data: Blob }>;
+		userId: string;
+		fetch?: (userId: string) => Promise<{ data: Blob }>;
 		version?: number;
 		alt?: string;
 		class?: string;
@@ -15,13 +19,14 @@
 
 	$effect(() => {
 		void version;
+		void userId;
 		let active = true;
 		let createdUrl: string | null = null;
 		url = null;
 
 		(async () => {
 			try {
-				const content = await load();
+				const content = await fetchPicture(userId);
 				if (!active) return;
 				createdUrl = URL.createObjectURL(content.data);
 				url = createdUrl;

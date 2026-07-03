@@ -64,7 +64,7 @@
 <div class="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8">
 	<section class="h-fit rounded-md border border-gray-200 bg-white p-6 shadow-sm">
 		<div class="flex items-start gap-4">
-			<ProfilePicture load={() => apiClient.getMyProfilePicture()} />
+			<ProfilePicture userId={profile.id} fetch={() => apiClient.getMyProfilePicture()} />
 			<div>
 				<h1 class="text-xl font-bold text-gray-900">{profile.fullname}</h1>
 				<dl class="mt-4 space-y-3 text-sm">

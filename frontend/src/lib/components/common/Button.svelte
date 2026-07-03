@@ -13,6 +13,7 @@
 		loading = false,
 		onclick,
 		children,
+		class: className = '',
 		...rest
 	}: {
 		variant?: Variant;
@@ -23,6 +24,7 @@
 		loading?: boolean;
 		onclick?: (event: MouseEvent) => void;
 		children: Snippet;
+		class?: string;
 	} = $props();
 
 	const variantStyles: Record<Variant, string> = {
@@ -39,7 +41,7 @@
 	};
 
 	const classes = $derived(
-		`inline-flex items-center gap-2 rounded-md font-medium disabled:opacity-60 ${variantStyles[variant]} ${sizeStyles[size]}`
+		`inline-flex items-center justify-center gap-2 rounded-md font-medium disabled:opacity-60 ${variantStyles[variant]} ${sizeStyles[size]} ${className}`
 	);
 </script>
 

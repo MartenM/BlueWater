@@ -82,10 +82,7 @@
 				? 'border-red-400'
 				: 'border-gray-300'} bg-white"
 		>
-			<ProfilePicture
-				load={() => apiClient.getProfilePicture(value!)}
-				class="h-10 w-[30px] shrink-0 rounded object-cover"
-			/>
+			<ProfilePicture userId={value!} class="h-10 w-[30px] shrink-0 rounded object-cover" />
 			<span class="flex-1 text-gray-900">{selectedName}</span>
 			{#if !disabled}
 				<button
@@ -141,22 +138,10 @@
 							onclick={() => select(member)}
 							class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
 						>
-							{#if member.hasProfilePicture}
-								<ProfilePicture
-									load={() => apiClient.getProfilePicture(member.id)}
-									class="h-10 w-[30px] shrink-0 rounded object-cover"
-								/>
-							{:else}
-								<div
-									class="flex h-10 w-[30px] shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400"
-								>
-									<svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
-										<path
-											d="M12 12c2.7 0 4.875-2.175 4.875-4.875S14.7 2.25 12 2.25 7.125 4.425 7.125 7.125 9.3 12 12 12Zm0 2.25c-3.45 0-9 1.5-9 5.25v1.5h18v-1.5c0-3.75-5.55-5.25-9-5.25Z"
-										/>
-									</svg>
-								</div>
-							{/if}
+							<ProfilePicture
+								userId={member.id}
+								class="h-10 w-[30px] shrink-0 rounded object-cover"
+							/>
 							<span class="text-gray-900">{member.fullname}</span>
 						</button>
 					</li>
