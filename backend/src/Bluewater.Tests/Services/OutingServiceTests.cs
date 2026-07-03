@@ -362,16 +362,110 @@ public class OutingServiceTests : SqliteServiceTestBase
     }
 
     // -------------------------------------------------------------------------
+    // SearchCandidatesAsync
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task SearchCandidatesAsync_ReturnsInstanceMembers()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var otherMember = await CreateUserAsync("othermember", "othermember@example.com");
+        await AddMemberAsync(instance.Id, otherMember.Id);
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null));
+
+        var candidates = await _sut.SearchCandidatesAsync(outing.Id, null);
+
+        candidates.ShouldContain(c => c.Id == otherMember.Id);
+    }
+
+    [Fact]
+    public async Task SearchCandidatesAsync_ReturnsInvitedNonMembers()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var invitee = await CreateUserAsync("invitee", "invitee@example.com");
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null));
+        await _sut.InviteParticipantAsync(outing.Id, new InviteParticipantRequest(invitee.Id));
+
+        var candidates = await _sut.SearchCandidatesAsync(outing.Id, null);
+
+        candidates.ShouldContain(c => c.Id == invitee.Id);
+    }
+
+    [Fact]
+    public async Task SearchCandidatesAsync_ExcludesUnrelatedActiveMembers()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var (instance, member) = await CreateInstanceInSeasonAsync(season.Id);
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null));
+
+        var (_, unrelatedMember) = await CreateInstanceInSeasonAsync(season.Id);
+
+        var candidates = await _sut.SearchCandidatesAsync(outing.Id, null);
+
+        candidates.ShouldNotContain(c => c.Id == unrelatedMember.Id);
+    }
+
+    [Fact]
+    public async Task SearchCandidatesAsync_HonorsSearchTerm()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var alice = await CreateUserAsync("alice", "alice@example.com");
+        alice.Firstname = "Alice";
+        var bob = await CreateUserAsync("bob", "bob@example.com");
+        bob.Firstname = "Bob";
+        Db.Users.UpdateRange(alice, bob);
+        await Db.SaveChangesAsync();
+        await AddMemberAsync(instance.Id, alice.Id);
+        await AddMemberAsync(instance.Id, bob.Id);
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null));
+
+        var candidates = await _sut.SearchCandidatesAsync(outing.Id, "alice");
+
+        candidates.ShouldContain(c => c.Id == alice.Id);
+        candidates.ShouldNotContain(c => c.Id == bob.Id);
+    }
+
+    [Fact]
+    public async Task SearchCandidatesAsync_Throws_WhenOutingDoesNotExist()
+    {
+        var (_, member) = await CreateInstanceWithMemberAsync();
+        CurrentServiceUserId = member.Id;
+
+        await Should.ThrowAsync<BlueNotFoundException>(() => _sut.SearchCandidatesAsync(Guid.NewGuid(), null));
+    }
+
+    [Fact]
+    public async Task SearchCandidatesAsync_Throws_WhenCallerIsNotAMemberOrInvited()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var outsider = await CreateUserAsync("outsider", "outsider@example.com");
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null));
+
+        CurrentServiceUserId = outsider.Id;
+        await Should.ThrowAsync<BlueNotFoundException>(() => _sut.SearchCandidatesAsync(outing.Id, null));
+    }
+
+    // -------------------------------------------------------------------------
     // Test helpers
     // -------------------------------------------------------------------------
 
     private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceWithMemberAsync()
     {
         var season = await CreateCurrentSeasonAsync();
+        return await CreateInstanceInSeasonAsync(season.Id);
+    }
+
+    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceInSeasonAsync(Guid seasonId)
+    {
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
-        var group = new UserGroup { Id = Guid.NewGuid(), Name = "Rowing 1", Description = "Team", UserGroupCategoryId = category.Id };
-        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
-        var member = await CreateUserAsync("member", "member@example.com");
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Rowing {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = seasonId };
+        var member = await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
 
         Db.UserGroupCategories.Add(category);
         Db.UserGroups.Add(group);

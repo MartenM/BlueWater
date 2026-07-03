@@ -8,10 +8,13 @@
 		Spinner,
 		breadcrumbs,
 		OutingRosterManager,
-		OutingChangelogList
+		OutingChangelogList,
+		MemberPicker,
+		BlueAlert
 	} from '$lib';
-	import { OutingParticipantRole } from '$lib/api/apiClient';
+	import { OutingParticipantRole, InviteParticipantRequest } from '$lib/api/apiClient';
 	import type { OutingChangelogEntryDto, OutingDetailDto } from '$lib/api/apiClient';
+	import { AlertLevel } from '$lib/alert';
 	import { apiClient } from '$lib/api/client';
 	import { session } from '$lib/auth/session.svelte';
 	import type { PageProps } from './$types';
@@ -28,6 +31,10 @@
 
 	let deleteDialog = $state<HTMLDialogElement>();
 	let didNotHappenDialog = $state<HTMLDialogElement>();
+
+	let inviteUserId = $state<string | null>(null);
+	let inviteBusy = $state(false);
+	let inviteError = $state<string | null>(null);
 
 	const myParticipant = $derived(
 		outing?.participants.find((p) => p.userId === session.user?.id) ?? null
@@ -115,6 +122,21 @@
 		} catch {
 			actionError = 'Bijwerken is mislukt. Probeer het later opnieuw.';
 			busy = false;
+		}
+	}
+
+	async function handleInvite() {
+		if (!inviteUserId) return;
+		inviteBusy = true;
+		inviteError = null;
+		try {
+			await apiClient.invite(params.id, new InviteParticipantRequest({ userId: inviteUserId }));
+			inviteUserId = null;
+			await load();
+		} catch {
+			inviteError = 'Uitnodigen is mislukt. Probeer het later opnieuw.';
+		} finally {
+			inviteBusy = false;
 		}
 	}
 
@@ -214,6 +236,31 @@
 					</div>
 				{/if}
 			</dl>
+
+			{#if !outing.confirmed}
+				<div class="mt-6">
+					<span class="mb-1 block text-sm font-medium text-gray-700">Iemand uitnodigen</span>
+					<div class="flex items-end gap-2">
+						<div class="flex-1">
+							<MemberPicker bind:value={inviteUserId} disabled={inviteBusy} />
+						</div>
+						<Button
+							type="button"
+							variant="secondary"
+							size="sm"
+							disabled={!inviteUserId || inviteBusy}
+							onclick={handleInvite}
+						>
+							Uitnodigen
+						</Button>
+					</div>
+					{#if inviteError}
+						<div class="mt-2">
+							<BlueAlert level={AlertLevel.Danger}>{inviteError}</BlueAlert>
+						</div>
+					{/if}
+				</div>
+			{/if}
 
 			<div class="mt-8">
 				<OutingChangelogList entries={changelog} />

@@ -1,5 +1,6 @@
 using Bluewater.Core.Dto.Common;
 using Bluewater.Core.Dto.Outings;
+using Bluewater.Core.Dto.Profile;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Outings;
 using Microsoft.AspNetCore.Authorization;
@@ -52,6 +53,14 @@ public class OutingsController : ControllerBase
     public Task<OutingDetailDto> Get(Guid id)
     {
         return _outingService.GetAsync(id);
+    }
+
+    /// <summary>Searches for users eligible to be added to this outing's roster (instance members plus already-invited non-members).</summary>
+    [Authorize]
+    [HttpGet("{id:guid}/candidates")]
+    public Task<List<ActiveMemberDto>> SearchCandidates(Guid id, [FromQuery] string? search)
+    {
+        return _outingService.SearchCandidatesAsync(id, search);
     }
 
     /// <summary>Creates a new outing.</summary>

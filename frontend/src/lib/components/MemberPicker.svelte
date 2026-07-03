@@ -7,12 +7,14 @@
 		value = $bindable<string | null>(null),
 		invalid = false,
 		disabled = false,
-		placeholder = 'Zoek een lid...'
+		placeholder = 'Zoek een lid...',
+		search: searchFn = (term: string) => apiClient.active(term)
 	}: {
 		value?: string | null;
 		invalid?: boolean;
 		disabled?: boolean;
 		placeholder?: string;
+		search?: (term: string) => Promise<ActiveMemberDto[]>;
 	} = $props();
 
 	let search = $state('');
@@ -34,7 +36,7 @@
 		searching = true;
 		debounceTimer = setTimeout(async () => {
 			try {
-				results = await apiClient.active(term);
+				results = await searchFn(term);
 				open = results.length > 0;
 			} catch {
 				results = [];

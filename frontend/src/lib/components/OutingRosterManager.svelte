@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { apiClient } from '$lib/api/client';
-	import {
-		InviteParticipantRequest,
-		OutingParticipantRole,
-		SetParticipantRoleRequest
-	} from '$lib/api/apiClient';
+	import { OutingParticipantRole, SetParticipantRoleRequest } from '$lib/api/apiClient';
 	import type { OutingDetailDto, OutingParticipantDto } from '$lib/api/apiClient';
 	import { session } from '$lib/auth/session.svelte';
 	import BlueAlert from './BlueAlert.svelte';
@@ -40,7 +36,9 @@
 		OutingParticipantRole.None
 	];
 
-	let inviteUserId = $state<string | null>(null);
+	let addUserId = $state<Record<string, string | null>>(
+		Object.fromEntries(roleRowOrder.map((role) => [role, null]))
+	);
 	let busy = $state(false);
 	let actionError = $state<string | null>(null);
 
@@ -76,16 +74,17 @@
 		}
 	}
 
-	async function invite() {
-		if (!inviteUserId) return;
+	async function addToRole(role: OutingParticipantRole) {
+		const userId = addUserId[role];
+		if (!userId) return;
 		busy = true;
 		actionError = null;
 		try {
-			await apiClient.invite(outing.id, new InviteParticipantRequest({ userId: inviteUserId }));
-			inviteUserId = null;
+			await apiClient.assignRole(outing.id, userId, new SetParticipantRoleRequest({ role }));
+			addUserId[role] = null;
 			onChanged();
 		} catch {
-			actionError = 'Uitnodigen is mislukt. Probeer het later opnieuw.';
+			actionError = 'Toevoegen is mislukt. Probeer het later opnieuw.';
 		} finally {
 			busy = false;
 		}
@@ -153,17 +152,19 @@
 
 				<div class="mt-2 flex flex-wrap gap-2">
 					{#each participantsByRole[role] as participant (participant.userId)}
-						<div class="flex items-center gap-2 rounded-md border border-gray-200 py-1 pr-2 pl-1">
+						<div
+							class="flex w-40 flex-col items-center gap-1 rounded-md border border-gray-200 p-2 text-center"
+						>
 							{#if participant.hasProfilePicture}
 								<ProfilePicture
 									load={() => apiClient.getProfilePicture(participant.userId)}
-									class="h-8 w-6 shrink-0 rounded object-cover"
+									class="h-20 shrink-0 rounded object-cover"
 								/>
 							{:else}
 								<div
-									class="flex h-8 w-6 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400"
+									class="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400"
 								>
-									<svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+									<svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
 										<path
 											d="M12 12c2.7 0 4.875-2.175 4.875-4.875S14.7 2.25 12 2.25 7.125 4.425 7.125 7.125 9.3 12 12 12Zm0 2.25c-3.45 0-9 1.5-9 5.25v1.5h18v-1.5c0-3.75-5.55-5.25-9-5.25Z"
 										/>
@@ -171,17 +172,18 @@
 								</div>
 							{/if}
 
-							<span class="truncate text-sm text-gray-900">
+							<span class="w-full truncate text-xs text-gray-900">
 								{participant.fullname}
-								{#if participant.invited}
-									<span class="ml-1 text-xs text-gray-400">(uitgenodigd)</span>
-								{/if}
-								{#if participant.checkedIn}
-									<span class="ml-1 text-green-600" title="Ingecheckt">✅</span>
-								{/if}
 							</span>
+							{#if participant.invited}
+								<span class="text-[10px] text-gray-400">(uitgenodigd)</span>
+							{/if}
+							{#if participant.checkedIn}
+								<span class="text-green-600" title="Ingecheckt">✅</span>
+							{/if}
 
 							{#if !outing.confirmed}
+								<div class="flex flex-row items-center gap-1">
 								<select
 									value={participant.role}
 									disabled={busy}
@@ -190,7 +192,7 @@
 											participant.userId,
 											(e.currentTarget as HTMLSelectElement).value as OutingParticipantRole
 										)}
-									class="rounded-md border-gray-300 py-1 pl-1.5 text-xs focus:border-primary focus:ring-primary disabled:opacity-60"
+									class="w-full rounded-md border-gray-300 py-1 pl-1.5 text-xs focus:border-primary focus:ring-primary disabled:opacity-60"
 								>
 									{#each Object.values(OutingParticipantRole) as optionRole (optionRole)}
 										<option value={optionRole}>{roleLabels[optionRole]}</option>
@@ -201,37 +203,50 @@
 									type="button"
 									disabled={busy}
 									onclick={() => askRemove(participant.userId, participant.fullname)}
-									class="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
+									class="text-gray-400 hover:text-red-600 disabled:opacity-60"
+									aria-label={`${participant.fullname} verwijderen`}
+									title="Verwijderen"
 								>
-									Verwijderen
+									<svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+										<path
+											fill-rule="evenodd"
+											d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.25H3.5a.75.75 0 0 0 0 1.5h.325l.616 10.474A2.75 2.75 0 0 0 7.184 18.5h5.632a2.75 2.75 0 0 0 2.743-2.526L16.175 5.5H16.5a.75.75 0 0 0 0-1.5H14v-.25A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4.5h2.5v-.25a1.25 1.25 0 0 0-1.25-1.25h-2.5A1.25 1.25 0 0 0 7.5 4.25v.25H10Zm-2 3.25a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75Zm4.5.75a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 1.5 0v-6Z"
+											clip-rule="evenodd"
+										/>
+									</svg>
 								</button>
+								</div>
 							{/if}
 						</div>
 					{:else}
 						<p class="text-sm text-gray-400">Niemand</p>
 					{/each}
 				</div>
+
+				{#if !outing.confirmed}
+					<div class="mt-2 flex items-end gap-2">
+						<div class="max-w-xs flex-1">
+							<MemberPicker
+								bind:value={addUserId[role]}
+								disabled={busy}
+								placeholder="Lid zoeken..."
+								search={(term) => apiClient.candidates(outing.id, term)}
+							/>
+						</div>
+						<Button
+							type="button"
+							variant="secondary"
+							size="sm"
+							disabled={!addUserId[role] || busy}
+							onclick={() => addToRole(role)}
+						>
+							Toevoegen
+						</Button>
+					</div>
+				{/if}
 			</div>
 		{/each}
 	</div>
-
-	{#if !outing.confirmed}
-		<div class="mt-4 flex items-end gap-2">
-			<div class="flex-1">
-				<span class="mb-1 block text-sm font-medium text-gray-700">Iemand uitnodigen</span>
-				<MemberPicker bind:value={inviteUserId} disabled={busy} />
-			</div>
-			<Button
-				type="button"
-				variant="secondary"
-				size="sm"
-				disabled={!inviteUserId || busy}
-				onclick={invite}
-			>
-				Uitnodigen
-			</Button>
-		</div>
-	{/if}
 
 	{#if actionError}
 		<div class="mt-3">

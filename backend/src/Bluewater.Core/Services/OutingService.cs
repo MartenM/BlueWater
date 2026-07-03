@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Bluewater.Core.Dto.Common;
 using Bluewater.Core.Dto.Outings;
+using Bluewater.Core.Dto.Profile;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Fleet;
@@ -239,6 +240,39 @@ public class OutingService : IOutingService
     // -------------------------------------------------------------------------
     // Participants
     // -------------------------------------------------------------------------
+
+    public async Task<List<ActiveMemberDto>> SearchCandidatesAsync(Guid outingId, string? search, CancellationToken ct = default)
+    {
+        var outing = await FindOutingAsync(outingId);
+
+        if (!await CanAccessOutingAsync(outing))
+            throw new BlueNotFoundException($"Outing '{outingId}' was not found.");
+
+        var query = _db.Users
+            .AsNoTracking()
+            .Where(u =>
+                _db.UserGroupInstanceMembers.Any(m => m.UserGroupInstanceId == outing.UserGroupInstanceId
+                    && m.UserId == u.Id
+                    && m.DeletedAt == null)
+                || _db.OutingParticipants.Any(p => p.OutingId == outingId && p.Invited && p.UserId == u.Id));
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(u =>
+                u.Firstname.ToLower().Contains(term) ||
+                u.Surname.ToLower().Contains(term) ||
+                u.SurnamePrefix.ToLower().Contains(term));
+        }
+
+        var users = await query
+            .OrderBy(u => u.Surname).ThenBy(u => u.Firstname)
+            .ToListAsync(ct);
+
+        return users
+            .Select(u => new ActiveMemberDto(u.Id, u.Fullname, u.ProfilePictureFileId != null))
+            .ToList();
+    }
 
     public async Task<OutingDetailDto> SetParticipantRoleAsync(Guid outingId, Guid userId, SetParticipantRoleRequest request)
     {
