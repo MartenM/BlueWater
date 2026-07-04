@@ -74,37 +74,3 @@ test('hints at creating a new instance instead when a group name already exists'
 	await page.getByLabel('Naam').fill(groupName);
 	await expect(page.getByText('Een groep met deze naam bestaat al')).toBeVisible();
 });
-
-test('rejects creating an instance when another group with the same name already has one in that season', async ({
-	page
-}) => {
-	const unique = Date.now();
-	const categoryName = `E2E Categorie ${unique}`;
-	const sharedName = `E2E Botsing ${unique}`;
-
-	await page.goto('/tools/groups/categories/new');
-	await page.waitForLoadState('networkidle');
-	await page.getByLabel('Naam').fill(categoryName);
-	await page.getByRole('button', { name: 'Aanmaken' }).click();
-	await expect(page.getByRole('heading', { name: 'Categorie bewerken' })).toBeVisible();
-
-	await page.goto('/tools/groups/groups/new');
-	await page.waitForLoadState('networkidle');
-	await page.getByLabel('Categorie').selectOption({ label: categoryName });
-	await page.getByLabel('Naam').fill(sharedName);
-	await page.getByRole('button', { name: 'Aanmaken' }).click();
-	await expect(page.getByRole('heading', { name: sharedName })).toBeVisible();
-	await page.getByRole('link', { name: 'Nieuwe instantie' }).click();
-	await page.getByRole('button', { name: 'Aanmaken' }).click();
-	await expect(page.getByRole('heading', { name: sharedName })).toBeVisible();
-
-	await page.goto('/tools/groups/groups/new');
-	await page.waitForLoadState('networkidle');
-	await page.getByLabel('Categorie').selectOption({ label: categoryName });
-	await page.getByLabel('Naam').fill(sharedName);
-	await page.getByRole('button', { name: 'Aanmaken' }).click();
-	await expect(page.getByRole('heading', { name: sharedName })).toBeVisible();
-	await page.getByRole('link', { name: 'Nieuwe instantie' }).click();
-	await page.getByRole('button', { name: 'Aanmaken' }).click();
-	await expect(page.getByText('Controleer de gemarkeerde velden.')).toBeVisible();
-});

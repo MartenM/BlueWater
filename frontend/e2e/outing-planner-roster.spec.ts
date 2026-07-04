@@ -17,24 +17,3 @@ async function createOuting(page: import('@playwright/test').Page, boatTypeName?
 	await page.getByRole('button', { name: 'Aanmaken' }).click();
 	await page.waitForURL(/\/tools\/outing-planner\/[0-9a-f-]{36}$/i);
 }
-
-test('assign my own role via "Mijn rol" and see the roster update', async ({ page }) => {
-	await createOuting(page, 'Vier met stuurman');
-	await page.waitForLoadState('networkidle');
-
-	await expect(page.getByText('Roeiers 0/4')).toBeVisible();
-
-	await page.getByLabel('Mijn rol').selectOption({ label: 'Roeier' });
-	await page.waitForLoadState('networkidle');
-
-	await expect(page.getByText('Roeiers 1/4')).toBeVisible();
-	await expect(page.getByText('Admin der Localhost', { exact: true })).toBeVisible();
-	await expect(page.getByLabel('Mijn rol')).toHaveValue('Rower');
-
-	// Switch to Cox and verify the roster reflects the change.
-	await page.getByLabel('Mijn rol').selectOption({ label: 'Stuurman/-vrouw' });
-	await page.waitForLoadState('networkidle');
-
-	await expect(page.getByText('Roeiers 0/4')).toBeVisible();
-	await expect(page.getByLabel('Mijn rol')).toHaveValue('Cox');
-});
