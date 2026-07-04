@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { DataTable, Spinner, breadcrumbs } from '$lib';
+	import { Button, DataTable, Spinner, breadcrumbs } from '$lib';
 	import {
 		OutingParticipantRole,
 		type OutingListItemDto,
@@ -54,12 +54,7 @@
 
 <div class="flex items-center justify-between">
 	<h1 class="text-2xl font-bold text-gray-900">Outing Planner</h1>
-	<a
-		href={resolve('/tools/outing-planner/new')}
-		class="text-sm font-medium text-primary-hover hover:underline"
-	>
-		Nieuwe outing
-	</a>
+	<Button href={resolve('/tools/outing-planner/new')} size="sm">Nieuwe outing</Button>
 </div>
 
 {#if loading}

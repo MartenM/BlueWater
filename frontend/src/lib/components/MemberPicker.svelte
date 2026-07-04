@@ -82,7 +82,7 @@
 				? 'border-red-400'
 				: 'border-gray-300'} bg-white"
 		>
-			<ProfilePicture userId={value!} class="h-10 w-[30px] shrink-0 rounded object-cover" />
+			<ProfilePicture userId={value!} class="h-10 shrink-0 rounded object-cover" />
 			<span class="flex-1 text-gray-900">{selectedName}</span>
 			{#if !disabled}
 				<button
@@ -138,10 +138,7 @@
 							onclick={() => select(member)}
 							class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
 						>
-							<ProfilePicture
-								userId={member.id}
-								class="h-10 w-[30px] shrink-0 rounded object-cover"
-							/>
+							<ProfilePicture userId={member.id} class="h-10 shrink-0 rounded object-cover" />
 							<span class="text-gray-900">{member.fullname}</span>
 						</button>
 					</li>

@@ -22,6 +22,7 @@
 
 	let name = $state(untrack(() => group?.name) ?? '');
 	let description = $state(untrack(() => group?.description) ?? '');
+	let administrative = $state(untrack(() => group?.administrative) ?? false);
 	const form = new FormState();
 </script>
 
@@ -29,7 +30,14 @@
 	{form}
 	{submitLabel}
 	onsubmit={() =>
-		onSubmit(new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId }))}
+		onSubmit(
+			new UpsertUserGroupRequest({
+				name,
+				description,
+				administrative,
+				userGroupCategoryId: categoryId
+			})
+		)}
 >
 	<div>
 		<span class="text-sm font-medium text-gray-700">Categorie</span>
@@ -60,4 +68,13 @@
 			/>
 		{/snippet}
 	</FormField>
+
+	<label class="flex items-center gap-2 text-sm text-gray-700">
+		<input
+			type="checkbox"
+			bind:checked={administrative}
+			class="rounded text-primary focus:ring-primary"
+		/>
+		Administratief
+	</label>
 </BlueForm>

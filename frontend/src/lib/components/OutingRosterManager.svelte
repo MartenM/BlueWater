@@ -182,10 +182,7 @@
 						onclick={() => addToRole(member)}
 						class="flex w-full items-center gap-3 px-3 py-1 text-left text-sm hover:bg-gray-50 focus:bg-gray-50 focus:outline-none disabled:opacity-60"
 					>
-						<ProfilePicture
-							userId={member.id}
-							class="h-10 w-[30px] shrink-0 rounded object-cover"
-						/>
+						<ProfilePicture userId={member.id} class="h-10 shrink-0 rounded object-cover" />
 						<span class="text-gray-900">{member.fullname}</span>
 					</button>
 				</li>

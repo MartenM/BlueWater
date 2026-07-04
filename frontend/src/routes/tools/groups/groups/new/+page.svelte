@@ -16,6 +16,7 @@
 	let categoryId = $state('');
 	let name = $state('');
 	let description = $state('');
+	let administrative = $state(false);
 	const form = new FormState();
 
 	let nameMatches = $state<UserGroupDto[]>([]);
@@ -51,7 +52,12 @@
 		event.preventDefault();
 		form.submit(async () => {
 			const group = await apiClient.userGroupsPOST(
-				new UpsertUserGroupRequest({ name, description, userGroupCategoryId: categoryId })
+				new UpsertUserGroupRequest({
+					name,
+					description,
+					administrative,
+					userGroupCategoryId: categoryId
+				})
 			);
 			goto(resolve('/tools/groups/group/[groupId]', { groupId: group.id }));
 		});
@@ -129,6 +135,15 @@
 					/>
 				{/snippet}
 			</FormField>
+
+			<label class="flex items-center gap-2 text-sm text-gray-700">
+				<input
+					type="checkbox"
+					bind:checked={administrative}
+					class="rounded text-primary focus:ring-primary"
+				/>
+				Administratief
+			</label>
 
 			{#if form.formError}
 				<BlueAlert level={AlertLevel.Danger}>{form.formError}</BlueAlert>

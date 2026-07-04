@@ -48,6 +48,7 @@ public class UserGroupService : IUserGroupService
             Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description,
+            Administrative = request.Administrative,
             UserGroupCategoryId = request.UserGroupCategoryId
         };
 
@@ -65,6 +66,7 @@ public class UserGroupService : IUserGroupService
 
         group.Name = request.Name;
         group.Description = request.Description;
+        group.Administrative = request.Administrative;
         group.UserGroupCategoryId = request.UserGroupCategoryId;
 
         await _db.SaveChangesAsync();
@@ -163,6 +165,7 @@ public class UserGroupService : IUserGroupService
         new(x.Id,
             x.Name,
             x.Description,
+            x.Administrative,
             x.UserGroupCategoryId,
             x.UserGroupCategory?.Name ?? string.Empty,
             x.Permissions.Select(p => new UserGroupPermissionDto(p.Permission, p.UserGroupCategoryRoleId)).ToList());

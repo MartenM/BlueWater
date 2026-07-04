@@ -27,4 +27,5 @@ public enum BluePermission
     AdminSignupView = 23,
     AdminSignupModify = 24,
     AdminSignupModifyOthers = 25,
+    OutingPlannerUse = 26,
 }

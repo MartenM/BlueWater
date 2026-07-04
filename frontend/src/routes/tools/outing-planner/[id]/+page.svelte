@@ -39,6 +39,10 @@
 
 	async function load() {
 		loading = true;
+		await refresh();
+	}
+
+	async function refresh() {
 		try {
 			[outing, changelog] = await Promise.all([
 				apiClient.outingsGET(params.id),
@@ -77,7 +81,7 @@
 		actionError = null;
 		try {
 			await apiClient.confirm(params.id);
-			await load();
+			await refresh();
 		} catch {
 			actionError = 'Bevestigen is mislukt. Probeer het later opnieuw.';
 		} finally {
@@ -108,7 +112,7 @@
 		try {
 			await apiClient.invite(params.id, new InviteParticipantRequest({ userId: inviteUserId }));
 			inviteUserId = null;
-			await load();
+			await refresh();
 		} catch {
 			inviteError = 'Uitnodigen is mislukt. Probeer het later opnieuw.';
 		} finally {
@@ -235,7 +239,7 @@
 		</div>
 
 		<div class="lg:col-span-2">
-			<OutingRosterManager {outing} onChanged={load} />
+			<OutingRosterManager {outing} onChanged={refresh} />
 		</div>
 	</div>
 

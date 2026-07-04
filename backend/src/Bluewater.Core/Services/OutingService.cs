@@ -5,6 +5,7 @@ using Bluewater.Core.Dto.Profile;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Fleet;
+using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.Outings;
 using Bluewater.Infra.Context;
 using FluentValidation;
@@ -121,7 +122,7 @@ public class OutingService : IOutingService
         var entries = await _db.OutingChangelogEntries
             .AsNoTracking()
             .Where(e => e.OutingId == outingId)
-            .OrderBy(e => e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
 
         var actorIds = entries.Select(e => e.CreatedByUserId).Distinct().ToList();
@@ -144,6 +145,7 @@ public class OutingService : IOutingService
     {
         await _outingValidator.ValidateAndThrowAsync(request);
         await AssertInstanceMemberAsync(request.UserGroupInstanceId);
+        await AssertInstanceGroupHasOutingPlannerPermissionAsync(request.UserGroupInstanceId);
 
         var outing = new Outing
         {
@@ -521,6 +523,20 @@ public class OutingService : IOutingService
     {
         return await _db.UserGroupInstanceMembers
             .AnyAsync(m => m.UserGroupInstanceId == instanceId && m.UserId == userId);
+    }
+
+    private async Task AssertInstanceGroupHasOutingPlannerPermissionAsync(Guid instanceId)
+    {
+        var groupId = await _db.UserGroupInstances
+            .Where(i => i.Id == instanceId)
+            .Select(i => i.UserGroupId)
+            .FirstAsync();
+
+        var hasPermission = await _db.UserGroupPermissions
+            .AnyAsync(p => p.UserGroupId == groupId && p.Permission == BluePermission.OutingPlannerUse);
+
+        if (!hasPermission)
+            throw new BlueValidationException("This team is not allowed to use the outing planner.");
     }
 
     private async Task<bool> CanAccessOutingAsync(Outing outing)

@@ -143,6 +143,16 @@ public class OutingServiceTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task CreateAsync_Throws_WhenGroupLacksOutingPlannerPermission()
+    {
+        var (instance, member) = await CreateInstanceWithoutOutingPlannerPermissionAsync();
+        CurrentServiceUserId = member.Id;
+
+        await Should.ThrowAsync<BlueValidationException>(() =>
+            _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, null, null)));
+    }
+
+    [Fact]
     public async Task InvitedOnlyParticipant_CanSetOwnRole_ButNotEditOutingFields()
     {
         var (instance, member) = await CreateInstanceWithMemberAsync();
@@ -465,6 +475,24 @@ public class OutingServiceTests : SqliteServiceTestBase
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
         var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Rowing {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
         var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = seasonId };
+        var member = await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
+
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.Add(group);
+        Db.UserGroupInstances.Add(instance);
+        Db.UserGroupInstanceMembers.Add(new UserGroupInstanceMember { UserGroupInstanceId = instance.Id, UserId = member.Id });
+        Db.UserGroupPermissions.Add(new UserGroupPermission { UserGroupId = group.Id, Permission = BluePermission.OutingPlannerUse });
+        await Db.SaveChangesAsync();
+
+        return (instance, member);
+    }
+
+    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceWithoutOutingPlannerPermissionAsync()
+    {
+        var season = await CreateCurrentSeasonAsync();
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Rowing {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
         var member = await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
 
         Db.UserGroupCategories.Add(category);

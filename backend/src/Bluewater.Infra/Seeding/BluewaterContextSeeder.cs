@@ -383,6 +383,7 @@ public class BluewaterContextSeeder
             Name = "Senioren",
             Description = "Seniorentrainingsgroep.",
             UserGroupCategoryId = training.Id,
+            Permissions = [new UserGroupPermission { Id = Guid.NewGuid(), Permission = BluePermission.OutingPlannerUse }],
         }).Entity;
 
         var juniors = _context.UserGroups.Add(new UserGroup
@@ -390,6 +391,7 @@ public class BluewaterContextSeeder
             Name = "Junioren",
             Description = "Juniorentrainingsgroep (t/m 18 jaar).",
             UserGroupCategoryId = training.Id,
+            Permissions = [new UserGroupPermission { Id = Guid.NewGuid(), Permission = BluePermission.OutingPlannerUse }],
         }).Entity;
 
         return (members, maintainers, seniors, juniors);

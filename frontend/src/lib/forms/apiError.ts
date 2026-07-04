@@ -11,7 +11,7 @@ export interface FormErrors {
 export function extractApiError(e: unknown): FormErrors {
 	if (e instanceof ValidationProblemDetails && e.errors) {
 		return {
-			formError: 'Controleer de gemarkeerde velden.',
+			formError: e.detail ?? 'Controleer de gemarkeerde velden.',
 			fieldErrors: e.errors
 		};
 	}

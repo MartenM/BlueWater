@@ -7,6 +7,7 @@ public class UserGroup : IAuditable
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public bool Administrative { get; set; }
 
     public Guid UserGroupCategoryId { get; set; }
     public UserGroupCategory UserGroupCategory { get; set; } = null!;

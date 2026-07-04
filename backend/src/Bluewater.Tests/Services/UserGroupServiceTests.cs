@@ -48,19 +48,31 @@ public class UserGroupServiceTests : SqliteServiceTestBase
     public async Task CreateAsync_PersistsGroup_AndReturnsDto()
     {
         var category = await CreateCategoryAsync();
-        var request = new UpsertUserGroupRequest("Members", "Active members", category.Id);
+        var request = new UpsertUserGroupRequest("Members", "Active members", false, category.Id);
 
         var result = await _sut.CreateAsync(request);
 
         result.Name.ShouldBe(request.Name);
         result.UserGroupCategoryId.ShouldBe(category.Id);
+        result.Administrative.ShouldBeFalse();
         (await Db.UserGroups.CountAsync(x => x.Id == result.Id)).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task CreateAsync_PersistsAdministrativeFlag()
+    {
+        var category = await CreateCategoryAsync();
+        var request = new UpsertUserGroupRequest("Board", "Board members", true, category.Id);
+
+        var result = await _sut.CreateAsync(request);
+
+        result.Administrative.ShouldBeTrue();
     }
 
     [Fact]
     public async Task CreateAsync_Throws_WhenCategoryDoesNotExist()
     {
-        var request = new UpsertUserGroupRequest("Members", "Active members", Guid.NewGuid());
+        var request = new UpsertUserGroupRequest("Members", "Active members", false, Guid.NewGuid());
 
         await Should.ThrowAsync<BlueValidationException>(() => _sut.CreateAsync(request));
     }
@@ -74,7 +86,7 @@ public class UserGroupServiceTests : SqliteServiceTestBase
         Db.UserGroups.Add(group);
         await Db.SaveChangesAsync();
 
-        var result = await _sut.UpdateAsync(group.Id, new UpsertUserGroupRequest("Renamed", "New", otherCategory.Id));
+        var result = await _sut.UpdateAsync(group.Id, new UpsertUserGroupRequest("Renamed", "New", false, otherCategory.Id));
 
         result.Name.ShouldBe("Renamed");
         result.UserGroupCategoryId.ShouldBe(otherCategory.Id);
@@ -86,7 +98,7 @@ public class UserGroupServiceTests : SqliteServiceTestBase
         var category = await CreateCategoryAsync();
 
         await Should.ThrowAsync<BlueNotFoundException>(
-            () => _sut.UpdateAsync(Guid.NewGuid(), new UpsertUserGroupRequest("Renamed", "New", category.Id)));
+            () => _sut.UpdateAsync(Guid.NewGuid(), new UpsertUserGroupRequest("Renamed", "New", false, category.Id)));
     }
 
     [Fact]

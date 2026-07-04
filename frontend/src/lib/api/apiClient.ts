@@ -9566,6 +9566,7 @@ export enum BluePermission {
     AdminSignupView = "AdminSignupView",
     AdminSignupModify = "AdminSignupModify",
     AdminSignupModifyOthers = "AdminSignupModifyOthers",
+    OutingPlannerUse = "OutingPlannerUse",
 }
 
 export enum BlueUserSex {
@@ -13947,6 +13948,7 @@ export interface IUpsertUserGroupCategoryRoleRequest {
 export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
     name!: string;
     description!: string;
+    administrative!: boolean;
     userGroupCategoryId!: string;
 
     [key: string]: any;
@@ -13968,6 +13970,7 @@ export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
             }
             this.name = _data["name"];
             this.description = _data["description"];
+            this.administrative = _data["administrative"];
             this.userGroupCategoryId = _data["userGroupCategoryId"];
         }
     }
@@ -13987,6 +13990,7 @@ export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
         }
         data["name"] = this.name;
         data["description"] = this.description;
+        data["administrative"] = this.administrative;
         data["userGroupCategoryId"] = this.userGroupCategoryId;
         return data;
     }
@@ -13995,6 +13999,7 @@ export class UpsertUserGroupRequest implements IUpsertUserGroupRequest {
 export interface IUpsertUserGroupRequest {
     name: string;
     description: string;
+    administrative: boolean;
     userGroupCategoryId: string;
 
     [key: string]: any;
@@ -14371,6 +14376,7 @@ export class UserGroupDto implements IUserGroupDto {
     id!: string;
     name!: string;
     description!: string;
+    administrative!: boolean;
     userGroupCategoryId!: string;
     userGroupCategoryName!: string;
     permissions!: UserGroupPermissionDto[];
@@ -14398,6 +14404,7 @@ export class UserGroupDto implements IUserGroupDto {
             this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
+            this.administrative = _data["administrative"];
             this.userGroupCategoryId = _data["userGroupCategoryId"];
             this.userGroupCategoryName = _data["userGroupCategoryName"];
             if (Array.isArray(_data["permissions"])) {
@@ -14424,6 +14431,7 @@ export class UserGroupDto implements IUserGroupDto {
         data["id"] = this.id;
         data["name"] = this.name;
         data["description"] = this.description;
+        data["administrative"] = this.administrative;
         data["userGroupCategoryId"] = this.userGroupCategoryId;
         data["userGroupCategoryName"] = this.userGroupCategoryName;
         if (Array.isArray(this.permissions)) {
@@ -14439,6 +14447,7 @@ export interface IUserGroupDto {
     id: string;
     name: string;
     description: string;
+    administrative: boolean;
     userGroupCategoryId: string;
     userGroupCategoryName: string;
     permissions: UserGroupPermissionDto[];

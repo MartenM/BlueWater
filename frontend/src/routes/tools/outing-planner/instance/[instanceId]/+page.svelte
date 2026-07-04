@@ -2,7 +2,12 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { DataTable, Pagination, breadcrumbs } from '$lib';
-	import { OutingParticipantRole, OutingView, type OutingListItemDto } from '$lib/api/apiClient';
+	import {
+		OutingParticipantRole,
+		OutingView,
+		type OutingListItemDto,
+		type UserGroupInstanceDto
+	} from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import type { PageProps } from './$types';
 
@@ -21,6 +26,7 @@
 	const pageSize = 25;
 	let loading = $state(true);
 	let error = $state(false);
+	let instance = $state<UserGroupInstanceDto | null>(null);
 
 	const totalPages = $derived(Math.ceil(totalCount / pageSize));
 
@@ -38,6 +44,14 @@
 		}
 	}
 
+	async function loadInstance() {
+		try {
+			instance = await apiClient.userGroupInstancesGET(params.instanceId);
+		} catch {
+			instance = null;
+		}
+	}
+
 	function selectView(view: OutingView) {
 		activeView = view;
 		page = 1;
@@ -51,9 +65,13 @@
 
 	onMount(() => {
 		load();
+		loadInstance();
+	});
+
+	$effect(() => {
 		breadcrumbs.set([
 			{ label: 'Outing Planner', href: '/tools/outing-planner' },
-			{ label: 'Team' }
+			{ label: instance ? `${instance.userGroupName} (${instance.seasonName})` : 'Team' }
 		]);
 		return () => breadcrumbs.clear();
 	});
@@ -82,7 +100,12 @@
 {/snippet}
 
 <div class="flex items-center justify-between">
-	<h1 class="text-2xl font-bold text-gray-900">Outings</h1>
+	<div>
+		<h1 class="text-2xl font-bold text-gray-900">Outings</h1>
+		{#if instance}
+			<p class="text-sm text-gray-500">{instance.userGroupName} · {instance.seasonName}</p>
+		{/if}
+	</div>
 	<a
 		href={resolve('/tools/outing-planner/new')}
 		class="text-sm font-medium text-primary-hover hover:underline"
