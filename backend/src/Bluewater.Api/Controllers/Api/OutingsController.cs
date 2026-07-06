@@ -36,6 +36,14 @@ public class OutingsController : ControllerBase
         return _outingService.GetMyInstancesAsync();
     }
 
+    /// <summary>Gets every instance (across all seasons) the current user belongs to that has outing-planner permission, grouped by season.</summary>
+    [BlueAuthorize(BluePermission.OutingPlannerUse)]
+    [HttpGet("instance-history")]
+    public Task<List<OutingHistorySeasonGroupDto>> GetInstanceHistory()
+    {
+        return _outingService.GetInstanceHistoryAsync();
+    }
+
     /// <summary>Gets outings for a team, filtered by view (upcoming / awaiting confirmation / rowed history).</summary>
     [BlueAuthorize(BluePermission.OutingPlannerUse)]
     [HttpGet("instances/{instanceId:guid}")]

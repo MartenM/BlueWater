@@ -4,9 +4,9 @@
 	import { Button, DataTable, Spinner, breadcrumbs } from '$lib';
 	import {
 		OutingParticipantRole,
-		type OutingHistorySeasonGroupDto,
 		type OutingListItemDto,
-		type OutingOverviewGroupDto
+		type OutingOverviewGroupDto,
+		type OutingHistorySeasonGroupDto
 	} from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 
@@ -15,8 +15,8 @@
 	let loading = $state(true);
 
 	let history = $state<OutingHistorySeasonGroupDto[]>([]);
+	let historyError = $state(false);
 	let historyLoading = $state(true);
-	let historyOpen = $state(false);
 
 	onMount(async () => {
 		try {
@@ -32,8 +32,9 @@
 	onMount(async () => {
 		try {
 			history = await apiClient.instanceHistory();
+			historyError = false;
 		} catch {
-			history = [];
+			historyError = true;
 		} finally {
 			historyLoading = false;
 		}
@@ -103,6 +104,36 @@
 					items={group.outings}
 					emptyMessage="Geen outings gevonden."
 				/>
+			</div>
+		{/each}
+	</div>
+{/if}
+
+{#if historyLoading}
+	<Spinner />
+{:else if historyError}
+	<p class="mt-4 text-sm text-gray-600">Teams konden niet worden geladen.</p>
+{:else if history.length === 0}
+	<p class="mt-4 text-sm text-gray-500">Geen teams gevonden.</p>
+{:else}
+	<div class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+		{#each history as season (season.seasonId)}
+			<div>
+				<h3 class="text-sm font-semibold text-gray-500">{season.seasonName}</h3>
+				<ul class="mt-2 divide-y divide-gray-200 rounded-md border border-gray-200">
+					{#each season.instances as instance (instance.id)}
+						<li>
+							<a
+								href={resolve('/tools/outing-planner/instance/[instanceId]', {
+									instanceId: instance.id
+								})}
+								class="block px-3 py-2 text-sm text-primary hover:bg-gray-50 hover:underline"
+							>
+								{instance.name}
+							</a>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		{/each}
 	</div>

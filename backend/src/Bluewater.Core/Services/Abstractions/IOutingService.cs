@@ -9,6 +9,7 @@ public interface IOutingService
 {
     Task<List<OutingOverviewGroupDto>> GetOverviewAsync();
     Task<List<OutingMyInstanceDto>> GetMyInstancesAsync();
+    Task<List<OutingHistorySeasonGroupDto>> GetInstanceHistoryAsync();
     Task<PagedResult<OutingListItemDto>> GetForInstanceAsync(Guid instanceId, OutingView view, int page, int pageSize);
     Task<OutingDetailDto> GetAsync(Guid outingId);
     Task<List<ActiveMemberDto>> SearchCandidatesAsync(Guid outingId, string? search, CancellationToken ct = default);

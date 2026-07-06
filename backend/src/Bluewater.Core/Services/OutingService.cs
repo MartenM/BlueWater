@@ -79,6 +79,25 @@ public class OutingService : IOutingService
             .ToListAsync();
     }
     
+    public async Task<List<OutingHistorySeasonGroupDto>> GetInstanceHistoryAsync()
+    {
+        var userId = _currentUser.Id;
+
+        var instances = await _db.UserGroupInstances
+            .AsNoTracking()
+            .Where(x => x.Members.Any(m => m.UserId == userId)
+                && x.UserGroup.Permissions.Any(p => p.Permission == BluePermission.OutingPlannerUse))
+            .OrderBy(x => x.UserGroup.Name)
+            .Select(x => new { x.SeasonId, x.Season.Name, x.Season.StartDate, Instance = new OutingMyInstanceDto(x.Id, x.UserGroup.Name) })
+            .ToListAsync();
+
+        return instances
+            .GroupBy(x => (x.SeasonId, x.Name, x.StartDate))
+            .OrderByDescending(g => g.Key.StartDate)
+            .Select(g => new OutingHistorySeasonGroupDto(g.Key.SeasonId, g.Key.Name, g.Select(x => x.Instance).ToList()))
+            .ToList();
+    }
+
     public async Task<PagedResult<OutingListItemDto>> GetForInstanceAsync(Guid instanceId, OutingView view, int page, int pageSize)
     {
         await AssertInstanceMemberAsync(instanceId);

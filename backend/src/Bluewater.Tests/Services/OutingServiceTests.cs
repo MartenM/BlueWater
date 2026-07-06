@@ -55,6 +55,34 @@ public class OutingServiceTests : SqliteServiceTestBase
         result.ShouldContain(i => i.Id == instance.Id);
     }
 
+    [Fact]
+    public async Task GetInstanceHistoryAsync_GroupsByAllSeasonsMembership_AndExcludesInstancesWithoutPermission()
+    {
+        var currentSeason = await CreateCurrentSeasonAsync();
+        var pastSeason = new BlueSeason
+        {
+            Id = Guid.NewGuid(),
+            StartDate = new DateOnly(2024, 6, 1),
+            EndDate = new DateOnly(2025, 5, 31)
+        };
+        Db.Seasons.Add(pastSeason);
+        await Db.SaveChangesAsync();
+
+        var member = await CreateUserAsync("history-member", "history-member@example.com");
+        var (currentInstance, _) = await CreateInstanceInSeasonAsync(currentSeason.Id, member);
+        var (pastInstance, _) = await CreateInstanceInSeasonAsync(pastSeason.Id, member);
+        var (noPermissionInstance, _) = await CreateInstanceWithoutOutingPlannerPermissionAsync(member, currentSeason.Id);
+
+        CurrentServiceUserId = member.Id;
+
+        var result = await _sut.GetInstanceHistoryAsync();
+
+        result.Select(g => g.SeasonId).ShouldBe([currentSeason.Id, pastSeason.Id]);
+        result.Single(g => g.SeasonId == currentSeason.Id).Instances.ShouldContain(i => i.Id == currentInstance.Id);
+        result.Single(g => g.SeasonId == pastSeason.Id).Instances.ShouldContain(i => i.Id == pastInstance.Id);
+        result.SelectMany(g => g.Instances).ShouldNotContain(i => i.Id == noPermissionInstance.Id);
+    }
+
     // -------------------------------------------------------------------------
     // BlueNotFoundException
     // -------------------------------------------------------------------------
@@ -470,12 +498,12 @@ public class OutingServiceTests : SqliteServiceTestBase
         return await CreateInstanceInSeasonAsync(season.Id);
     }
 
-    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceInSeasonAsync(Guid seasonId)
+    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceInSeasonAsync(Guid seasonId, BlueUser? existingMember = null)
     {
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
         var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Rowing {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
         var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = seasonId };
-        var member = await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
+        var member = existingMember ?? await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
 
         Db.UserGroupCategories.Add(category);
         Db.UserGroups.Add(group);
@@ -487,13 +515,13 @@ public class OutingServiceTests : SqliteServiceTestBase
         return (instance, member);
     }
 
-    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceWithoutOutingPlannerPermissionAsync()
+    private async Task<(UserGroupInstance instance, BlueUser member)> CreateInstanceWithoutOutingPlannerPermissionAsync(BlueUser? existingMember = null, Guid? seasonIdOverride = null)
     {
-        var season = await CreateCurrentSeasonAsync();
+        var seasonId = seasonIdOverride ?? (await CreateCurrentSeasonAsync()).Id;
         var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
         var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Rowing {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
-        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
-        var member = await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = seasonId };
+        var member = existingMember ?? await CreateUserAsync($"member-{Guid.NewGuid():N}"[..16], $"{Guid.NewGuid():N}@example.com");
 
         Db.UserGroupCategories.Add(category);
         Db.UserGroups.Add(group);
