@@ -72,11 +72,13 @@ public class OutingService : IOutingService
 
         return await _db.UserGroupInstances
             .AsNoTracking()
-            .Where(x => x.SeasonId == currentSeasonId && x.Members.Any(m => m.UserId == userId))
+            .Where(x => x.SeasonId == currentSeasonId
+                && x.Members.Any(m => m.UserId == userId)
+                && x.UserGroup.Permissions.Any(p => p.Permission == BluePermission.OutingPlannerUse))
             .Select(x => new OutingMyInstanceDto(x.Id, x.UserGroup.Name + " - " + x.Season.Name))
             .ToListAsync();
     }
-
+    
     public async Task<PagedResult<OutingListItemDto>> GetForInstanceAsync(Guid instanceId, OutingView view, int page, int pageSize)
     {
         await AssertInstanceMemberAsync(instanceId);

@@ -4,6 +4,7 @@
 	import { Button, DataTable, Spinner, breadcrumbs } from '$lib';
 	import {
 		OutingParticipantRole,
+		type OutingHistorySeasonGroupDto,
 		type OutingListItemDto,
 		type OutingOverviewGroupDto
 	} from '$lib/api/apiClient';
@@ -13,6 +14,10 @@
 	let error = $state(false);
 	let loading = $state(true);
 
+	let history = $state<OutingHistorySeasonGroupDto[]>([]);
+	let historyLoading = $state(true);
+	let historyOpen = $state(false);
+
 	onMount(async () => {
 		try {
 			groups = await apiClient.mine();
@@ -21,6 +26,16 @@
 			error = true;
 		} finally {
 			loading = false;
+		}
+	});
+
+	onMount(async () => {
+		try {
+			history = await apiClient.instanceHistory();
+		} catch {
+			history = [];
+		} finally {
+			historyLoading = false;
 		}
 	});
 
