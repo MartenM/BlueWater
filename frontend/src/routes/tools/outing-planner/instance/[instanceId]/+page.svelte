@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { DataTable, Pagination, breadcrumbs } from '$lib';
+	import { DataTable, Pagination, OutingPlannerTeamList, breadcrumbs } from '$lib';
 	import {
 		OutingParticipantRole,
 		OutingView,
@@ -114,35 +114,43 @@
 	</a>
 </div>
 
-<div class="mt-4 flex gap-4 border-b border-gray-200">
-	{#each tabs as tab (tab.view)}
-		<button
-			type="button"
-			onclick={() => selectView(tab.view)}
-			class="border-b-2 px-1 pb-2 text-sm font-medium {activeView === tab.view
-				? 'border-primary text-primary'
-				: 'border-transparent text-gray-500 hover:text-gray-700'}"
-		>
-			{tab.label}
-		</button>
-	{/each}
-</div>
+<div class="mt-6 lg:flex lg:items-start lg:gap-8">
+	<div class="lg:w-3/4">
+		<div class="flex gap-4 border-b border-gray-200">
+			{#each tabs as tab (tab.view)}
+				<button
+					type="button"
+					onclick={() => selectView(tab.view)}
+					class="border-b-2 px-1 pb-2 text-sm font-medium {activeView === tab.view
+						? 'border-primary text-primary'
+						: 'border-transparent text-gray-500 hover:text-gray-700'}"
+				>
+					{tab.label}
+				</button>
+			{/each}
+		</div>
 
-<DataTable
-	columns={[
-		{ header: 'Datum', cell: dateCell },
-		{ header: 'Boot', cell: boatCell },
-		{ header: 'Roeiers', cell: rowersCell },
-		{ header: 'Mijn rol', cell: myRoleCell }
-	]}
-	{items}
-	{loading}
-	error={error ? 'Outings konden niet worden geladen.' : undefined}
-	emptyMessage="Geen outings gevonden."
-/>
+		<DataTable
+			columns={[
+				{ header: 'Datum', cell: dateCell },
+				{ header: 'Boot', cell: boatCell },
+				{ header: 'Roeiers', cell: rowersCell },
+				{ header: 'Mijn rol', cell: myRoleCell }
+			]}
+			{items}
+			{loading}
+			error={error ? 'Outings konden niet worden geladen.' : undefined}
+			emptyMessage="Geen outings gevonden."
+		/>
 
-{#if !loading && !error && totalPages > 1}
-	<div class="mt-4">
-		<Pagination {page} {totalPages} onPageChange={goToPage} />
+		{#if !loading && !error && totalPages > 1}
+			<div class="mt-4">
+				<Pagination {page} {totalPages} onPageChange={goToPage} />
+			</div>
+		{/if}
 	</div>
-{/if}
+
+	<div class="mt-10 lg:mt-0 lg:w-1/4">
+		<OutingPlannerTeamList />
+	</div>
+</div>
