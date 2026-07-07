@@ -21,14 +21,16 @@
 	});
 </script>
 
+<h2 class="text-lg font-semibold text-gray-900">Mijn teams</h2>
+
 {#if loading}
 	<Spinner />
 {:else if error}
-	<p class="text-sm text-gray-600">Teams konden niet worden geladen.</p>
+	<p class="mt-2 text-sm text-gray-600">Teams konden niet worden geladen.</p>
 {:else if history.length === 0}
-	<p class="text-sm text-gray-500">Geen teams gevonden.</p>
+	<p class="mt-2 text-sm text-gray-500">Geen teams gevonden.</p>
 {:else}
-	<div class="space-y-6">
+	<div class="mt-4 space-y-6">
 		{#each history as season (season.seasonId)}
 			<div>
 				<h3 class="text-sm font-semibold text-gray-500">{season.seasonName}</h3>
@@ -39,7 +41,7 @@
 								href={resolve('/tools/outing-planner/instance/[instanceId]', {
 									instanceId: instance.id
 								})}
-								class="block px-3 py-2 text-sm text-primary hover:bg-gray-50 hover:underline"
+								class="block px-3 py-2 text-sm text-primary-hover hover:bg-gray-50 hover:underline"
 							>
 								{instance.name}
 							</a>

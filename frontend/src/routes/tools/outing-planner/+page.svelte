@@ -33,7 +33,7 @@
 {#snippet dateCell(item: OutingListItemDto)}
 	<a
 		href={resolve('/tools/outing-planner/[id]', { id: item.id })}
-		class="font-medium text-primary hover:underline"
+		class="font-medium text-primary-hover hover:underline"
 	>
 		{item.outingDate.toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}
 	</a>
@@ -57,7 +57,7 @@
 	<Button href={resolve('/tools/outing-planner/new')} size="sm">Nieuwe outing</Button>
 </div>
 
-<div class="mt-6 lg:flex lg:items-start lg:gap-8">
+<div class="mt-6 lg:flex lg:items-start">
 	<div class="lg:w-3/4">
 		{#if loading}
 			<Spinner />
@@ -71,14 +71,6 @@
 					<div>
 						<div class="flex items-center justify-between">
 							<h2 class="text-lg font-semibold text-gray-900">{group.userGroupInstanceName}</h2>
-							<a
-								href={resolve('/tools/outing-planner/instance/[instanceId]', {
-									instanceId: group.userGroupInstanceId
-								})}
-								class="text-sm text-primary-hover hover:underline"
-							>
-								Alle outings
-							</a>
 						</div>
 						<DataTable
 							columns={[
@@ -96,7 +88,9 @@
 		{/if}
 	</div>
 
-	<div class="mt-10 lg:mt-0 lg:w-1/4">
+	<div
+		class="mt-10 border-t border-gray-200 pt-6 lg:mt-0 lg:w-1/4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
+	>
 		<OutingPlannerTeamList />
 	</div>
 </div>

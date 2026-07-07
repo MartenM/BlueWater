@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { DataTable, Pagination, OutingPlannerTeamList, breadcrumbs } from '$lib';
+	import { Button, DataTable, Pagination, OutingPlannerTeamList, breadcrumbs } from '$lib';
 	import {
 		OutingParticipantRole,
 		OutingView,
@@ -80,7 +80,7 @@
 {#snippet dateCell(item: OutingListItemDto)}
 	<a
 		href={resolve('/tools/outing-planner/[id]', { id: item.id })}
-		class="font-medium text-primary hover:underline"
+		class="font-medium text-primary-hover hover:underline"
 	>
 		{item.outingDate.toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}
 	</a>
@@ -106,15 +106,10 @@
 			<p class="text-sm text-gray-500">{instance.userGroupName} · {instance.seasonName}</p>
 		{/if}
 	</div>
-	<a
-		href={resolve('/tools/outing-planner/new')}
-		class="text-sm font-medium text-primary-hover hover:underline"
-	>
-		Nieuwe outing
-	</a>
+	<Button href={resolve('/tools/outing-planner/new')} size="sm">Nieuwe outing</Button>
 </div>
 
-<div class="mt-6 lg:flex lg:items-start lg:gap-8">
+<div class="mt-6 lg:flex lg:items-start">
 	<div class="lg:w-3/4">
 		<div class="flex gap-4 border-b border-gray-200">
 			{#each tabs as tab (tab.view)}
@@ -122,7 +117,7 @@
 					type="button"
 					onclick={() => selectView(tab.view)}
 					class="border-b-2 px-1 pb-2 text-sm font-medium {activeView === tab.view
-						? 'border-primary text-primary'
+						? 'border-primary text-primary-hover'
 						: 'border-transparent text-gray-500 hover:text-gray-700'}"
 				>
 					{tab.label}
@@ -150,7 +145,9 @@
 		{/if}
 	</div>
 
-	<div class="mt-10 lg:mt-0 lg:w-1/4">
+	<div
+		class="mt-10 border-t border-gray-200 pt-6 lg:mt-0 lg:w-1/4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
+	>
 		<OutingPlannerTeamList />
 	</div>
 </div>
