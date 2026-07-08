@@ -13,11 +13,13 @@
 	let {
 		blocks,
 		editable,
-		onchange
+		onchange,
+		showHourLabels = true
 	}: {
 		blocks: TimeBlock[];
 		editable: boolean;
 		onchange?: (blocks: TimeBlock[]) => void;
+		showHourLabels?: boolean;
 	} = $props();
 
 	const TOTAL_MINUTES = DAY_END_MINUTES - DAY_START_MINUTES;
@@ -288,13 +290,15 @@
 	const MIN_MINUTES_FOR_LABEL = 45;
 </script>
 
-<div class="relative h-4 select-none text-[10px] text-gray-400">
-	{#each hourMarks as mark (mark)}
-		<span class="absolute -translate-x-1/2" style="left: {minutesToPercent(mark)}%">
-			{minutesToTimeString(mark)}
-		</span>
-	{/each}
-</div>
+{#if showHourLabels}
+	<div class="sticky top-0 z-10 h-4 select-none bg-white text-[10px] text-gray-400">
+		{#each hourMarks as mark (mark)}
+			<span class="absolute -translate-x-1/2" style="left: {minutesToPercent(mark)}%">
+				{minutesToTimeString(mark)}
+			</span>
+		{/each}
+	</div>
+{/if}
 
 <div
 	class="relative h-8 select-none rounded border border-gray-200 bg-gray-50"

@@ -172,13 +172,13 @@
 							<p class="mt-1 text-xs text-red-600">{dayErrors[key]}</p>
 						{/if}
 						<div class="mt-3 space-y-4">
-							{#each data.roleGroups as group (group.userGroupCategoryRoleId ?? group.roleLabel)}
+							{#each data.roleGroups as group, groupIndex (group.userGroupCategoryRoleId ?? group.roleLabel)}
 								<div>
 									<h3 class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
 										{group.roleLabel}
 									</h3>
 									<div class="mt-1 space-y-1.5">
-										{#each group.members as member (member.userId)}
+										{#each group.members as member, memberIndex (member.userId)}
 											<div class="flex items-center gap-3">
 												<span class="w-40 shrink-0 truncate text-sm text-gray-700">
 													{member.fullname}
@@ -188,6 +188,7 @@
 														blocks={blocksFor(member, day)}
 														editable={member.userId === myUserId}
 														onchange={(blocks) => saveDay(day, blocks)}
+														showHourLabels={groupIndex === 0 && memberIndex === 0}
 													/>
 												</div>
 											</div>
