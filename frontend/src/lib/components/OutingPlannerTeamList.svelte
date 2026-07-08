@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
 	import { apiClient } from '$lib/api/client';
 	import type { OutingHistorySeasonGroupDto } from '$lib/api/apiClient';
 	import Spinner from './Spinner.svelte';
+
+	let { basePath = '/tools/outing-planner' }: { basePath?: string } = $props();
 
 	let history = $state<OutingHistorySeasonGroupDto[]>([]);
 	let error = $state(false);
@@ -21,6 +22,7 @@
 	});
 </script>
 
+<!-- eslint-disable svelte/no-navigation-without-resolve -- basePath is data-driven, not a static route literal resolve() can check -->
 <h2 class="text-lg font-semibold text-gray-900">Mijn teams</h2>
 
 {#if loading}
@@ -38,9 +40,7 @@
 					{#each season.instances as instance (instance.id)}
 						<li>
 							<a
-								href={resolve('/tools/outing-planner/instance/[instanceId]', {
-									instanceId: instance.id
-								})}
+								href="{basePath}/instance/{instance.id}"
 								class="block px-3 py-2 text-sm text-primary-hover hover:bg-gray-50 hover:underline"
 							>
 								{instance.name}

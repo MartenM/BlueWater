@@ -3,6 +3,7 @@ using System.Reflection;
 using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Agenda;
+using Bluewater.Domain.Models.Availability;
 using Bluewater.Domain.Models.Auth;
 using Bluewater.Domain.Models.Clusters;
 using Bluewater.Domain.Models.Exams;
@@ -60,6 +61,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<Outing> Outings => Set<Outing>();
     public DbSet<OutingParticipant> OutingParticipants => Set<OutingParticipant>();
     public DbSet<OutingChangelogEntry> OutingChangelogEntries => Set<OutingChangelogEntry>();
+    public DbSet<AvailabilityBlock> AvailabilityBlocks => Set<AvailabilityBlock>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -451,6 +453,18 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany(x => x.Participants)
                 .HasForeignKey(x => x.OutingId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AvailabilityBlock>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => new { x.UserId, x.Date });
 
             e.HasOne(x => x.User)
                 .WithMany()
