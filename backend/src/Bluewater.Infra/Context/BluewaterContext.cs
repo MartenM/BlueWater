@@ -11,6 +11,7 @@ using Bluewater.Domain.Models.Signup;
 using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.MaterialPlanner;
 using Bluewater.Domain.Models.News;
 using Bluewater.Domain.Models.Outings;
 using Bluewater.Infra.Services.Abstractions;
@@ -62,6 +63,7 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<OutingParticipant> OutingParticipants => Set<OutingParticipant>();
     public DbSet<OutingChangelogEntry> OutingChangelogEntries => Set<OutingChangelogEntry>();
     public DbSet<AvailabilityBlock> AvailabilityBlocks => Set<AvailabilityBlock>();
+    public DbSet<MaterialReservation> MaterialReservations => Set<MaterialReservation>();
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -113,6 +115,12 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.LoginEnabled)
+                .IsRequired();
+
+            e.Property(x => x.MaterialPlannerStartHour)
+                .IsRequired();
+
+            e.Property(x => x.MaterialPlannerEndHour)
                 .IsRequired();
 
             e.Property(x => x.CurrentSeasonId)
@@ -469,6 +477,20 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasOne(x => x.User)
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<MaterialReservation>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => new { x.EquipmentId, x.Date });
+
+            e.Property(x => x.CustomLabel).HasMaxLength(200);
+
+            e.HasOne(x => x.Equipment)
+                .WithMany()
+                .HasForeignKey(x => x.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

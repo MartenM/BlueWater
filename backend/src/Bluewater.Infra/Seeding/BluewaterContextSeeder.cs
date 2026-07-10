@@ -143,7 +143,11 @@ public class BluewaterContextSeeder
             var existing = group.Permissions.Select(p => p.Permission).ToHashSet();
             foreach (var permission in allPermissions.Except(existing))
             {
-                group.Permissions.Add(new UserGroupPermission { Id = Guid.NewGuid(), Permission = permission });
+                // Add via the DbSet, not the navigation collection: a client-generated (non-default)
+                // Guid key added through navigation fixup gets state-detected as Modified rather than
+                // Added, since EF assumes a non-default key means the row already exists.
+                var newPermission = new UserGroupPermission { Id = Guid.NewGuid(), UserGroupId = group.Id, Permission = permission };
+                _context.UserGroupPermissions.Add(newPermission);
                 changed = true;
             }
         }
@@ -220,7 +224,12 @@ public class BluewaterContextSeeder
             EndDate = new DateOnly(year + 1, 5, 31),
         }).Entity;
 
-        _context.AppSettings.Add(new BlueAppSettings { CurrentSeasonId = season.Id });
+        _context.AppSettings.Add(new BlueAppSettings
+        {
+            CurrentSeasonId = season.Id,
+            MaterialPlannerStartHour = 6,
+            MaterialPlannerEndHour = 23,
+        });
 
         return season;
     }

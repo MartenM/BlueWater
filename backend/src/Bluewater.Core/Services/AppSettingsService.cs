@@ -1,14 +1,22 @@
-using Bluewater.Domain.Models;
+using Bluewater.Core.Dto.AppSettings;
+using Bluewater.Core.Services.Abstractions;
 using Bluewater.Infra.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bluewater.Core.Services;
 
-public class AppSettingsService
+public class AppSettingsService : IAppSettingsService
 {
-    private BlueAppSettings _appSettings;
+    private readonly BluewaterContext _db;
 
-    public AppSettingsService(BluewaterContext context)
+    public AppSettingsService(BluewaterContext db)
     {
-        _appSettings = context.AppSettings.First();
+        _db = db;
+    }
+
+    public async Task<MaterialPlannerSettingsDto> GetMaterialPlannerSettingsAsync()
+    {
+        var settings = await _db.AppSettings.AsNoTracking().FirstAsync();
+        return new MaterialPlannerSettingsDto(settings.MaterialPlannerStartHour, settings.MaterialPlannerEndHour);
     }
 }

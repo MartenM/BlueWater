@@ -28,4 +28,6 @@ public enum BluePermission
     AdminSignupModify = 24,
     AdminSignupModifyOthers = 25,
     OutingPlannerUse = 26,
+    MaterialPlannerUse = 27,
+    MaterialPlannerOverride = 28,
 }

@@ -140,6 +140,8 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<ISignupService, SignupService>();
         builder.Services.AddScoped<IOutingService, OutingService>();
         builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+        builder.Services.AddScoped<IMaterialReservationService, MaterialReservationService>();
+        builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
         builder.Services.AddOptions<SignupOptions>()
             .Bind(builder.Configuration.GetSection("Signup"))

@@ -1590,6 +1590,76 @@ export class Client {
 	/**
 	 * @return OK
 	 */
+	materialPlanner(): Promise<MaterialPlannerSettingsDto> {
+		let url_ = this.baseUrl + '/api/AppSettings/material-planner';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMaterialPlanner(_response);
+		});
+	}
+
+	protected processMaterialPlanner(response: Response): Promise<MaterialPlannerSettingsDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MaterialPlannerSettingsDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MaterialPlannerSettingsDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
 	login(body: LoginRequest): Promise<AuthResponse> {
 		let url_ = this.baseUrl + '/api/Auth/login';
 		url_ = url_.replace(/[?&]$/, '');
@@ -4241,6 +4311,377 @@ export class Client {
 			});
 		}
 		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @param date (optional)
+	 * @return OK
+	 */
+	plannerDay(date: string | undefined): Promise<MaterialPlannerDayDto> {
+		let url_ = this.baseUrl + '/api/MaterialReservation/planner-day?';
+		if (date === null) throw new globalThis.Error("The parameter 'date' cannot be null.");
+		else if (date !== undefined) url_ += 'date=' + encodeURIComponent('' + date) + '&';
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processPlannerDay(_response);
+		});
+	}
+
+	protected processPlannerDay(response: Response): Promise<MaterialPlannerDayDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MaterialPlannerDayDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MaterialPlannerDayDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	materialReservationPOST(body: CreateMaterialReservationRequest): Promise<MaterialReservationDto> {
+		let url_ = this.baseUrl + '/api/MaterialReservation';
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMaterialReservationPOST(_response);
+		});
+	}
+
+	protected processMaterialReservationPOST(response: Response): Promise<MaterialReservationDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MaterialReservationDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MaterialReservationDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	materialReservationPATCH(
+		id: string,
+		body: UpdateMaterialReservationRequest
+	): Promise<MaterialReservationDto> {
+		let url_ = this.baseUrl + '/api/MaterialReservation/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMaterialReservationPATCH(_response);
+		});
+	}
+
+	protected processMaterialReservationPATCH(response: Response): Promise<MaterialReservationDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MaterialReservationDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MaterialReservationDto>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	materialReservationDELETE(id: string): Promise<void> {
+		let url_ = this.baseUrl + '/api/MaterialReservation/{id}';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		let options_: RequestInit = {
+			method: 'DELETE',
+			headers: {}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processMaterialReservationDELETE(_response);
+		});
+	}
+
+	protected processMaterialReservationDELETE(response: Response): Promise<void> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				return;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<void>(null as any);
+	}
+
+	/**
+	 * @return OK
+	 */
+	label(id: string, body: SetMaterialReservationLabelRequest): Promise<MaterialReservationDto> {
+		let url_ = this.baseUrl + '/api/MaterialReservation/{id}/label';
+		if (id === undefined || id === null)
+			throw new globalThis.Error("The parameter 'id' must be defined.");
+		url_ = url_.replace('{id}', encodeURIComponent('' + id));
+		url_ = url_.replace(/[?&]$/, '');
+
+		const content_ = JSON.stringify(body);
+
+		let options_: RequestInit = {
+			body: content_,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		};
+
+		return this.http.fetch(url_, options_).then((_response: Response) => {
+			return this.processLabel(_response);
+		});
+	}
+
+	protected processLabel(response: Response): Promise<MaterialReservationDto> {
+		const status = response.status;
+		let _headers: any = {};
+		if (response.headers && response.headers.forEach) {
+			response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+		}
+		if (status === 200) {
+			return response.text().then((_responseText) => {
+				let result200: any = null;
+				let resultData200 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result200 = MaterialReservationDto.fromJS(resultData200);
+				return result200;
+			});
+		} else if (status === 400) {
+			return response.text().then((_responseText) => {
+				let result400: any = null;
+				let resultData400 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result400 = ValidationProblemDetails.fromJS(resultData400);
+				return throwException('Bad Request', status, _responseText, _headers, result400);
+			});
+		} else if (status === 401) {
+			return response.text().then((_responseText) => {
+				return throwException('Unauthorized', status, _responseText, _headers);
+			});
+		} else if (status === 403) {
+			return response.text().then((_responseText) => {
+				return throwException('Forbidden', status, _responseText, _headers);
+			});
+		} else if (status === 500) {
+			return response.text().then((_responseText) => {
+				let result500: any = null;
+				let resultData500 =
+					_responseText === '' ? null : JSON.parse(_responseText, this.jsonParseReviver);
+				result500 = ProblemDetails.fromJS(resultData500);
+				return throwException('Internal Error', status, _responseText, _headers, result500);
+			});
+		} else if (status !== 200 && status !== 204) {
+			return response.text().then((_responseText) => {
+				return throwException(
+					'An unexpected server error occurred.',
+					status,
+					_responseText,
+					_headers
+				);
+			});
+		}
+		return Promise.resolve<MaterialReservationDto>(null as any);
 	}
 
 	/**
@@ -11624,7 +12065,9 @@ export enum BluePermission {
 	AdminSignupView = 'AdminSignupView',
 	AdminSignupModify = 'AdminSignupModify',
 	AdminSignupModifyOthers = 'AdminSignupModifyOthers',
-	OutingPlannerUse = 'OutingPlannerUse'
+	OutingPlannerUse = 'OutingPlannerUse',
+	MaterialPlannerUse = 'MaterialPlannerUse',
+	MaterialPlannerOverride = 'MaterialPlannerOverride'
 }
 
 export enum BlueUserSex {
@@ -11687,6 +12130,63 @@ export interface IClusterMemberDto {
 	userId: string;
 	fullname: string;
 	email: string;
+
+	[key: string]: any;
+}
+
+export class CreateMaterialReservationRequest implements ICreateMaterialReservationRequest {
+	equipmentId!: string;
+	date!: Date;
+	startTime!: string;
+	endTime!: string;
+
+	[key: string]: any;
+
+	constructor(data?: ICreateMaterialReservationRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.equipmentId = _data['equipmentId'];
+			this.date = _data['date'] ? new Date(_data['date'].toString()) : (undefined as any);
+			this.startTime = _data['startTime'];
+			this.endTime = _data['endTime'];
+		}
+	}
+
+	static fromJS(data: any): CreateMaterialReservationRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new CreateMaterialReservationRequest();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['equipmentId'] = this.equipmentId;
+		data['date'] = this.date ? formatDate(this.date) : (undefined as any);
+		data['startTime'] = this.startTime;
+		data['endTime'] = this.endTime;
+		return data;
+	}
+}
+
+export interface ICreateMaterialReservationRequest {
+	equipmentId: string;
+	date: Date;
+	startTime: string;
+	endTime: string;
 
 	[key: string]: any;
 }
@@ -12478,6 +12978,318 @@ export class ManufacturerDto implements IManufacturerDto {
 export interface IManufacturerDto {
 	id: string;
 	name: string;
+
+	[key: string]: any;
+}
+
+export class MaterialPlannerBoatDto implements IMaterialPlannerBoatDto {
+	equipmentId!: string;
+	name!: string;
+	reservations!: MaterialReservationDto[];
+
+	[key: string]: any;
+
+	constructor(data?: IMaterialPlannerBoatDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.reservations = [];
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.equipmentId = _data['equipmentId'];
+			this.name = _data['name'];
+			if (Array.isArray(_data['reservations'])) {
+				this.reservations = [] as any;
+				for (let item of _data['reservations'])
+					this.reservations!.push(MaterialReservationDto.fromJS(item));
+			}
+		}
+	}
+
+	static fromJS(data: any): MaterialPlannerBoatDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MaterialPlannerBoatDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['equipmentId'] = this.equipmentId;
+		data['name'] = this.name;
+		if (Array.isArray(this.reservations)) {
+			data['reservations'] = [];
+			for (let item of this.reservations)
+				data['reservations'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
+}
+
+export interface IMaterialPlannerBoatDto {
+	equipmentId: string;
+	name: string;
+	reservations: MaterialReservationDto[];
+
+	[key: string]: any;
+}
+
+export class MaterialPlannerBoatTypeGroupDto implements IMaterialPlannerBoatTypeGroupDto {
+	equipmentTypeId!: string | undefined;
+	typeLabel!: string;
+	boats!: MaterialPlannerBoatDto[];
+
+	[key: string]: any;
+
+	constructor(data?: IMaterialPlannerBoatTypeGroupDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.boats = [];
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.equipmentTypeId = _data['equipmentTypeId'];
+			this.typeLabel = _data['typeLabel'];
+			if (Array.isArray(_data['boats'])) {
+				this.boats = [] as any;
+				for (let item of _data['boats']) this.boats!.push(MaterialPlannerBoatDto.fromJS(item));
+			}
+		}
+	}
+
+	static fromJS(data: any): MaterialPlannerBoatTypeGroupDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MaterialPlannerBoatTypeGroupDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['equipmentTypeId'] = this.equipmentTypeId;
+		data['typeLabel'] = this.typeLabel;
+		if (Array.isArray(this.boats)) {
+			data['boats'] = [];
+			for (let item of this.boats) data['boats'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
+}
+
+export interface IMaterialPlannerBoatTypeGroupDto {
+	equipmentTypeId: string | undefined;
+	typeLabel: string;
+	boats: MaterialPlannerBoatDto[];
+
+	[key: string]: any;
+}
+
+export class MaterialPlannerDayDto implements IMaterialPlannerDayDto {
+	date!: Date;
+	boatTypeGroups!: MaterialPlannerBoatTypeGroupDto[];
+
+	[key: string]: any;
+
+	constructor(data?: IMaterialPlannerDayDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+		if (!data) {
+			this.boatTypeGroups = [];
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.date = _data['date'] ? new Date(_data['date'].toString()) : (undefined as any);
+			if (Array.isArray(_data['boatTypeGroups'])) {
+				this.boatTypeGroups = [] as any;
+				for (let item of _data['boatTypeGroups'])
+					this.boatTypeGroups!.push(MaterialPlannerBoatTypeGroupDto.fromJS(item));
+			}
+		}
+	}
+
+	static fromJS(data: any): MaterialPlannerDayDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MaterialPlannerDayDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['date'] = this.date ? formatDate(this.date) : (undefined as any);
+		if (Array.isArray(this.boatTypeGroups)) {
+			data['boatTypeGroups'] = [];
+			for (let item of this.boatTypeGroups)
+				data['boatTypeGroups'].push(item ? item.toJSON() : (undefined as any));
+		}
+		return data;
+	}
+}
+
+export interface IMaterialPlannerDayDto {
+	date: Date;
+	boatTypeGroups: MaterialPlannerBoatTypeGroupDto[];
+
+	[key: string]: any;
+}
+
+export class MaterialPlannerSettingsDto implements IMaterialPlannerSettingsDto {
+	startHour!: number;
+	endHour!: number;
+
+	[key: string]: any;
+
+	constructor(data?: IMaterialPlannerSettingsDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.startHour = _data['startHour'];
+			this.endHour = _data['endHour'];
+		}
+	}
+
+	static fromJS(data: any): MaterialPlannerSettingsDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MaterialPlannerSettingsDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['startHour'] = this.startHour;
+		data['endHour'] = this.endHour;
+		return data;
+	}
+}
+
+export interface IMaterialPlannerSettingsDto {
+	startHour: number;
+	endHour: number;
+
+	[key: string]: any;
+}
+
+export class MaterialReservationDto implements IMaterialReservationDto {
+	id!: string;
+	equipmentId!: string;
+	date!: Date;
+	startTime!: string;
+	endTime!: string;
+	ownerUserId!: string;
+	ownerFullname!: string;
+	customLabel!: string | undefined;
+	canEdit!: boolean;
+
+	[key: string]: any;
+
+	constructor(data?: IMaterialReservationDto) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.id = _data['id'];
+			this.equipmentId = _data['equipmentId'];
+			this.date = _data['date'] ? new Date(_data['date'].toString()) : (undefined as any);
+			this.startTime = _data['startTime'];
+			this.endTime = _data['endTime'];
+			this.ownerUserId = _data['ownerUserId'];
+			this.ownerFullname = _data['ownerFullname'];
+			this.customLabel = _data['customLabel'];
+			this.canEdit = _data['canEdit'];
+		}
+	}
+
+	static fromJS(data: any): MaterialReservationDto {
+		data = typeof data === 'object' ? data : {};
+		let result = new MaterialReservationDto();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['id'] = this.id;
+		data['equipmentId'] = this.equipmentId;
+		data['date'] = this.date ? formatDate(this.date) : (undefined as any);
+		data['startTime'] = this.startTime;
+		data['endTime'] = this.endTime;
+		data['ownerUserId'] = this.ownerUserId;
+		data['ownerFullname'] = this.ownerFullname;
+		data['customLabel'] = this.customLabel;
+		data['canEdit'] = this.canEdit;
+		return data;
+	}
+}
+
+export interface IMaterialReservationDto {
+	id: string;
+	equipmentId: string;
+	date: Date;
+	startTime: string;
+	endTime: string;
+	ownerUserId: string;
+	ownerFullname: string;
+	customLabel: string | undefined;
+	canEdit: boolean;
 
 	[key: string]: any;
 }
@@ -14143,6 +14955,51 @@ export interface ISetDayAvailabilityRequest {
 	[key: string]: any;
 }
 
+export class SetMaterialReservationLabelRequest implements ISetMaterialReservationLabelRequest {
+	customLabel!: string | undefined;
+
+	[key: string]: any;
+
+	constructor(data?: ISetMaterialReservationLabelRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.customLabel = _data['customLabel'];
+		}
+	}
+
+	static fromJS(data: any): SetMaterialReservationLabelRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new SetMaterialReservationLabelRequest();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['customLabel'] = this.customLabel;
+		return data;
+	}
+}
+
+export interface ISetMaterialReservationLabelRequest {
+	customLabel: string | undefined;
+
+	[key: string]: any;
+}
+
 export class SetParticipantRoleRequest implements ISetParticipantRoleRequest {
 	role!: OutingParticipantRole;
 
@@ -15067,6 +15924,55 @@ export class SubmitResponseRequest implements ISubmitResponseRequest {
 
 export interface ISubmitResponseRequest {
 	fieldValues: FieldValueRequest[];
+
+	[key: string]: any;
+}
+
+export class UpdateMaterialReservationRequest implements IUpdateMaterialReservationRequest {
+	startTime!: string;
+	endTime!: string;
+
+	[key: string]: any;
+
+	constructor(data?: IUpdateMaterialReservationRequest) {
+		if (data) {
+			for (var property in data) {
+				if (data.hasOwnProperty(property)) (this as any)[property] = (data as any)[property];
+			}
+		}
+	}
+
+	init(_data?: any) {
+		if (_data) {
+			for (var property in _data) {
+				if (_data.hasOwnProperty(property)) this[property] = _data[property];
+			}
+			this.startTime = _data['startTime'];
+			this.endTime = _data['endTime'];
+		}
+	}
+
+	static fromJS(data: any): UpdateMaterialReservationRequest {
+		data = typeof data === 'object' ? data : {};
+		let result = new UpdateMaterialReservationRequest();
+		result.init(data);
+		return result;
+	}
+
+	toJSON(data?: any) {
+		data = typeof data === 'object' ? data : {};
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) data[property] = this[property];
+		}
+		data['startTime'] = this.startTime;
+		data['endTime'] = this.endTime;
+		return data;
+	}
+}
+
+export interface IUpdateMaterialReservationRequest {
+	startTime: string;
+	endTime: string;
 
 	[key: string]: any;
 }
