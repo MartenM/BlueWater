@@ -219,13 +219,14 @@
 						<dd class="mt-1.5">
 							{#if outing.boatReservationId}
 								<span class="text-xs text-green-700">Boot gereserveerd ✓</span>
-								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() result with an appended query string, not a static route literal -->
+								<!-- eslint-disable svelte/no-navigation-without-resolve -- resolve() result with an appended query string, not a static route literal -->
 								<a
 									href={resolve('/tools/material-planner') + `?date=${dateKey(outing.outingDate)}`}
 									class="ml-2 text-xs text-primary-hover hover:underline"
 								>
 									Bekijk in materiaalplanner
 								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							{:else if !outing.confirmed}
 								<Button
 									type="button"
