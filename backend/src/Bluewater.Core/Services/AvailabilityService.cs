@@ -3,6 +3,7 @@ using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models.Availability;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.Outings;
 using Bluewater.Infra.Context;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -79,6 +80,7 @@ public class AvailabilityService : IAvailabilityService
 
         var userIds = members.Select(m => m.UserId).ToList();
         var days = await LoadDaysForUsersAsync(userIds, monday);
+        var outings = await LoadOutingsForWeekAsync(instanceId, monday);
 
         var roleGroups = members
             .GroupBy(m => (m.UserGroupCategoryRoleId, RoleLabel: m.UserGroupCategoryRole?.NamePlural ?? "Overig"))
@@ -95,12 +97,47 @@ public class AvailabilityService : IAvailabilityService
                     .ToList()))
             .ToList();
 
-        return new InstanceWeekAvailabilityDto(instanceId, monday, roleGroups);
+        return new InstanceWeekAvailabilityDto(instanceId, monday, roleGroups, outings);
     }
 
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    private async Task<List<OutingTimelineEntryDto>> LoadOutingsForWeekAsync(Guid instanceId, DateOnly monday)
+    {
+        // OutingDate is stored as a UTC instant, but this overlay renders on the same local
+        // wall-clock time axis as AvailabilityBlock — convert the week bounds to UTC for the
+        // query, then convert each match back to local before deriving Date/StartTime/EndTime,
+        // otherwise outings show up shifted by the server's UTC offset (or on the wrong day
+        // near midnight).
+        var weekStart = DateTime.SpecifyKind(monday.ToDateTime(TimeOnly.MinValue), DateTimeKind.Local)
+            .ToUniversalTime();
+        var weekEnd = DateTime.SpecifyKind(monday.AddDays(7).ToDateTime(TimeOnly.MinValue), DateTimeKind.Local)
+            .ToUniversalTime();
+
+        var outings = await _db.Outings
+            .AsNoTracking()
+            .Include(o => o.Boat)
+            .Where(o => o.UserGroupInstanceId == instanceId && o.OutingDate >= weekStart && o.OutingDate < weekEnd)
+            .OrderBy(o => o.OutingDate)
+            .ToListAsync();
+
+        return outings
+            .Select(o =>
+            {
+                var localStart = o.OutingDate.ToLocalTime();
+                var localEnd = o.OutingDateEnd?.ToLocalTime();
+                return new OutingTimelineEntryDto(
+                    o.Id,
+                    DateOnly.FromDateTime(localStart),
+                    TimeOnly.FromDateTime(localStart),
+                    localEnd.HasValue ? TimeOnly.FromDateTime(localEnd.Value) : null,
+                    o.Boat?.Name,
+                    o.Boat?.Name ?? o.BoatTypeDifferent ?? "Outing");
+            })
+            .ToList();
+    }
 
     private async Task<Dictionary<Guid, List<AvailabilityDayDto>>> LoadDaysForUsersAsync(List<Guid> userIds, DateOnly monday)
     {

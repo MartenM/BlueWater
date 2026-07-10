@@ -16,6 +16,8 @@
 	import type { OutingChangelogEntryDto, OutingDetailDto } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
 	import { apiClient } from '$lib/api/client';
+	import { dateKey } from '$lib/constants/availability';
+	import { extractApiError } from '$lib/forms/apiError';
 	import type { PageProps } from './$types';
 
 	let { params }: PageProps = $props();
@@ -27,6 +29,8 @@
 	let actionError = $state<string | null>(null);
 	let busy = $state(false);
 	let now = $state(new Date());
+	let bookBoatBusy = $state(false);
+	let bookBoatError = $state<string | null>(null);
 
 	let deleteDialog = $state<HTMLDialogElement>();
 	let didNotHappenDialog = $state<HTMLDialogElement>();
@@ -120,6 +124,18 @@
 		}
 	}
 
+	async function handleBookBoat() {
+		bookBoatBusy = true;
+		bookBoatError = null;
+		try {
+			outing = await apiClient.bookBoat(params.id);
+		} catch (e) {
+			bookBoatError = extractApiError(e).formError ?? 'Reserveren is mislukt.';
+		} finally {
+			bookBoatBusy = false;
+		}
+	}
+
 	async function handleDelete() {
 		await apiClient.outingsDELETE(params.id);
 		goto(
@@ -199,6 +215,33 @@
 				<div>
 					<dt class="text-sm font-medium text-gray-500">Boot</dt>
 					<dd class="mt-1 text-sm text-gray-900">{outing.boatName ?? '—'}</dd>
+					{#if outing.boatId}
+						<dd class="mt-1.5">
+							{#if outing.boatReservationId}
+								<span class="text-xs text-green-700">Boot gereserveerd ✓</span>
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() result with an appended query string, not a static route literal -->
+								<a
+									href={resolve('/tools/material-planner') + `?date=${dateKey(outing.outingDate)}`}
+									class="ml-2 text-xs text-primary-hover hover:underline"
+								>
+									Bekijk in materiaalplanner
+								</a>
+							{:else if !outing.confirmed}
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									disabled={bookBoatBusy}
+									onclick={handleBookBoat}
+								>
+									Reserveer boot
+								</Button>
+							{/if}
+							{#if bookBoatError}
+								<p class="mt-1 text-xs text-red-600">{bookBoatError}</p>
+							{/if}
+						</dd>
+					{/if}
 				</div>
 				{#if outing.description}
 					<div>

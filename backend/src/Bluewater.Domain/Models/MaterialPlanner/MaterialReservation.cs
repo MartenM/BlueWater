@@ -1,5 +1,6 @@
 using Bluewater.Domain.Auditing;
 using Bluewater.Domain.Models.Fleet;
+using Bluewater.Domain.Models.Outings;
 
 namespace Bluewater.Domain.Models.MaterialPlanner;
 
@@ -15,6 +16,10 @@ public class MaterialReservation : IAuditable
     public TimeOnly EndTime { get; set; }
 
     public string? CustomLabel { get; set; }
+
+    /// <summary>Set when this reservation was created by booking an outing's boat; such reservations are managed via the outing, not edited directly.</summary>
+    public Guid? OutingId { get; set; }
+    public Outing? Outing { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }

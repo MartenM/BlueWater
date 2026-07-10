@@ -66,6 +66,14 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<MaterialReservation> MaterialReservations => Set<MaterialReservation>();
 
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<NullableUtcDateTimeConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -496,6 +504,14 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
                 .WithMany()
                 .HasForeignKey(x => x.EquipmentId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(x => x.OutingId);
+
+            e.HasOne(x => x.Outing)
+                .WithMany()
+                .HasForeignKey(x => x.OutingId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
 
         builder.Entity<OutingChangelogEntry>(e =>

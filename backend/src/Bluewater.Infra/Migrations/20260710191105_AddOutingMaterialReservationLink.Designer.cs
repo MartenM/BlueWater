@@ -3,6 +3,7 @@ using System;
 using Bluewater.Infra.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewater.Infra.Migrations
 {
     [DbContext(typeof(BluewaterContext))]
-    partial class BluewaterContextModelSnapshot : ModelSnapshot
+    [Migration("20260710191105_AddOutingMaterialReservationLink")]
+    partial class AddOutingMaterialReservationLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

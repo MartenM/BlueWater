@@ -26,6 +26,7 @@ export { default as OutingChangelogList } from './components/OutingChangelogList
 export { default as OutingPlannerTeamList } from './components/OutingPlannerTeamList.svelte';
 export { default as AvailabilityTimeline } from './components/AvailabilityTimeline.svelte';
 export { default as MaterialReservationTimeline } from './components/MaterialReservationTimeline.svelte';
+export { default as OutingTimelineOverlay } from './components/OutingTimelineOverlay.svelte';
 export { default as MemberPicker } from './components/MemberPicker.svelte';
 export { default as ClusterPicker } from './components/ClusterPicker.svelte';
 export { default as GroupForm } from './components/GroupForm.svelte';

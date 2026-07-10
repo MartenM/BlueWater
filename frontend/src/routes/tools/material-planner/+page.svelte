@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { page } from '$app/state';
 	import { HasPermission, MaterialReservationTimeline, Spinner, breadcrumbs } from '$lib';
 	import {
 		BluePermission,
@@ -14,7 +15,15 @@
 	import { addDays, dateKey, toApiTime } from '$lib/constants/availability';
 	import { extractApiError } from '$lib/forms/apiError';
 
-	let selectedDate = $state(new Date());
+	function initialDate(): Date {
+		const param = page.url.searchParams.get('date');
+		if (!param) return new Date();
+		const [y, m, d] = param.split('-').map(Number);
+		if (!y || !m || !d) return new Date();
+		return new Date(y, m - 1, d);
+	}
+
+	let selectedDate = $state(untrack(() => initialDate()));
 	let data = $state<MaterialPlannerDayDto | null>(null);
 	let settings = $state<MaterialPlannerSettingsDto | null>(null);
 	let loading = $state(true);

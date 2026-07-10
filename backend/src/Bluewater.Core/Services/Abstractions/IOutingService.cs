@@ -16,6 +16,7 @@ public interface IOutingService
     Task<OutingDetailDto> CreateAsync(UpsertOutingRequest request);
     Task<OutingDetailDto> UpdateAsync(Guid outingId, UpsertOutingRequest request);
     Task DeleteAsync(Guid outingId);
+    Task<OutingDetailDto> BookBoatAsync(Guid outingId);
     Task<OutingDetailDto> SetParticipantRoleAsync(Guid outingId, Guid userId, SetParticipantRoleRequest request);
     Task<OutingDetailDto> InviteParticipantAsync(Guid outingId, InviteParticipantRequest request);
     Task<OutingDetailDto> RemoveParticipantAsync(Guid outingId, Guid userId);

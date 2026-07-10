@@ -1,11 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { AvailabilityTimeline, OutingPlannerTeamList, Spinner, breadcrumbs } from '$lib';
+	import {
+		AvailabilityTimeline,
+		OutingPlannerTeamList,
+		OutingTimelineOverlay,
+		Spinner,
+		breadcrumbs
+	} from '$lib';
 	import {
 		AvailabilityBlockInputDto,
 		SetDayAvailabilityRequest,
 		type AvailabilityMemberWeekDto,
 		type InstanceWeekAvailabilityDto,
+		type OutingTimelineEntryDto,
 		type UserGroupInstanceDto
 	} from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
@@ -61,6 +68,11 @@
 		} catch {
 			instance = null;
 		}
+	}
+
+	function outingsFor(day: Date): OutingTimelineEntryDto[] {
+		const key = dateKey(day);
+		return (data?.outings ?? []).filter((o) => dateKey(o.date) === key);
 	}
 
 	function blocksFor(member: AvailabilityMemberWeekDto, day: Date): TimeBlock[] {
@@ -170,6 +182,16 @@
 						</h2>
 						{#if dayErrors[key]}
 							<p class="mt-1 text-xs text-red-600">{dayErrors[key]}</p>
+						{/if}
+						{#if outingsFor(day).length > 0}
+							<div class="mt-3 flex items-center gap-3">
+								<span class="w-40 shrink-0 truncate text-xs font-medium text-blue-700">
+									Geplande outings
+								</span>
+								<div class="flex-1">
+									<OutingTimelineOverlay entries={outingsFor(day)} showHourLabels={false} />
+								</div>
+							</div>
 						{/if}
 						<div class="mt-3 space-y-4">
 							{#each data.roleGroups as group, groupIndex (group.userGroupCategoryRoleId ?? group.roleLabel)}

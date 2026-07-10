@@ -17,6 +17,7 @@ public class OutingService : IOutingService
 {
     private readonly BluewaterContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IMaterialReservationService _materialReservationService;
     private readonly IValidator<UpsertOutingRequest> _outingValidator;
     private readonly IValidator<SetParticipantRoleRequest> _roleValidator;
     private readonly IValidator<InviteParticipantRequest> _inviteValidator;
@@ -24,12 +25,14 @@ public class OutingService : IOutingService
     public OutingService(
         BluewaterContext db,
         ICurrentUserService currentUser,
+        IMaterialReservationService materialReservationService,
         IValidator<UpsertOutingRequest> outingValidator,
         IValidator<SetParticipantRoleRequest> roleValidator,
         IValidator<InviteParticipantRequest> inviteValidator)
     {
         _db = db;
         _currentUser = currentUser;
+        _materialReservationService = materialReservationService;
         _outingValidator = outingValidator;
         _roleValidator = roleValidator;
         _inviteValidator = inviteValidator;
@@ -130,7 +133,13 @@ public class OutingService : IOutingService
         if (!await CanAccessOutingAsync(outing))
             throw new BlueNotFoundException($"Outing '{outingId}' was not found.");
 
-        return ToDetailDto(outing);
+        var boatReservationId = await _db.MaterialReservations
+            .AsNoTracking()
+            .Where(r => r.OutingId == outingId)
+            .Select(r => (Guid?)r.Id)
+            .FirstOrDefaultAsync();
+
+        return ToDetailDto(outing, boatReservationId);
     }
 
     public async Task<List<OutingChangelogEntryDto>> GetChangelogAsync(Guid outingId)
@@ -196,6 +205,18 @@ public class OutingService : IOutingService
 
         var changelogEntries = new List<OutingChangelogEntry>();
 
+        var boatChanged = outing.BoatId != request.BoatId;
+        var dateChanged = outing.OutingDate != request.OutingDate || outing.OutingDateEnd != request.OutingDateEnd;
+        if (boatChanged || dateChanged)
+        {
+            var hadLinkedReservation = await _db.MaterialReservations.AnyAsync(r => r.OutingId == outingId);
+            if (hadLinkedReservation)
+            {
+                await _materialReservationService.DeleteLinkedForOutingAsync(outingId);
+                changelogEntries.Add(BuildChangelogEntry(outingId, OutingChangelogType.BoatReservationRemoved, new { }));
+            }
+        }
+
         if (outing.OutingDate != request.OutingDate)
         {
             changelogEntries.Add(BuildChangelogEntry(outingId, OutingChangelogType.DateChanged,
@@ -256,8 +277,52 @@ public class OutingService : IOutingService
         await AssertInstanceMemberAsync(outing.UserGroupInstanceId);
         AssertNotConfirmed(outing);
 
+        await _materialReservationService.DeleteLinkedForOutingAsync(outingId);
+
         _db.Outings.Remove(outing);
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<OutingDetailDto> BookBoatAsync(Guid outingId)
+    {
+        var outing = await LoadOutingWithDetailsAsync(outingId);
+        await AssertInstanceMemberAsync(outing.UserGroupInstanceId);
+        AssertNotConfirmed(outing);
+
+        if (outing.BoatId is null)
+            throw new BlueValidationException("This outing does not have a boat selected.");
+
+        if (outing.OutingDateEnd is null)
+            throw new BlueValidationException("This outing needs an end time before its boat can be reserved.");
+
+        var alreadyLinked = await _db.MaterialReservations.AnyAsync(r => r.OutingId == outingId);
+        if (alreadyLinked)
+            throw new BlueValidationException("This outing's boat has already been reserved.");
+
+        // OutingDate/OutingDateEnd are stored as UTC instants, but MaterialReservation's
+        // Date/StartTime/EndTime are plain local wall-clock values (no timezone, per the
+        // Material Planner's own convention) — convert before deriving them, otherwise the
+        // linked reservation silently lands on the wrong time slot relative to the outing.
+        var localStart = outing.OutingDate.ToLocalTime();
+        var localEnd = outing.OutingDateEnd.Value.ToLocalTime();
+
+        var label = $"{InstanceName(outing.UserGroupInstance)} - {outing.OutingDate:d MMM}";
+        await _materialReservationService.CreateLinkedForOutingAsync(
+            outingId,
+            outing.BoatId.Value,
+            DateOnly.FromDateTime(localStart),
+            TimeOnly.FromDateTime(localStart),
+            TimeOnly.FromDateTime(localEnd),
+            label);
+
+        _db.OutingChangelogEntries.Add(BuildChangelogEntry(outingId, OutingChangelogType.BoatReserved, new
+        {
+            boatId = outing.BoatId,
+            boatName = outing.Boat?.Name,
+        }));
+        await _db.SaveChangesAsync();
+
+        return await GetAsync(outingId);
     }
 
     // -------------------------------------------------------------------------
@@ -650,7 +715,7 @@ public class OutingService : IOutingService
                 .ToList());
     }
 
-    private static OutingDetailDto ToDetailDto(Outing outing)
+    private static OutingDetailDto ToDetailDto(Outing outing, Guid? boatReservationId)
     {
         return new OutingDetailDto(
             outing.Id,
@@ -665,6 +730,7 @@ public class OutingService : IOutingService
             outing.BoatType?.Coxed ?? false,
             outing.BoatId,
             outing.Boat?.Name,
+            boatReservationId,
             outing.Description,
             outing.Confirmed,
             outing.Participants

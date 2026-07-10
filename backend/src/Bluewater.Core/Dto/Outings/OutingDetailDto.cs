@@ -13,6 +13,7 @@ public record OutingDetailDto(
     bool CoxRequired,
     Guid? BoatId,
     string? BoatName,
+    Guid? BoatReservationId,
     string? Description,
     bool Confirmed,
     IReadOnlyList<OutingParticipantDto> Participants);

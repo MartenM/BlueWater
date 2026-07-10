@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import Sailboat from '@lucide/svelte/icons/sailboat';
 	import {
 		SNAP_MINUTES,
 		fromApiTime,
@@ -192,7 +195,12 @@
 
 		if (isTap && state.id !== null) {
 			dragPreview = null;
-			openPopup(state.id, e.clientX);
+			const reservation = reservations.find((r) => r.id === state.id);
+			if (reservation?.outingId) {
+				goto(resolve('/tools/outing-planner/[id]', { id: reservation.outingId }));
+			} else {
+				openPopup(state.id, e.clientX);
+			}
 			return;
 		}
 
@@ -326,23 +334,35 @@
 			{@const startMin = preview ? preview.startMin : base.startMin}
 			{@const endMin = preview ? preview.endMin : base.endMin}
 			{@const isOwn = reservation.ownerUserId === currentUserId}
+			{@const isOuting = !!reservation.outingId}
 			<div
-				class="absolute inset-y-0.5 flex items-center justify-center overflow-hidden rounded {reservation.canEdit
-					? 'cursor-grab bg-primary/80 hover:bg-primary'
-					: 'cursor-pointer bg-primary/50 hover:bg-primary/60'} {isOwn
+				class="absolute inset-y-0.5 flex items-center justify-center gap-1 overflow-hidden rounded {isOuting
+					? 'cursor-pointer bg-blue-600/80 hover:bg-blue-600'
+					: reservation.canEdit
+						? 'cursor-grab bg-primary/80 hover:bg-primary'
+						: 'cursor-pointer bg-primary/50 hover:bg-primary/60'} {isOwn && !isOuting
 					? 'ring-2 ring-primary'
 					: ''}"
 				style="left: {minutesToPercent(startMin)}%; width: {minutesToPercent(endMin) -
 					minutesToPercent(startMin)}%"
 				onpointerdown={(e) => onBlockPointerDown(e, reservation)}
 				role="presentation"
-				title="{reservation.customLabel ?? reservation.ownerFullname}{isOwn
+				title="{isOuting ? 'Outing: ' : ''}{reservation.customLabel ??
+					reservation.ownerFullname}{isOwn && !isOuting
 					? ' (jouw reservering)'
 					: ''} · {fromApiTime(reservation.startTime)} - {fromApiTime(reservation.endTime)}"
 				data-testid="material-reservation-block"
+				data-outing-linked={isOuting}
 			>
+				{#if isOuting}
+					<Sailboat class="size-3 shrink-0 text-white" />
+				{/if}
 				{#if endMin - startMin >= MIN_MINUTES_FOR_LABEL}
-					<span class="truncate px-1 text-[10px] whitespace-nowrap text-primary-content">
+					<span
+						class="truncate px-1 text-[10px] whitespace-nowrap {isOuting
+							? 'text-white'
+							: 'text-primary-content'}"
+					>
 						{reservation.customLabel ?? reservation.ownerFullname}
 					</span>
 				{/if}

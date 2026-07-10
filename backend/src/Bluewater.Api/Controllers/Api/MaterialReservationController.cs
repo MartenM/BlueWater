@@ -29,6 +29,18 @@ public class MaterialReservationController : ControllerBase
         return _materialReservationService.GetDayAsync(ParseDateOnly(date));
     }
 
+    /// <summary>Checks whether a boat is already reserved for a given date/time range.</summary>
+    [BlueAuthorize(BluePermission.MaterialPlannerUse)]
+    [HttpGet("conflict")]
+    public Task<MaterialReservationConflictDto> GetConflict(
+        [FromQuery] Guid equipmentId,
+        [FromQuery] string date,
+        [FromQuery] string startTime,
+        [FromQuery] string endTime)
+    {
+        return _materialReservationService.GetConflictAsync(equipmentId, ParseDateOnly(date), ParseTimeOnly(startTime), ParseTimeOnly(endTime));
+    }
+
     /// <summary>Creates a new reservation for the current user.</summary>
     [BlueAuthorize(BluePermission.MaterialPlannerUse)]
     [HttpPost]
@@ -66,5 +78,10 @@ public class MaterialReservationController : ControllerBase
     private static DateOnly ParseDateOnly(string value)
     {
         return DateOnly.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private static TimeOnly ParseTimeOnly(string value)
+    {
+        return TimeOnly.Parse(value, CultureInfo.InvariantCulture);
     }
 }

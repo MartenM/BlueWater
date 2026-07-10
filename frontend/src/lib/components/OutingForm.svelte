@@ -5,10 +5,12 @@
 	import type {
 		EquipmentDto,
 		EquipmentTypeDto,
+		MaterialReservationConflictDto,
 		OutingDetailDto,
 		OutingMyInstanceDto
 	} from '$lib/api/apiClient';
 	import { BlueForm, apiClient } from '$lib';
+	import { dateKey, toApiTime } from '$lib/constants/availability';
 	import FormField from './FormField.svelte';
 
 	let {
@@ -58,6 +60,57 @@
 	const availableBoats = $derived(
 		boatTypeId ? boats.filter((b) => b.equipmentTypeId === boatTypeId) : boats
 	);
+
+	let conflict = $state<MaterialReservationConflictDto | null>(null);
+	let conflictChecking = $state(false);
+
+	// The conflict endpoint has no notion of "the outing being edited" — if this outing already
+	// booked the boat for this exact slot, the check reports that same reservation as a conflict.
+	const isOwnBooking = $derived(
+		!!conflict?.conflictingReservation &&
+			conflict.conflictingReservation.id === outing?.boatReservationId
+	);
+
+	let conflictRequestId = 0;
+
+	$effect(() => {
+		const id = boatId;
+		const dateInput = outingDate;
+		const minutesInput = durationMinutes;
+
+		const requestId = ++conflictRequestId;
+
+		if (!id || !dateInput) {
+			conflict = null;
+			return;
+		}
+		const start = parseDateTime(dateInput);
+		if (!start) {
+			conflict = null;
+			return;
+		}
+		const minutes = parseInt(minutesInput) || 0;
+		const end = minutes > 0 ? new Date(start.getTime() + minutes * 60000) : start;
+		const pad = (n: number) => String(n).padStart(2, '0');
+
+		conflictChecking = true;
+		apiClient
+			.conflict(
+				id,
+				dateKey(start),
+				toApiTime(`${pad(start.getHours())}:${pad(start.getMinutes())}`),
+				toApiTime(`${pad(end.getHours())}:${pad(end.getMinutes())}`)
+			)
+			.then((result) => {
+				if (requestId === conflictRequestId) conflict = result;
+			})
+			.catch(() => {
+				if (requestId === conflictRequestId) conflict = null;
+			})
+			.finally(() => {
+				if (requestId === conflictRequestId) conflictChecking = false;
+			});
+	});
 
 	const form = new FormState();
 
@@ -190,6 +243,23 @@
 			</select>
 		{/snippet}
 	</FormField>
+
+	{#if boatId}
+		<p class="-mt-2 text-xs">
+			{#if conflictChecking}
+				<span class="text-gray-500">Beschikbaarheid controleren…</span>
+			{:else if conflict?.hasConflict && !isOwnBooking}
+				<span class="text-red-600">
+					Boot is al gereserveerd: {conflict.conflictingReservation?.customLabel ??
+						conflict.conflictingReservation?.ownerFullname}
+				</span>
+			{:else if isOwnBooking}
+				<span class="text-green-700">Boot gereserveerd voor deze outing ✓</span>
+			{:else if conflict}
+				<span class="text-green-700">Boot is beschikbaar</span>
+			{/if}
+		</p>
+	{/if}
 
 	<FormField label="Omschrijving" errors={form.errorsFor('description')}>
 		{#snippet children(invalid)}

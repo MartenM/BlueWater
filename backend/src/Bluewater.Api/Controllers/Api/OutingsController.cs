@@ -88,6 +88,14 @@ public class OutingsController : ControllerBase
         return _outingService.UpdateAsync(id, request);
     }
 
+    /// <summary>Books and links a Material Planner reservation for this outing's boat/date/time.</summary>
+    [BlueAuthorize(BluePermission.OutingPlannerUse)]
+    [HttpPost("{id:guid}/book-boat")]
+    public Task<OutingDetailDto> BookBoat(Guid id)
+    {
+        return _outingService.BookBoatAsync(id);
+    }
+
     /// <summary>Deletes an outing (the outing did not happen and is being removed before confirmation).</summary>
     [BlueAuthorize(BluePermission.OutingPlannerUse)]
     [HttpDelete("{id:guid}")]

@@ -400,6 +400,130 @@ public class OutingServiceTests : SqliteServiceTestBase
     }
 
     // -------------------------------------------------------------------------
+    // Boat reservation linking (Material Planner integration)
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task BookBoatAsync_CreatesLinkedReservation_VisibleOnOutingDetail()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var boat = await CreateBoatAsync("Skiff");
+        CurrentServiceUserId = member.Id;
+        CurrentUserId = member.Id;
+        var start = DateTime.UtcNow.AddDays(1);
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, boat.Id, null));
+
+        var booked = await _sut.BookBoatAsync(outing.Id);
+
+        booked.BoatReservationId.ShouldNotBeNull();
+        var reservation = await Db.MaterialReservations.FirstAsync(r => r.OutingId == outing.Id);
+        reservation.EquipmentId.ShouldBe(boat.Id);
+
+        var changelog = await _sut.GetChangelogAsync(outing.Id);
+        changelog.ShouldContain(e => e.Type == OutingChangelogType.BoatReserved);
+    }
+
+    [Fact]
+    public async Task BookBoatAsync_Throws_WhenNoBoatSelected()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        CurrentServiceUserId = member.Id;
+        var start = DateTime.UtcNow.AddDays(1);
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, null, null));
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.BookBoatAsync(outing.Id));
+    }
+
+    [Fact]
+    public async Task BookBoatAsync_Throws_WhenNoEndTimeSet()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var boat = await CreateBoatAsync("Skiff");
+        CurrentServiceUserId = member.Id;
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, DateTime.UtcNow.AddDays(1), null, null, null, boat.Id, null));
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.BookBoatAsync(outing.Id));
+    }
+
+    [Fact]
+    public async Task BookBoatAsync_Throws_WhenBoatAlreadyReservedForThatSlot()
+    {
+        var (instanceA, memberA) = await CreateInstanceWithMemberAsync();
+        var boat = await CreateBoatAsync("Skiff");
+        var reservationService = GetService<IMaterialReservationService>();
+        CurrentServiceUserId = memberA.Id;
+        CurrentUserId = memberA.Id;
+
+        // OutingDate is stored/compared as UTC, but MaterialReservation.Date/StartTime/EndTime are
+        // local wall-clock values (BookBoatAsync converts via ToLocalTime() before deriving them) —
+        // build the conflicting reservation from the outing's local-time equivalent, not the raw
+        // UTC value, so the overlap is real regardless of the test machine's timezone offset.
+        var start = DateTime.UtcNow.AddDays(1).Date.AddHours(10).AddMinutes(30);
+        var localStart = start.ToLocalTime();
+        await reservationService.CreateAsync(new Core.Dto.MaterialPlanner.CreateMaterialReservationRequest(
+            boat.Id,
+            DateOnly.FromDateTime(localStart),
+            TimeOnly.FromDateTime(localStart).AddMinutes(-30),
+            TimeOnly.FromDateTime(localStart).AddMinutes(30)));
+
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instanceA.Id, start, start.AddHours(1), null, null, boat.Id, null));
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.BookBoatAsync(outing.Id));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_RemovesLinkedReservation_WhenBoatChanges()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var boatA = await CreateBoatAsync("BoatA");
+        var boatB = await CreateBoatAsync("BoatB");
+        CurrentServiceUserId = member.Id;
+        CurrentUserId = member.Id;
+        var start = DateTime.UtcNow.AddDays(1);
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, boatA.Id, null));
+        await _sut.BookBoatAsync(outing.Id);
+
+        var updated = await _sut.UpdateAsync(outing.Id, new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, boatB.Id, null));
+
+        updated.BoatReservationId.ShouldBeNull();
+        var remaining = await Db.MaterialReservations.Where(r => r.OutingId == outing.Id).ToListAsync();
+        remaining.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_RemovesLinkedReservation_WhenDateChanges()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var boat = await CreateBoatAsync("Skiff");
+        CurrentServiceUserId = member.Id;
+        CurrentUserId = member.Id;
+        var start = DateTime.UtcNow.AddDays(1);
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, boat.Id, null));
+        await _sut.BookBoatAsync(outing.Id);
+
+        var updated = await _sut.UpdateAsync(outing.Id, new UpsertOutingRequest(instance.Id, start.AddDays(1), start.AddDays(1).AddHours(1), null, null, boat.Id, null));
+
+        updated.BoatReservationId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_RemovesLinkedReservation()
+    {
+        var (instance, member) = await CreateInstanceWithMemberAsync();
+        var boat = await CreateBoatAsync("Skiff");
+        CurrentServiceUserId = member.Id;
+        CurrentUserId = member.Id;
+        var start = DateTime.UtcNow.AddDays(1);
+        var outing = await _sut.CreateAsync(new UpsertOutingRequest(instance.Id, start, start.AddHours(1), null, null, boat.Id, null));
+        await _sut.BookBoatAsync(outing.Id);
+
+        await _sut.DeleteAsync(outing.Id);
+
+        var remaining = await Db.MaterialReservations.Where(r => r.OutingId == outing.Id).ToListAsync();
+        remaining.ShouldBeEmpty();
+    }
+
+    // -------------------------------------------------------------------------
     // SearchCandidatesAsync
     // -------------------------------------------------------------------------
 
@@ -553,5 +677,19 @@ public class OutingServiceTests : SqliteServiceTestBase
         Db.EquipmentTypes.Add(type);
         await Db.SaveChangesAsync();
         return type;
+    }
+
+    private async Task<Equipment> CreateBoatAsync(string name)
+    {
+        var equipment = new Equipment
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            FreeFleet = true,
+            OutOfOrder = false,
+        };
+        Db.Equipment.Add(equipment);
+        await Db.SaveChangesAsync();
+        return equipment;
     }
 }

@@ -1,8 +1,10 @@
 using Bluewater.Core.Dto.MaterialPlanner;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
+using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.Outings;
 using Bluewater.Tests.TestSupport;
 using Microsoft.EntityFrameworkCore;
 
@@ -392,6 +394,117 @@ public class MaterialReservationServiceTests : SqliteServiceTestBase
     }
 
     // -------------------------------------------------------------------------
+    // Linked-to-outing reservations
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetConflictAsync_ReturnsConflict_WhenOverlapExists()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        await _sut.CreateAsync(new CreateMaterialReservationRequest(boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0)));
+
+        var noConflict = await _sut.GetConflictAsync(boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(12, 0), new TimeOnly(13, 0));
+        noConflict.HasConflict.ShouldBeFalse();
+
+        var conflict = await _sut.GetConflictAsync(boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 30), new TimeOnly(11, 30));
+        conflict.HasConflict.ShouldBeTrue();
+        conflict.ConflictingReservation.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateLinkedForOutingAsync_CreatesReservation_WithOutingIdAndCanEditFalse()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        var outingId = await CreateOutingAsync();
+
+        var created = await _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0), "Team A - 6 Jul");
+
+        created.OutingId.ShouldBe(outingId);
+        created.CanEdit.ShouldBeFalse();
+        created.CustomLabel.ShouldBe("Team A - 6 Jul");
+    }
+
+    [Fact]
+    public async Task CreateLinkedForOutingAsync_Throws_WhenConflicting()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        await _sut.CreateAsync(new CreateMaterialReservationRequest(boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0)));
+        var outingId = await CreateOutingAsync();
+
+        await Should.ThrowAsync<BlueValidationException>(() =>
+            _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 30), new TimeOnly(11, 30), null));
+    }
+
+    [Fact]
+    public async Task DeleteLinkedForOutingAsync_RemovesReservation_AndIsNoOpWhenNoneExists()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        var outingId = await CreateOutingAsync();
+        await _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0), null);
+
+        await _sut.DeleteLinkedForOutingAsync(outingId);
+
+        var remaining = await Db.MaterialReservations.Where(r => r.OutingId == outingId).ToListAsync();
+        remaining.ShouldBeEmpty();
+
+        var otherOutingId = await CreateOutingAsync();
+        await Should.NotThrowAsync(() => _sut.DeleteLinkedForOutingAsync(otherOutingId));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Throws_WhenReservationIsLinkedToOuting()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        var outingId = await CreateOutingAsync();
+        var linked = await _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0), null);
+
+        await Should.ThrowAsync<BlueValidationException>(() =>
+            _sut.UpdateAsync(linked.Id, new UpdateMaterialReservationRequest(new TimeOnly(12, 0), new TimeOnly(13, 0))));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Throws_WhenReservationIsLinkedToOuting()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        var outingId = await CreateOutingAsync();
+        var linked = await _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0), null);
+
+        await Should.ThrowAsync<BlueValidationException>(() => _sut.DeleteAsync(linked.Id));
+    }
+
+    [Fact]
+    public async Task SetLabelAsync_Throws_WhenReservationIsLinkedToOuting()
+    {
+        var boat = await CreateBoatAsync("Single");
+        var user = await CreateUserAsync();
+        CurrentUserId = user.Id;
+        CurrentServiceUserId = user.Id;
+        var outingId = await CreateOutingAsync();
+        var linked = await _sut.CreateLinkedForOutingAsync(outingId, boat.Id, new DateOnly(2026, 7, 6), new TimeOnly(10, 0), new TimeOnly(11, 0), null);
+
+        await Should.ThrowAsync<BlueValidationException>(() =>
+            _sut.SetLabelAsync(linked.Id, new SetMaterialReservationLabelRequest("Nope")));
+    }
+
+    // -------------------------------------------------------------------------
     // Test helpers
     // -------------------------------------------------------------------------
 
@@ -430,6 +543,37 @@ public class MaterialReservationServiceTests : SqliteServiceTestBase
         Db.Equipment.Add(equipment);
         await Db.SaveChangesAsync();
         return equipment;
+    }
+
+    /// <summary>Creates a minimal real Outing row (with its owning season/group/instance chain) so tests can set a valid OutingId FK on a linked reservation.</summary>
+    private async Task<Guid> CreateOutingAsync()
+    {
+        var season = await Db.Seasons.FirstOrDefaultAsync() ?? new BlueSeason
+        {
+            Id = Guid.NewGuid(),
+            StartDate = new DateOnly(2025, 6, 1),
+            EndDate = new DateOnly(2026, 5, 31),
+        };
+        if (!await Db.Seasons.AnyAsync(s => s.Id == season.Id))
+            Db.Seasons.Add(season);
+
+        var category = new UserGroupCategory { Id = Guid.NewGuid(), Name = "General", Description = "General members" };
+        var group = new UserGroup { Id = Guid.NewGuid(), Name = $"Team {Guid.NewGuid():N}"[..12], Description = "Team", UserGroupCategoryId = category.Id };
+        var instance = new UserGroupInstance { Id = Guid.NewGuid(), UserGroupId = group.Id, SeasonId = season.Id };
+        Db.UserGroupCategories.Add(category);
+        Db.UserGroups.Add(group);
+        Db.UserGroupInstances.Add(instance);
+
+        var outing = new Outing
+        {
+            Id = Guid.NewGuid(),
+            UserGroupInstanceId = instance.Id,
+            OutingDate = new DateTime(2026, 7, 6, 10, 0, 0, DateTimeKind.Utc),
+        };
+        Db.Outings.Add(outing);
+        await Db.SaveChangesAsync();
+
+        return outing.Id;
     }
 
     private async Task<Equipment> CreateBoatAsync(string name, EquipmentType? equipmentType)

@@ -3,6 +3,7 @@ using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.Outings;
 using Bluewater.Tests.TestSupport;
 using Microsoft.EntityFrameworkCore;
 
@@ -240,6 +241,44 @@ public class AvailabilityServiceTests : SqliteServiceTestBase
 
         await Should.ThrowAsync<BlueValidationException>(() =>
             _sut.GetInstanceWeekAsync(instance.Id, new DateOnly(2026, 7, 6)));
+    }
+
+    [Fact]
+    public async Task GetInstanceWeekAsync_IncludesOutings_ScheduledInThatWeek()
+    {
+        var (instance, member, _) = await CreateInstanceWithRoleAsync("Rowers");
+        var monday = new DateOnly(2026, 7, 6);
+
+        var inWeek = new Outing
+        {
+            Id = Guid.NewGuid(),
+            UserGroupInstanceId = instance.Id,
+            OutingDate = new DateTime(2026, 7, 8, 18, 0, 0, DateTimeKind.Utc),
+            OutingDateEnd = new DateTime(2026, 7, 8, 20, 0, 0, DateTimeKind.Utc),
+        };
+        var outOfWeek = new Outing
+        {
+            Id = Guid.NewGuid(),
+            UserGroupInstanceId = instance.Id,
+            OutingDate = new DateTime(2026, 7, 20, 18, 0, 0, DateTimeKind.Utc),
+        };
+        Db.Outings.AddRange(inWeek, outOfWeek);
+        await Db.SaveChangesAsync();
+
+        CurrentServiceUserId = member.Id;
+        var result = await _sut.GetInstanceWeekAsync(instance.Id, monday);
+
+        // OutingDate/OutingDateEnd are stored as UTC; the service converts to local wall-clock
+        // time before deriving Date/StartTime/EndTime, so compare against the same conversion
+        // rather than a hardcoded offset that would only hold in one timezone.
+        var expectedLocalStart = inWeek.OutingDate.ToLocalTime();
+        var expectedLocalEnd = inWeek.OutingDateEnd!.Value.ToLocalTime();
+
+        result.Outings.ShouldHaveSingleItem();
+        result.Outings[0].Id.ShouldBe(inWeek.Id);
+        result.Outings[0].Date.ShouldBe(DateOnly.FromDateTime(expectedLocalStart));
+        result.Outings[0].StartTime.ShouldBe(TimeOnly.FromDateTime(expectedLocalStart));
+        result.Outings[0].EndTime.ShouldBe(TimeOnly.FromDateTime(expectedLocalEnd));
     }
 
     // -------------------------------------------------------------------------

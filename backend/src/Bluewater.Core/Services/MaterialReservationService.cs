@@ -100,6 +100,7 @@ public class MaterialReservationService : IMaterialReservationService
         var reservation = await _db.MaterialReservations.FirstOrDefaultAsync(r => r.Id == id)
             ?? throw new BlueNotFoundException($"Material reservation '{id}' was not found.");
 
+        AssertNotLinkedToOuting(reservation);
         AssertOwnerOrOverride(reservation);
 
         await AssertNoConflictAsync(reservation.EquipmentId, reservation.Date, request.StartTime, request.EndTime, excludeId: reservation.Id);
@@ -116,6 +117,7 @@ public class MaterialReservationService : IMaterialReservationService
         var reservation = await _db.MaterialReservations.FirstOrDefaultAsync(r => r.Id == id)
             ?? throw new BlueNotFoundException($"Material reservation '{id}' was not found.");
 
+        AssertNotLinkedToOuting(reservation);
         AssertOwnerOrOverride(reservation);
 
         _db.MaterialReservations.Remove(reservation);
@@ -129,6 +131,7 @@ public class MaterialReservationService : IMaterialReservationService
         var reservation = await _db.MaterialReservations.FirstOrDefaultAsync(r => r.Id == id)
             ?? throw new BlueNotFoundException($"Material reservation '{id}' was not found.");
 
+        AssertNotLinkedToOuting(reservation);
         AssertOwnerOrOverride(reservation);
 
         reservation.CustomLabel = string.IsNullOrWhiteSpace(request.CustomLabel) ? null : request.CustomLabel;
@@ -137,18 +140,61 @@ public class MaterialReservationService : IMaterialReservationService
         return await ToDtoWithOwnerAsync(reservation);
     }
 
+    public async Task<MaterialReservationConflictDto> GetConflictAsync(Guid equipmentId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
+    {
+        var conflict = await FindConflictAsync(equipmentId, date, startTime, endTime, excludeId: null);
+        if (conflict == null)
+            return new MaterialReservationConflictDto(false, null);
+
+        return new MaterialReservationConflictDto(true, await ToDtoWithOwnerAsync(conflict));
+    }
+
+    public async Task<MaterialReservationDto> CreateLinkedForOutingAsync(Guid outingId, Guid equipmentId, DateOnly date, TimeOnly startTime, TimeOnly endTime, string? label)
+    {
+        await AssertNoConflictAsync(equipmentId, date, startTime, endTime, excludeId: null);
+
+        var reservation = new MaterialReservation
+        {
+            Id = Guid.NewGuid(),
+            EquipmentId = equipmentId,
+            Date = date,
+            StartTime = startTime,
+            EndTime = endTime,
+            CustomLabel = label,
+            OutingId = outingId,
+        };
+        _db.MaterialReservations.Add(reservation);
+        await _db.SaveChangesAsync();
+
+        return await ToDtoWithOwnerAsync(reservation);
+    }
+
+    public async Task DeleteLinkedForOutingAsync(Guid outingId)
+    {
+        var reservation = await _db.MaterialReservations.FirstOrDefaultAsync(r => r.OutingId == outingId);
+        if (reservation == null)
+            return;
+
+        _db.MaterialReservations.Remove(reservation);
+        await _db.SaveChangesAsync();
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
 
-    private async Task AssertNoConflictAsync(Guid equipmentId, DateOnly date, TimeOnly start, TimeOnly end, Guid? excludeId)
+    private async Task<MaterialReservation?> FindConflictAsync(Guid equipmentId, DateOnly date, TimeOnly start, TimeOnly end, Guid? excludeId)
     {
-        var hasConflict = await _db.MaterialReservations
+        return await _db.MaterialReservations
             .Where(r => r.EquipmentId == equipmentId && r.Date == date)
             .Where(r => excludeId == null || r.Id != excludeId)
-            .AnyAsync(r => r.StartTime < end && r.EndTime > start);
+            .FirstOrDefaultAsync(r => r.StartTime < end && r.EndTime > start);
+    }
 
-        if (hasConflict)
+    private async Task AssertNoConflictAsync(Guid equipmentId, DateOnly date, TimeOnly start, TimeOnly end, Guid? excludeId)
+    {
+        var conflict = await FindConflictAsync(equipmentId, date, start, end, excludeId);
+        if (conflict != null)
             throw new BlueValidationException("This boat is already reserved for part of that time range.");
     }
 
@@ -156,6 +202,12 @@ public class MaterialReservationService : IMaterialReservationService
     {
         if (reservation.CreatedByUserId != _currentUser.Id && !_currentUser.HasPermission(BluePermission.MaterialPlannerOverride))
             throw new BlueValidationException("You can only edit or delete your own reservations.");
+    }
+
+    private static void AssertNotLinkedToOuting(MaterialReservation reservation)
+    {
+        if (reservation.OutingId != null)
+            throw new BlueValidationException("This reservation is managed by an outing - edit the outing instead.");
     }
 
     private async Task<MaterialReservationDto> ToDtoWithOwnerAsync(MaterialReservation reservation)
@@ -167,7 +219,8 @@ public class MaterialReservationService : IMaterialReservationService
     private MaterialReservationDto ToDto(MaterialReservation reservation, IReadOnlyDictionary<Guid, Domain.Models.BlueUser> owners)
     {
         var ownerFullname = owners.TryGetValue(reservation.CreatedByUserId, out var owner) ? owner.Fullname : string.Empty;
-        var canEdit = reservation.CreatedByUserId == _currentUser.Id || _currentUser.HasPermission(BluePermission.MaterialPlannerOverride);
+        var canEdit = reservation.OutingId == null
+            && (reservation.CreatedByUserId == _currentUser.Id || _currentUser.HasPermission(BluePermission.MaterialPlannerOverride));
 
         return new MaterialReservationDto(
             reservation.Id,
@@ -178,6 +231,7 @@ public class MaterialReservationService : IMaterialReservationService
             reservation.CreatedByUserId,
             ownerFullname,
             reservation.CustomLabel,
-            canEdit);
+            canEdit,
+            reservation.OutingId);
     }
 }

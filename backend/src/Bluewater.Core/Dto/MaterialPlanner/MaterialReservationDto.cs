@@ -9,4 +9,5 @@ public record MaterialReservationDto(
     Guid OwnerUserId,
     string OwnerFullname,
     string? CustomLabel,
-    bool CanEdit);
+    bool CanEdit,
+    Guid? OutingId);

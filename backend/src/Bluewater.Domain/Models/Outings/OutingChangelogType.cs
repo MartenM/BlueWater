@@ -9,4 +9,6 @@ public enum OutingChangelogType
     BoatChanged,
     BoatTypeChanged,
     Confirmed,
+    BoatReserved,
+    BoatReservationRemoved,
 }

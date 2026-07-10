@@ -17,7 +17,7 @@
 <div class="mt-6 lg:flex lg:items-start">
 	<div class="lg:w-3/4">
 		<p class="text-sm text-gray-600">
-			Kies hieronder een team om de beschikbaarheid van de leden te bekijken, of stel je eigen
+			Kies een ploeg om de beschikbaarheid van de leden te bekijken, of stel je eigen
 			beschikbaarheid onafhankelijk van een team in.
 		</p>
 	</div>
