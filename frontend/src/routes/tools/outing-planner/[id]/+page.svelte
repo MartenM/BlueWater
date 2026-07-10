@@ -12,7 +12,7 @@
 		MemberPicker,
 		BlueAlert
 	} from '$lib';
-	import { OutingParticipantRole, InviteParticipantRequest } from '$lib/api/apiClient';
+	import { InviteParticipantRequest } from '$lib/api/apiClient';
 	import type { OutingChangelogEntryDto, OutingDetailDto } from '$lib/api/apiClient';
 	import { AlertLevel } from '$lib/alert';
 	import { apiClient } from '$lib/api/client';

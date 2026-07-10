@@ -2,7 +2,6 @@
 	import { apiClient } from '$lib/api/client';
 	import { OutingParticipantRole, SetParticipantRoleRequest } from '$lib/api/apiClient';
 	import type { ActiveMemberDto, OutingDetailDto, OutingParticipantDto } from '$lib/api/apiClient';
-	import { session } from '$lib/auth/session.svelte';
 	import BlueAlert from './BlueAlert.svelte';
 	import ProfilePicture from './ProfilePicture.svelte';
 	import Modal from './common/Modal.svelte';
@@ -58,12 +57,6 @@
 			roleRowOrder.map((role) => [role, outing.participants.filter((p) => p.role === role)])
 		) as Record<OutingParticipantRole, OutingParticipantDto[]>
 	);
-
-	const myUserId = $derived(session.user?.id ?? null);
-	const myParticipant = $derived(
-		myUserId ? (outing.participants.find((p) => p.userId === myUserId) ?? null) : null
-	);
-	const myRole = $derived(myParticipant?.role ?? OutingParticipantRole.None);
 
 	async function changeRole(userId: string, role: OutingParticipantRole) {
 		busy = true;
