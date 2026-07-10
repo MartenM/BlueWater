@@ -371,6 +371,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
         {
             e.HasKey(x => new { x.SignupId, x.MemberClusterId });
 
+            e.HasQueryFilter(x => x.Signup.DeletedAt == null && x.MemberCluster.DeletedAt == null);
+
             e.HasOne(x => x.Signup)
                 .WithMany(x => x.Clusters)
                 .HasForeignKey(x => x.SignupId)
@@ -387,6 +389,8 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasKey(x => x.Id);
 
             e.Property(x => x.Type).HasConversion<string>();
+
+            e.HasQueryFilter(x => x.Signup.DeletedAt == null);
 
             e.HasOne(x => x.Signup)
                 .WithMany(x => x.InputFields)
