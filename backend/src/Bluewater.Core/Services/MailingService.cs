@@ -278,9 +278,13 @@ public class MailingService : IMailingService
         // send an empty body.
         await _db.SaveChangesAsync();
 
-        foreach (var recipient in unsentRecipients)
+        // Sends are staggered (rather than all enqueued for immediate execution) to avoid
+        // tripping the SMTP provider's rate limits on larger mailings.
+        for (var i = 0; i < unsentRecipients.Count; i++)
         {
-            _backgroundJobClient.Enqueue<MailingRecipientSendJob>(job => job.ExecuteAsync(recipient.Id));
+            var recipient = unsentRecipients[i];
+            var delay = TimeSpan.FromMilliseconds(_mailOptions.SendDelayMilliseconds * i);
+            _backgroundJobClient.Schedule<MailingRecipientSendJob>(job => job.ExecuteAsync(recipient.Id), delay);
         }
     }
 
@@ -317,7 +321,7 @@ public class MailingService : IMailingService
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new MailingRecipientDto(x.Id, x.UserId, x.Email, x.FullName, x.Sent, x.SentAt, x.Opened, x.FirstOpenedAt, x.OpenCount))
+            .Select(x => new MailingRecipientDto(x.Id, x.UserId, x.Email, x.FullName, x.Sent, x.SentAt, x.Bounced, x.BounceReason, x.Opened, x.FirstOpenedAt, x.OpenCount))
             .ToListAsync();
 
         return new PagedResult<MailingRecipientDto>(items, page, pageSize, totalCount);

@@ -7,6 +7,8 @@ public record MailingRecipientDto(
     string FullName,
     bool Sent,
     DateTime? SentAt,
+    bool Bounced,
+    string? BounceReason,
     bool Opened,
     DateTime? FirstOpenedAt,
     int OpenCount);

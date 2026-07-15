@@ -74,7 +74,8 @@ public class MailService : IMailService
                 rendered.Subject,
                 rendered.HtmlBody,
                 rendered.PlainTextBody,
-                request.AttachmentStoredFileIds));
+                request.AttachmentStoredFileIds,
+                recipient.UserId));
         }
     }
 }

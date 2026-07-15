@@ -1,5 +1,9 @@
 using Bluewater.Domain.Models.Mail;
+using Bluewater.Infra.Context;
+using Bluewater.Infra.Exceptions;
 using Bluewater.Infra.Services.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Bluewater.Core.Services.Mail;
 
@@ -12,11 +16,15 @@ public class TransactionalMailJob
 {
     private readonly IMailTransportService _transportService;
     private readonly IFileStorageService _fileStorageService;
+    private readonly BluewaterContext _db;
+    private readonly ILogger<TransactionalMailJob> _logger;
 
-    public TransactionalMailJob(IMailTransportService transportService, IFileStorageService fileStorageService)
+    public TransactionalMailJob(IMailTransportService transportService, IFileStorageService fileStorageService, BluewaterContext db, ILogger<TransactionalMailJob> logger)
     {
         _transportService = transportService;
         _fileStorageService = fileStorageService;
+        _db = db;
+        _logger = logger;
     }
 
     public async Task ExecuteAsync(
@@ -28,7 +36,8 @@ public class TransactionalMailJob
         string subject,
         string htmlBody,
         string? plainTextBody,
-        List<Guid> attachmentStoredFileIds)
+        List<Guid> attachmentStoredFileIds,
+        Guid? userId)
     {
         var envelope = new MailMessageEnvelope
         {
@@ -57,6 +66,29 @@ public class TransactionalMailJob
             });
         }
 
-        await _transportService.SendAsync(envelope);
+        try
+        {
+            await _transportService.SendAsync(envelope);
+        }
+        catch (MailRecipientRejectedException ex)
+        {
+            _logger.LogWarning(ex, "Transactional mail rejected for {Recipients}", string.Join(", ", toAddresses));
+
+            if (userId is not null)
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userId);
+                if (user is not null)
+                {
+                    user.EmailConfirmed = false;
+                    await _db.SaveChangesAsync();
+                }
+            }
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send transactional mail to {Recipients}", string.Join(", ", toAddresses));
+            throw;
+        }
     }
 }

@@ -1,7 +1,9 @@
 using Bluewater.Domain.Models.Mail;
 using Bluewater.Infra.Context;
+using Bluewater.Infra.Exceptions;
 using Bluewater.Infra.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Bluewater.Core.Services.Mail;
 
@@ -13,11 +15,13 @@ public class MailingRecipientSendJob
 {
     private readonly BluewaterContext _db;
     private readonly IMailTransportService _transportService;
+    private readonly ILogger<MailingRecipientSendJob> _logger;
 
-    public MailingRecipientSendJob(BluewaterContext db, IMailTransportService transportService)
+    public MailingRecipientSendJob(BluewaterContext db, IMailTransportService transportService, ILogger<MailingRecipientSendJob> logger)
     {
         _db = db;
         _transportService = transportService;
+        _logger = logger;
     }
 
     public async Task ExecuteAsync(Guid mailingRecipientId)
@@ -38,7 +42,35 @@ public class MailingRecipientSendJob
             PlainTextBody = recipient.RenderedPlainTextBody,
         };
 
-        await _transportService.SendAsync(envelope);
+        try
+        {
+            await _transportService.SendAsync(envelope);
+        }
+        catch (MailRecipientRejectedException ex)
+        {
+            _logger.LogWarning(ex, "Mailing recipient {RecipientId} ({Email}) bounced for mailing {MailingId}", recipient.Id, recipient.Email, recipient.MailingId);
+
+            recipient.Bounced = true;
+            recipient.BounceReason = ex.Message;
+            recipient.FailedAt = DateTime.UtcNow;
+
+            if (recipient.UserId is not null)
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == recipient.UserId);
+                if (user is not null)
+                {
+                    user.EmailConfirmed = false;
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send mailing recipient {RecipientId} ({Email}) for mailing {MailingId}", recipient.Id, recipient.Email, recipient.MailingId);
+            throw;
+        }
 
         recipient.Sent = true;
         recipient.SentAt = DateTime.UtcNow;

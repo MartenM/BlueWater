@@ -30,12 +30,14 @@ public abstract class SqliteServiceTestBase : IDisposable
     private readonly TestCurrentUserAccessor _currentUserAccessor = new();
     private readonly TestCurrentUserService _currentUserService = new();
     private readonly FakeBackgroundJobClient _fakeBackgroundJobClient = new();
+    private readonly FakeMailTransportService _fakeMailTransportService = new();
     private readonly string _fileStorageRootPath;
 
     protected BluewaterContext Db { get; }
     protected UserManager<BlueUser> UserManager { get; }
     protected string FileStorageRootPath => _fileStorageRootPath;
     protected FakeBackgroundJobClient BackgroundJobClient => _fakeBackgroundJobClient;
+    protected FakeMailTransportService MailTransportService => _fakeMailTransportService;
 
     /// <summary>
     /// The acting user stamped onto audit fields (CreatedByUserId/UpdatedByUserId/DeletedByUserId)
@@ -137,6 +139,8 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<Bluewater.Core.Services.Mail.TransactionalMailJob>();
         services.AddScoped<IMailingTargetResolverService, MailingTargetResolverService>();
         services.AddScoped<IMailingService, MailingService>();
+        services.AddSingleton(_fakeMailTransportService);
+        services.AddSingleton<IMailTransportService>(_fakeMailTransportService);
         services.AddScoped<Bluewater.Core.Services.Mail.MailingRecipientSendJob>();
         services.AddScoped<Bluewater.Core.Services.Mail.MailProofSendJob>();
         services.AddScoped<IMailTrackingService, MailTrackingService>();

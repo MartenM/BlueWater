@@ -16,6 +16,10 @@ public class MailingRecipient : IAuditable
     public bool Sent { get; set; }
     public DateTime? SentAt { get; set; }
 
+    public bool Bounced { get; set; }
+    public string? BounceReason { get; set; }
+    public DateTime? FailedAt { get; set; }
+
     public bool Opened { get; set; }
     public DateTime? FirstOpenedAt { get; set; }
     public int OpenCount { get; set; }

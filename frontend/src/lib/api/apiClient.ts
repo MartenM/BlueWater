@@ -11750,6 +11750,68 @@ export class Client {
         }
         return Promise.resolve<FileResponse>(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    resetUserPassword(id: string): Promise<ApiStatusResponse> {
+        let url_ = this.baseUrl + "/api/Users/{id}/reset-password";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processResetUserPassword(_response);
+        });
+    }
+
+    protected processResetUserPassword(response: Response): Promise<ApiStatusResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiStatusResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            return throwException("Unauthorized", status, _responseText, _headers);
+            });
+        } else if (status === 403) {
+            return response.text().then((_responseText) => {
+            return throwException("Forbidden", status, _responseText, _headers);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Internal Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ApiStatusResponse>(null as any);
+    }
 }
 
 export class ActiveMemberDto implements IActiveMemberDto {
@@ -11952,6 +12014,54 @@ export interface IAgendaItemDto {
     createdByUserId: string;
     updatedAt: Date | undefined;
     updatedByUserId: string | undefined;
+
+    [key: string]: any;
+}
+
+export class ApiStatusResponse implements IApiStatusResponse {
+    success?: boolean;
+
+    [key: string]: any;
+
+    constructor(data?: IApiStatusResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.success = _data["success"];
+        }
+    }
+
+    static fromJS(data: any): ApiStatusResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiStatusResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["success"] = this.success;
+        return data;
+    }
+}
+
+export interface IApiStatusResponse {
+    success?: boolean;
 
     [key: string]: any;
 }
@@ -13691,6 +13801,8 @@ export class MailingRecipientDto implements IMailingRecipientDto {
     fullName!: string;
     sent!: boolean;
     sentAt!: Date | undefined;
+    bounced!: boolean;
+    bounceReason!: string | undefined;
     opened!: boolean;
     firstOpenedAt!: Date | undefined;
     openCount!: number;
@@ -13718,6 +13830,8 @@ export class MailingRecipientDto implements IMailingRecipientDto {
             this.fullName = _data["fullName"];
             this.sent = _data["sent"];
             this.sentAt = _data["sentAt"] ? new Date(_data["sentAt"].toString()) : undefined as any;
+            this.bounced = _data["bounced"];
+            this.bounceReason = _data["bounceReason"];
             this.opened = _data["opened"];
             this.firstOpenedAt = _data["firstOpenedAt"] ? new Date(_data["firstOpenedAt"].toString()) : undefined as any;
             this.openCount = _data["openCount"];
@@ -13743,6 +13857,8 @@ export class MailingRecipientDto implements IMailingRecipientDto {
         data["fullName"] = this.fullName;
         data["sent"] = this.sent;
         data["sentAt"] = this.sentAt ? this.sentAt.toISOString() : undefined as any;
+        data["bounced"] = this.bounced;
+        data["bounceReason"] = this.bounceReason;
         data["opened"] = this.opened;
         data["firstOpenedAt"] = this.firstOpenedAt ? this.firstOpenedAt.toISOString() : undefined as any;
         data["openCount"] = this.openCount;
@@ -13757,6 +13873,8 @@ export interface IMailingRecipientDto {
     fullName: string;
     sent: boolean;
     sentAt: Date | undefined;
+    bounced: boolean;
+    bounceReason: string | undefined;
     opened: boolean;
     firstOpenedAt: Date | undefined;
     openCount: number;

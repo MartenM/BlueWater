@@ -191,6 +191,11 @@ public static class WebApplicationBuilderExtensions
             .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString)));
         builder.Services.AddHangfireServer();
 
+        // Mail jobs handle their own failure classification (bounce vs. transient) and don't
+        // want Hangfire silently re-attempting a send behind their backs — a failed job should
+        // surface as failed, not retry.
+        GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute { Attempts = 0 });
+
         builder.Services.AddScoped<IMailTransportService, MailTransportService>();
 
         return builder;
