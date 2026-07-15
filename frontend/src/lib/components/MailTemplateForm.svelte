@@ -6,7 +6,12 @@
 		MailTemplatePreviewRequest
 	} from '$lib/api/apiClient';
 	import { FormState } from '$lib/forms/formState.svelte';
-	import type { MailLayoutDto, MailTemplateDto, MailTemplatePreviewDto } from '$lib/api/apiClient';
+	import type {
+		MailLayoutDto,
+		MailSenderInfoDto,
+		MailTemplateDto,
+		MailTemplatePreviewDto
+	} from '$lib/api/apiClient';
 	import { apiClient } from '$lib/api/client';
 	import { BlueForm } from '$lib';
 	import FormField from './FormField.svelte';
@@ -17,11 +22,13 @@
 	let {
 		template,
 		layouts,
+		senders,
 		submitLabel,
 		onSubmit
 	}: {
 		template?: MailTemplateDto;
 		layouts: MailLayoutDto[];
+		senders: MailSenderInfoDto[];
 		submitLabel: string;
 		onSubmit: (request: UpsertMailTemplateRequest) => Promise<void>;
 	} = $props();
@@ -156,17 +163,19 @@
 			</select>
 		</label>
 
-		<FormField label="Standaard verzender-sleutel" errors={form.errorsFor('defaultSenderKey')}>
-			{#snippet children(invalid)}
-				<input
-					type="text"
-					bind:value={defaultSenderKey}
-					class="rounded-md focus:border-primary focus:ring-primary {invalid
-						? 'border-red-400'
-						: 'border-gray-300'}"
-				/>
-			{/snippet}
-		</FormField>
+		<label class="flex flex-col gap-1">
+			<span class="text-sm font-medium text-gray-700">Standaard verzender</span>
+			<select
+				value={defaultSenderKey}
+				onchange={(e) => (defaultSenderKey = e.currentTarget.value)}
+				class="rounded-md border-gray-300 focus:border-primary focus:ring-primary"
+			>
+				<option value="">— Geen standaard verzender —</option>
+				{#each senders as sender (sender.key)}
+					<option value={sender.key}>{sender.displayName}</option>
+				{/each}
+			</select>
+		</label>
 	</BlueForm>
 
 	<div>

@@ -23,7 +23,6 @@ public class MailingService : IMailingService
         ["FirstName"] = "Jane",
         ["FullName"] = "Jane Doe",
         ["Email"] = "jane.doe@example.com",
-        ["FormalSalutation"] = "Dear Jane Doe",
         ["AddressBlock"] = "Samplestraat 1, 1234 AB, Sample City",
     };
 

@@ -20,7 +20,6 @@ public static class BlueUserMergeTokenFactory
             ["FirstName"] = user.Firstname,
             ["FullName"] = user.Fullname,
             ["Email"] = user.Email ?? string.Empty,
-            ["FormalSalutation"] = $"Dear {user.Fullname}",
             ["AddressBlock"] = addressBlock,
         };
 

@@ -150,9 +150,8 @@ public class MailTemplateServiceTests : SqliteServiceTestBase
         result.ShouldContain(x => x.Token == "FirstName");
         result.ShouldContain(x => x.Token == "FullName");
         result.ShouldContain(x => x.Token == "Email");
-        result.ShouldContain(x => x.Token == "FormalSalutation");
         result.ShouldContain(x => x.Token == "AddressBlock");
-        result.Count.ShouldBe(5);
+        result.Count.ShouldBe(4);
     }
 
     [Fact]
@@ -163,7 +162,7 @@ public class MailTemplateServiceTests : SqliteServiceTestBase
 
         var result = await _sut.GetPlaceholdersAsync(template.Id);
 
-        result.Count.ShouldBe(5);
+        result.Count.ShouldBe(4);
     }
 
     [Fact]

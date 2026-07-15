@@ -6,6 +6,7 @@
 	import { MailTemplateKind } from '$lib/api/apiClient';
 	import type {
 		MailLayoutDto,
+		MailSenderInfoDto,
 		MailTemplateDto,
 		UpsertMailTemplateRequest
 	} from '$lib/api/apiClient';
@@ -16,15 +17,17 @@
 
 	let template = $state<MailTemplateDto | null>(null);
 	let layouts = $state<MailLayoutDto[]>([]);
+	let senders = $state<MailSenderInfoDto[]>([]);
 	let loading = $state(true);
 	let error = $state(false);
 	let deleteDialog = $state<HTMLDialogElement>();
 
 	onMount(async () => {
 		try {
-			[template, layouts] = await Promise.all([
+			[template, layouts, senders] = await Promise.all([
 				apiClient.mailTemplatesGET(params.id),
-				apiClient.mailLayoutsAll()
+				apiClient.mailLayoutsAll(),
+				apiClient.senders()
 			]);
 		} catch {
 			error = true;
@@ -78,6 +81,6 @@
 	/>
 
 	<div class="mt-6">
-		<MailTemplateForm {template} {layouts} submitLabel="Opslaan" onSubmit={handleEdit} />
+		<MailTemplateForm {template} {layouts} {senders} submitLabel="Opslaan" onSubmit={handleEdit} />
 	</div>
 {/if}
