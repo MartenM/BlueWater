@@ -37,6 +37,71 @@ public class BluewaterContextSeederTests : SqliteServiceTestBase
     }
 
     [Fact]
+    public async Task SeedAsync_CreatesDefaultMailLayoutAndTemplate()
+    {
+        var seeder = GetService<BluewaterContextSeeder>();
+
+        await seeder.SeedDevelopmentAsync();
+
+        var layout = await Db.MailLayouts.SingleAsync(x => x.Name == "default");
+        layout.IsDefault.ShouldBeTrue();
+        layout.HeaderHtml.ShouldContain("Logo_Gyas_Totaal.svg");
+        layout.FooterHtml.ShouldContain("{{AddressBlock}}");
+
+        var template = await Db.MailTemplates.SingleAsync(x => x.Name == "default");
+        template.Kind.ShouldBe(Domain.Models.Mail.MailTemplateKind.Mailing);
+        template.DefaultLayoutId.ShouldBe(layout.Id);
+        template.BodyMarkdown.ShouldContain("{{FirstName}}");
+    }
+
+    [Fact]
+    public async Task SeedAsync_CreatesRequiredTransactionalMailTemplates()
+    {
+        var seeder = GetService<BluewaterContextSeeder>();
+
+        await seeder.SeedDevelopmentAsync();
+
+        var welcome = await Db.MailTemplates.SingleAsync(
+            x => x.Name == Domain.Models.Mail.TransactionalMailTemplateNames.WelcomeEmail);
+        welcome.Kind.ShouldBe(Domain.Models.Mail.MailTemplateKind.Transactional);
+
+        var defaultLayout = await Db.MailLayouts.SingleAsync(x => x.Name == "default");
+        welcome.DefaultLayoutId.ShouldBe(defaultLayout.Id);
+    }
+
+    [Fact]
+    public async Task SeedAsync_DoesNotDuplicate_RequiredTransactionalMailTemplates_OnSubsequentStartup()
+    {
+        var seeder = GetService<BluewaterContextSeeder>();
+        await seeder.SeedDevelopmentAsync();
+
+        // Simulate a re-run against an existing DB (the "Users already exist" path).
+        await seeder.SeedDevelopmentAsync();
+
+        var count = await Db.MailTemplates.CountAsync(
+            x => x.Name == Domain.Models.Mail.TransactionalMailTemplateNames.WelcomeEmail);
+        count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SeedAsync_DoesNotOverwrite_ManuallyEditedTransactionalTemplateContent()
+    {
+        var seeder = GetService<BluewaterContextSeeder>();
+        await seeder.SeedDevelopmentAsync();
+
+        var welcome = await Db.MailTemplates.SingleAsync(
+            x => x.Name == Domain.Models.Mail.TransactionalMailTemplateNames.WelcomeEmail);
+        welcome.SubjectTemplate = "Admin-edited subject";
+        await Db.SaveChangesAsync();
+
+        await seeder.SeedDevelopmentAsync();
+
+        var reloaded = await Db.MailTemplates.SingleAsync(
+            x => x.Name == Domain.Models.Mail.TransactionalMailTemplateNames.WelcomeEmail);
+        reloaded.SubjectTemplate.ShouldBe("Admin-edited subject");
+    }
+
+    [Fact]
     public async Task SeedAsync_DoesNothing_WhenUsersAlreadyExist()
     {
         await CreateUserAsync();

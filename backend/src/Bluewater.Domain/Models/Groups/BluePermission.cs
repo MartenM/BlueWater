@@ -30,4 +30,6 @@ public enum BluePermission
     OutingPlannerUse = 26,
     MaterialPlannerUse = 27,
     MaterialPlannerOverride = 28,
+    AdminModifyMailTemplates = 29,
+    AdminModifyMailings = 30,
 }

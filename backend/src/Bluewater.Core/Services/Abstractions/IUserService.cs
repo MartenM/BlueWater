@@ -1,3 +1,4 @@
+using Bluewater.Core.Dto;
 using Bluewater.Core.Dto.Common;
 using Bluewater.Core.Dto.Users;
 
@@ -9,5 +10,6 @@ public interface IUserService
     Task<UserDto> GetAsync(Guid id);
     Task<CreateUserResponse> CreateAsync(CreateUserRequest request);
     Task<UserDto> UpdateAsync(Guid id, UpdateUserRequest request);
+    Task<ApiStatusResponse> ResetUserPasswordAsync(Guid id);
     Task DeleteAsync(Guid id);
 }

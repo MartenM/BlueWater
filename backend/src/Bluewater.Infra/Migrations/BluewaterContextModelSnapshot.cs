@@ -955,6 +955,364 @@ namespace Bluewater.Infra.Migrations
                     b.ToTable("UserGroupPermissions");
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailLayout", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FooterHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HeaderHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MailLayouts");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BodyMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DefaultLayoutId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DefaultSenderKey")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SubjectTemplate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefaultLayoutId");
+
+                    b.ToTable("MailTemplates");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.Mailing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BodyMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LayoutId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ProofSendCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SenderKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LayoutId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("Mailings");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingRecipient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("FirstOpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MailingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OpenCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Opened")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RenderedHtmlBody")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RenderedPlainTextBody")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RenderedSubject")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Sent")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TrackingToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackingToken")
+                        .IsUnique();
+
+                    b.HasIndex("MailingId", "Email")
+                        .IsUnique();
+
+                    b.ToTable("MailingRecipients");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingRecipientLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ClickCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("FirstClickedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MailingRecipientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OriginalUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MailingRecipientId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("MailingRecipientLinks");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingTargetCluster", b =>
+                {
+                    b.Property<Guid>("MailingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MemberClusterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LastSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("MailingId", "MemberClusterId");
+
+                    b.HasIndex("MemberClusterId");
+
+                    b.ToTable("MailingTargetClusters");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingTargetGroupInstance", b =>
+                {
+                    b.Property<Guid>("MailingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserGroupInstanceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LastSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("MailingId", "UserGroupInstanceId");
+
+                    b.HasIndex("UserGroupInstanceId");
+
+                    b.ToTable("MailingTargetGroupInstances");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.MaterialPlanner.MaterialReservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1837,6 +2195,93 @@ namespace Bluewater.Infra.Migrations
                     b.Navigation("UserGroupCategoryRole");
                 });
 
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailTemplate", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.MailLayout", "DefaultLayout")
+                        .WithMany()
+                        .HasForeignKey("DefaultLayoutId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("DefaultLayout");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.Mailing", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.MailLayout", "Layout")
+                        .WithMany()
+                        .HasForeignKey("LayoutId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Bluewater.Domain.Models.Mail.MailTemplate", "Template")
+                        .WithMany()
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Layout");
+
+                    b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingRecipient", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.Mailing", "Mailing")
+                        .WithMany("Recipients")
+                        .HasForeignKey("MailingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mailing");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingRecipientLink", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.MailingRecipient", "MailingRecipient")
+                        .WithMany("Links")
+                        .HasForeignKey("MailingRecipientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MailingRecipient");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingTargetCluster", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.Mailing", "Mailing")
+                        .WithMany("TargetClusters")
+                        .HasForeignKey("MailingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Bluewater.Domain.Models.Clusters.MemberCluster", "MemberCluster")
+                        .WithMany()
+                        .HasForeignKey("MemberClusterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Mailing");
+
+                    b.Navigation("MemberCluster");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingTargetGroupInstance", b =>
+                {
+                    b.HasOne("Bluewater.Domain.Models.Mail.Mailing", "Mailing")
+                        .WithMany("TargetGroupInstances")
+                        .HasForeignKey("MailingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Bluewater.Domain.Models.Groups.UserGroupInstance", "UserGroupInstance")
+                        .WithMany()
+                        .HasForeignKey("UserGroupInstanceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Mailing");
+
+                    b.Navigation("UserGroupInstance");
+                });
+
             modelBuilder.Entity("Bluewater.Domain.Models.MaterialPlanner.MaterialReservation", b =>
                 {
                     b.HasOne("Bluewater.Domain.Models.Fleet.Equipment", "Equipment")
@@ -2075,6 +2520,20 @@ namespace Bluewater.Infra.Migrations
             modelBuilder.Entity("Bluewater.Domain.Models.Groups.UserGroupInstance", b =>
                 {
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.Mailing", b =>
+                {
+                    b.Navigation("Recipients");
+
+                    b.Navigation("TargetClusters");
+
+                    b.Navigation("TargetGroupInstances");
+                });
+
+            modelBuilder.Entity("Bluewater.Domain.Models.Mail.MailingRecipient", b =>
+                {
+                    b.Navigation("Links");
                 });
 
             modelBuilder.Entity("Bluewater.Domain.Models.Outings.Outing", b =>

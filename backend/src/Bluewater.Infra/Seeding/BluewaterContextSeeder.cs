@@ -6,6 +6,7 @@ using Bluewater.Domain.Models.Clusters;
 using Bluewater.Domain.Models.Exams;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
+using Bluewater.Domain.Models.Mail;
 using Bluewater.Domain.Models.News;
 using Bluewater.Domain.Models.Signup;
 using Bluewater.Infra.Services.Abstractions;
@@ -43,6 +44,7 @@ public class BluewaterContextSeeder
         {
             _logger.LogInformation("No database seeding. Users already exists.");
             await EnsureAllPermissionsSeededAsync();
+            await EnsureRequiredTransactionalMailTemplatesSeededAsync();
             return;
         }
 
@@ -69,6 +71,8 @@ public class BluewaterContextSeeder
         await CreateNewsAsync();
         CreateAgendaItems();
         CreateSignups(faker, adminUser, memberUsers, alleLedenCluster);
+        var defaultLayoutId = CreateDefaultMailLayoutAndTemplate();
+        await EnsureRequiredTransactionalMailTemplatesSeededAsync(defaultLayoutId);
 
         await _context.SaveChangesAsync();
     }
@@ -79,6 +83,7 @@ public class BluewaterContextSeeder
         {
             _logger.LogInformation("No production database seeding. A user already exists.");
             await EnsureAllPermissionsSeededAsync();
+            await EnsureRequiredTransactionalMailTemplatesSeededAsync();
             return;
         }
 
@@ -120,6 +125,49 @@ public class BluewaterContextSeeder
             ShortText = "Welcome to your new installation. This news item confirms that the site has been set up successfully.",
             MembersOnly = false,
         });
+
+        await EnsureRequiredTransactionalMailTemplatesSeededAsync();
+        await _context.SaveChangesAsync();
+    }
+
+    // Ensures every RequiredTransactionalMailTemplates entry exists as a MailTemplate row, so the
+    // application's hardcoded name lookups (e.g. UserService.WelcomeMailTemplateName) always
+    // resolve without an operator having to hand-create them. Runs on every startup — like
+    // EnsureAllPermissionsSeededAsync — so an existing deployment picks up a newly-added required
+    // template after an upgrade, not just on first install. Never touches an already-seeded
+    // template's content: MailTemplateService blocks renaming/deleting Transactional templates,
+    // but editing subject/body/layout/sender is intentionally still allowed via the admin UI.
+    private async Task EnsureRequiredTransactionalMailTemplatesSeededAsync(Guid? preferredDefaultLayoutId = null)
+    {
+        var existingNames = await _context.MailTemplates
+            .Where(x => x.Kind == MailTemplateKind.Transactional)
+            .Select(x => x.Name)
+            .ToListAsync();
+        var existingSet = existingNames.ToHashSet(StringComparer.Ordinal);
+
+        var missing = RequiredTransactionalMailTemplates.All
+            .Where(d => !existingSet.Contains(d.Name))
+            .ToList();
+
+        if (missing.Count == 0) return;
+
+        var defaultLayoutId = preferredDefaultLayoutId ?? await _context.MailLayouts
+            .Where(x => x.Name == "default")
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync();
+
+        foreach (var definition in missing)
+        {
+            _context.MailTemplates.Add(new MailTemplate
+            {
+                Id = Guid.NewGuid(),
+                Name = definition.Name,
+                Kind = MailTemplateKind.Transactional,
+                SubjectTemplate = definition.SubjectTemplate,
+                BodyMarkdown = definition.BodyMarkdown,
+                DefaultLayoutId = defaultLayoutId,
+            });
+        }
 
         await _context.SaveChangesAsync();
     }
@@ -593,6 +641,106 @@ public class BluewaterContextSeeder
 
         return alleLeden;
     }
+
+    // Dev-only default: gives new local installs a ready-to-use layout/template pair instead of
+    // an empty mail admin section. Not seeded in SeedProductionAsync since the logo URL below is
+    // a local dev host and the branding is Gyas-specific — a real install should author its own.
+    private Guid CreateDefaultMailLayoutAndTemplate()
+    {
+        var layout = new MailLayout
+        {
+            Id = Guid.NewGuid(),
+            Name = "default",
+            IsDefault = true,
+            HeaderHtml = DefaultMailHeaderHtml,
+            FooterHtml = DefaultMailFooterHtml,
+        };
+        _context.MailLayouts.Add(layout);
+
+        _context.MailTemplates.Add(new MailTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = "default",
+            Kind = MailTemplateKind.Mailing,
+            SubjectTemplate = "Nieuws van Gyas",
+            BodyMarkdown = DefaultMailBodyMarkdown,
+            DefaultLayoutId = layout.Id,
+        });
+
+        return layout.Id;
+    }
+
+    private const string DefaultMailHeaderHtml = """
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-bottom:3px solid #ed8b00;">
+          <tr>
+            <td style="padding:24px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
+                <tr>
+                  <td>
+                    <img src="http://localhost:5175/images/logo/crop/Logo_Gyas_Totaal.svg" alt="Gyas" height="40" style="display:block;height:40px;width:auto;border:0;">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff;">
+          <tr>
+            <td style="padding:32px 32px 0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#1f2937;">
+                <tr>
+                  <td>
+        """;
+
+    private const string DefaultMailFooterHtml = """
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff;">
+          <tr>
+            <td style="padding:24px 32px 32px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;border-top:1px solid #e5e7eb;padding-top:16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#6b7280;">
+                <tr>
+                  <td>
+                    {{AddressBlock}}
+                    <br><br>
+                    Je ontvangt deze e-mail omdat je lid bent van Gyas.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        """;
+
+    private const string DefaultMailBodyMarkdown = """
+        Beste {{FirstName}},
+
+        We hopen dat je een goede start van het seizoen hebt gehad! Hierbij een korte update over wat er de komende tijd bij de vereniging te doen is.
+
+        **Aankomende activiteiten**
+
+        - De zaterdagtrainingen zijn weer begonnen — check het rooster op de site voor jouw groep.
+        - De algemene ledenvergadering staat gepland voor later deze maand; details volgen in een aparte mailing.
+        - Aanmeldingen voor nieuwe leden voor het najaarsseizoen zijn geopend — vertel het gerust door aan vrienden en familie.
+
+        **Een reminder**
+
+        Zorg dat je contactgegevens up-to-date zijn in je profiel, zodat we je kunnen bereiken over boekingen, afmeldingen en clubnieuws.
+
+        Heb je vragen? Antwoord gewoon op deze e-mail — we helpen je graag verder.
+
+        Tot op het water,
+        Het bestuur
+
+        ---
+
+        *Dit bericht is verstuurd naar {{Email}}. Het bij ons bekende adres:*
+        {{AddressBlock}}
+        """;
 
     private void CreateSignups(Faker faker, BlueUser adminUser, List<BlueUser> memberUsers, MemberCluster alleLedenCluster)
     {

@@ -1,33 +1,52 @@
 using System.Security.Cryptography;
+using Bluewater.Core.Dto;
 using Bluewater.Core.Dto.Common;
+using Bluewater.Core.Dto.Mail;
 using Bluewater.Core.Dto.Users;
 using Bluewater.Core.Exceptions;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
+using Bluewater.Domain.Models.Mail;
 using Bluewater.Infra.Context;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Bluewater.Core.Services;
 
 public class UserService : IUserService
 {
+    /// <summary>
+    /// Well-known <see cref="MailTemplate.Name"/> looked up for the new-member welcome mail.
+    /// Seeded automatically by BluewaterContextSeeder (see RequiredTransactionalMailTemplates);
+    /// if it's somehow still missing or has no sender configured, user creation still succeeds
+    /// and a warning is logged instead.
+    /// </summary>
+    public const string WelcomeMailTemplateName = TransactionalMailTemplateNames.WelcomeEmail;
+
     private readonly BluewaterContext _db;
     private readonly UserManager<BlueUser> _userManager;
     private readonly IValidator<CreateUserRequest> _createValidator;
     private readonly IValidator<UpdateUserRequest> _updateValidator;
+    private readonly IMailService _mailService;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         BluewaterContext db,
         UserManager<BlueUser> userManager,
         IValidator<CreateUserRequest> createValidator,
-        IValidator<UpdateUserRequest> updateValidator)
+        IValidator<UpdateUserRequest> updateValidator,
+        IMailService mailService,
+        ILogger<UserService> logger)
     {
         _db = db;
         _userManager = userManager;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _mailService = mailService;
+        _logger = logger;
     }
 
     public async Task<PagedResult<UserDto>> ListAsync(int page, int pageSize, string? search)
@@ -89,7 +108,41 @@ public class UserService : IUserService
         var password = GeneratePassword();
         ThrowIfFailed(await _userManager.CreateAsync(user, password));
 
+        await SendWelcomeMailAsync(user);
+
         return new CreateUserResponse(ToDto(user), password);
+    }
+
+    private async Task SendWelcomeMailAsync(BlueUser user)
+    {
+        var template = await _db.MailTemplates
+            .FirstOrDefaultAsync(x => x.Name == WelcomeMailTemplateName && x.Kind == MailTemplateKind.Transactional);
+
+        if (template is null || string.IsNullOrWhiteSpace(template.DefaultSenderKey))
+        {
+            _logger.LogWarning(
+                "Welcome mail template '{TemplateName}' (with a configured sender) was not found; skipping welcome mail for user {UserId}.",
+                WelcomeMailTemplateName, user.Id);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            return;
+        }
+
+        var request = new SendTransactionalMailRequest(
+            TemplateId: template.Id,
+            SubjectOverride: null,
+            BodyMarkdownOverride: null,
+            SenderKey: template.DefaultSenderKey,
+            Recipients: [new TransactionalRecipient(user.Email, user.Fullname, new Dictionary<string, string>(), user.Id)],
+            Cc: [],
+            Bcc: [],
+            ReplyToOverride: null,
+            AttachmentStoredFileIds: []);
+
+        await _mailService.SendTransactionalAsync(request);
     }
 
     public async Task<UserDto> UpdateAsync(Guid id, UpdateUserRequest request)
@@ -128,6 +181,54 @@ public class UserService : IUserService
         ThrowIfFailed(await _userManager.UpdateAsync(user));
 
         return ToDto(user);
+    }
+    
+    public async Task<ApiStatusResponse> ResetUserPasswordAsync(Guid id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString())
+                   ?? throw new BlueNotFoundException($"User '{id}' was not found.");
+
+        var template = await _db.MailTemplates.FirstAsync(x => x.Name == TransactionalMailTemplateNames.PasswordReset && x.Kind == MailTemplateKind.Transactional);
+        
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        
+        var newPassword = GeneratePassword();
+        await _userManager.ResetPasswordAsync(user, token, newPassword);
+        
+        if (string.IsNullOrWhiteSpace(template.DefaultSenderKey))
+        {
+            _logger.LogError(
+                "Welcome mail template '{TemplateName}' (with a configured sender) was not found; skipping welcome mail for user {UserId}.",
+                WelcomeMailTemplateName, user.Id);
+            
+            throw new BlueNotFoundException($"Default address used to send the mail could not be found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            throw new  BlueNotFoundException($"User does not have a valid email address.");
+        }
+        
+        var passwordMail = new SendTransactionalMailRequest(
+            TemplateId: template.Id,
+            SubjectOverride: null,
+            BodyMarkdownOverride: null,
+            SenderKey: template.DefaultSenderKey,
+            Recipients: [new TransactionalRecipient(user.Email, user.Fullname, new Dictionary<string, string>()
+            {
+                {"Password", newPassword}
+            }, user.Id)],
+            Cc: [],
+            Bcc: [],
+            ReplyToOverride: null,
+            AttachmentStoredFileIds: []);
+        
+        await _mailService.SendTransactionalAsync(passwordMail);
+        
+        return new ApiStatusResponse()
+        {
+            Success = true
+        };
     }
 
     public async Task DeleteAsync(Guid id)

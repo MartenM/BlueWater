@@ -1,7 +1,10 @@
+using Bluewater.Core.Dto.Mail;
 using Bluewater.Core.Dto.Users;
 using Bluewater.Core.Exceptions;
+using Bluewater.Core.Services;
 using Bluewater.Core.Services.Abstractions;
 using Bluewater.Domain.Models;
+using Bluewater.Domain.Models.Mail;
 using Bluewater.Tests.TestSupport;
 using FluentValidation;
 
@@ -166,6 +169,42 @@ public class UserServiceTests : SqliteServiceTestBase
     public async Task DeleteAsync_Throws_WhenUserDoesNotExist()
     {
         await Should.ThrowAsync<BlueNotFoundException>(() => _sut.DeleteAsync(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task CreateAsync_EnqueuesWelcomeMail_WhenTemplateExists()
+    {
+        // The welcome template can no longer be created via the service (it's seeded), so insert
+        // directly through the DbContext to set up this fixture.
+        Db.MailTemplates.Add(new MailTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = UserService.WelcomeMailTemplateName,
+            Kind = MailTemplateKind.Transactional,
+            SubjectTemplate = "Welcome {{FirstName}}",
+            BodyMarkdown = "Hi **{{FullName}}**",
+            DefaultSenderKey = "default",
+        });
+        await Db.SaveChangesAsync();
+
+        var request = BuildCreateRequest("welcomed", "welcomed@example.com");
+        await _sut.CreateAsync(request);
+
+        BackgroundJobClient.EnqueuedJobs.Count.ShouldBe(1);
+        var args = BackgroundJobClient.EnqueuedJobs[0].Args;
+        ((List<string>)args[1]!)[0].ShouldBe("welcomed@example.com");
+        args[5].ShouldBe("Welcome First");
+    }
+
+    [Fact]
+    public async Task CreateAsync_DoesNotThrow_AndSkipsMail_WhenWelcomeTemplateIsMissing()
+    {
+        var request = BuildCreateRequest("nomail", "nomail@example.com");
+
+        var result = await _sut.CreateAsync(request);
+
+        result.User.UserName.ShouldBe("nomail");
+        BackgroundJobClient.EnqueuedJobs.ShouldBeEmpty();
     }
 
     private static CreateUserRequest BuildCreateRequest(string userName, string email) =>

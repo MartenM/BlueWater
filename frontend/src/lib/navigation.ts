@@ -45,6 +45,7 @@ export const navItems: NavItem[] = [
 			{ label: 'Groepen', href: '/tools/groups' },
 			{ label: 'Examens', href: '/tools/exams' },
 			{ label: 'Clusters', href: '/tools/clusters' },
+			{ label: 'Mail', href: '/tools/mail' },
 			{ label: 'Inschrijvingen', href: '/tools/signup' }
 		]
 	},

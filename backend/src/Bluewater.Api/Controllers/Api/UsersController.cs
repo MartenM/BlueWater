@@ -1,4 +1,5 @@
 using Bluewater.Api.Authorization;
+using Bluewater.Core.Dto;
 using Bluewater.Core.Dto.Common;
 using Bluewater.Core.Dto.Users;
 using Bluewater.Core.Services.Abstractions;
@@ -77,6 +78,14 @@ public class UsersController : ControllerBase
     public Task SetPicture(Guid id, [FromForm] IFormFile file)
     {
         return _profileService.SetProfilePictureAsync(id, file.OpenReadStream(), file.FileName, file.ContentType);
+    }
+
+    [BlueAuthorize(BluePermission.AdminUsersModify)]
+    [HttpPost("{id:guid}/reset-password")]
+    [EndpointName("ResetUserPassword")]
+    public Task<ApiStatusResponse> ResetPassword(Guid id)
+    {
+        return _service.ResetUserPasswordAsync(id);
     }
 
     /// <summary>Streams a user's profile picture, e.g. for use as an &lt;img src&gt;.</summary>

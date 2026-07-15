@@ -11,12 +11,13 @@ using Bluewater.Infra.Options;
 using Bluewater.Infra.Services;
 using Bluewater.Infra.Services.Abstractions;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using TokenOptions = Bluewater.Infra.Options.TokenOptions;
 
 namespace Bluewater.Api.Extensions;
@@ -49,8 +50,13 @@ public static class WebApplicationBuilderExtensions
             .Bind(builder.Configuration.GetSection("Seeding"))
             .ValidateOnStart();
 
+        builder.Services.AddOptions<MailOptions>()
+            .Bind(builder.Configuration.GetSection("Mail"))
+            .ValidateOnStart();
+
         builder.AddDatabase();
         builder.AddBlueCors();
+        builder.AddMailAndBackgroundJobs();
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
@@ -143,6 +149,17 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IMaterialReservationService, MaterialReservationService>();
         builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
         builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        builder.Services.AddScoped<Bluewater.Core.Services.Mail.IMergeTokenRenderer, Bluewater.Core.Services.Mail.MergeTokenRenderer>();
+        builder.Services.AddScoped<Bluewater.Core.Services.Mail.IMailContentRenderer, Bluewater.Core.Services.Mail.MailContentRenderer>();
+        builder.Services.AddScoped<IMailLayoutService, MailLayoutService>();
+        builder.Services.AddScoped<IMailTemplateService, MailTemplateService>();
+        builder.Services.AddScoped<IMailService, MailService>();
+        builder.Services.AddScoped<Bluewater.Core.Services.Mail.TransactionalMailJob>();
+        builder.Services.AddScoped<IMailingTargetResolverService, MailingTargetResolverService>();
+        builder.Services.AddScoped<IMailingService, MailingService>();
+        builder.Services.AddScoped<Bluewater.Core.Services.Mail.MailingRecipientSendJob>();
+        builder.Services.AddScoped<Bluewater.Core.Services.Mail.MailProofSendJob>();
+        builder.Services.AddScoped<IMailTrackingService, MailTrackingService>();
         builder.Services.AddOptions<SignupOptions>()
             .Bind(builder.Configuration.GetSection("Signup"))
             .ValidateOnStart();
@@ -154,17 +171,27 @@ public static class WebApplicationBuilderExtensions
     private static WebApplicationBuilder AddDatabase(this WebApplicationBuilder builder)
     {
         var dbOptions = builder.Configuration.GetSection("Database").Get<DatabaseOptions>() ?? new DatabaseOptions();
-        var connectionString = new NpgsqlConnectionStringBuilder
-        {
-            Host = dbOptions.Host,
-            Port = dbOptions.Port,
-            Database = dbOptions.Database,
-            Username = dbOptions.Username,
-            Password = dbOptions.Password
-        }.ConnectionString;
+        var connectionString = dbOptions.BuildConnectionString();
 
         builder.Services.AddDbContext<BluewaterContext>(options => options.UseNpgsql(connectionString));
         builder.Services.AddScoped<BluewaterContextSeeder>();
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder AddMailAndBackgroundJobs(this WebApplicationBuilder builder)
+    {
+        var dbOptions = builder.Configuration.GetSection("Database").Get<DatabaseOptions>() ?? new DatabaseOptions();
+        var connectionString = dbOptions.BuildConnectionString();
+
+        builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString)));
+        builder.Services.AddHangfireServer();
+
+        builder.Services.AddScoped<IMailTransportService, MailTransportService>();
 
         return builder;
     }

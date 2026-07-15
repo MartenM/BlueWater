@@ -29,11 +29,13 @@ public abstract class SqliteServiceTestBase : IDisposable
     private readonly IServiceScope _scope;
     private readonly TestCurrentUserAccessor _currentUserAccessor = new();
     private readonly TestCurrentUserService _currentUserService = new();
+    private readonly FakeBackgroundJobClient _fakeBackgroundJobClient = new();
     private readonly string _fileStorageRootPath;
 
     protected BluewaterContext Db { get; }
     protected UserManager<BlueUser> UserManager { get; }
     protected string FileStorageRootPath => _fileStorageRootPath;
+    protected FakeBackgroundJobClient BackgroundJobClient => _fakeBackgroundJobClient;
 
     /// <summary>
     /// The acting user stamped onto audit fields (CreatedByUserId/UpdatedByUserId/DeletedByUserId)
@@ -99,6 +101,7 @@ public abstract class SqliteServiceTestBase : IDisposable
             o.Audience = "bluewater-tests";
             o.ExpireTime = TimeSpan.FromMinutes(15);
         });
+        services.Configure<MailOptions>(o => o.PublicBaseUrl = "https://test.example.com");
         services.AddScoped<TokenService>();
         services.AddSingleton<ICookieAuthService, TestCookieAuthService>();
         services.AddScoped<IAuthService, AuthService>();
@@ -124,6 +127,19 @@ public abstract class SqliteServiceTestBase : IDisposable
         services.AddScoped<IAppSettingsService, AppSettingsService>();
         services.AddScoped<IExamTypeService, ExamTypeService>();
         services.AddScoped<IUserExamService, UserExamService>();
+        services.AddScoped<Bluewater.Core.Services.Mail.IMergeTokenRenderer, Bluewater.Core.Services.Mail.MergeTokenRenderer>();
+        services.AddScoped<Bluewater.Core.Services.Mail.IMailContentRenderer, Bluewater.Core.Services.Mail.MailContentRenderer>();
+        services.AddScoped<IMailLayoutService, MailLayoutService>();
+        services.AddScoped<IMailTemplateService, MailTemplateService>();
+        services.AddSingleton(_fakeBackgroundJobClient);
+        services.AddSingleton<Hangfire.IBackgroundJobClient>(_fakeBackgroundJobClient);
+        services.AddScoped<IMailService, MailService>();
+        services.AddScoped<Bluewater.Core.Services.Mail.TransactionalMailJob>();
+        services.AddScoped<IMailingTargetResolverService, MailingTargetResolverService>();
+        services.AddScoped<IMailingService, MailingService>();
+        services.AddScoped<Bluewater.Core.Services.Mail.MailingRecipientSendJob>();
+        services.AddScoped<Bluewater.Core.Services.Mail.MailProofSendJob>();
+        services.AddScoped<IMailTrackingService, MailTrackingService>();
         services.AddScoped<BluewaterContextSeeder>();
         services.AddValidatorsFromAssemblyContaining<UpsertNewsPostRequestValidator>();
 

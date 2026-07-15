@@ -12,6 +12,7 @@ using Bluewater.Domain.Models.Files;
 using Bluewater.Domain.Models.Fleet;
 using Bluewater.Domain.Models.Groups;
 using Bluewater.Domain.Models.MaterialPlanner;
+using Bluewater.Domain.Models.Mail;
 using Bluewater.Domain.Models.News;
 using Bluewater.Domain.Models.Outings;
 using Bluewater.Infra.Services.Abstractions;
@@ -64,6 +65,13 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
     public DbSet<OutingChangelogEntry> OutingChangelogEntries => Set<OutingChangelogEntry>();
     public DbSet<AvailabilityBlock> AvailabilityBlocks => Set<AvailabilityBlock>();
     public DbSet<MaterialReservation> MaterialReservations => Set<MaterialReservation>();
+    public DbSet<MailLayout> MailLayouts => Set<MailLayout>();
+    public DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
+    public DbSet<Mailing> Mailings => Set<Mailing>();
+    public DbSet<MailingTargetCluster> MailingTargetClusters => Set<MailingTargetCluster>();
+    public DbSet<MailingTargetGroupInstance> MailingTargetGroupInstances => Set<MailingTargetGroupInstance>();
+    public DbSet<MailingRecipient> MailingRecipients => Set<MailingRecipient>();
+    public DbSet<MailingRecipientLink> MailingRecipientLinks => Set<MailingRecipientLink>();
 
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -526,6 +534,104 @@ public class BluewaterContext : IdentityDbContext<BlueUser, BlueRole, Guid>
             e.HasOne(x => x.Outing)
                 .WithMany(x => x.ChangelogEntries)
                 .HasForeignKey(x => x.OutingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<MailLayout>(e =>
+        {
+            e.HasKey(x => x.Id);
+        });
+
+        builder.Entity<MailTemplate>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Kind).HasConversion<string>();
+
+            e.HasOne(x => x.DefaultLayout)
+                .WithMany()
+                .HasForeignKey(x => x.DefaultLayoutId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+        });
+
+        builder.Entity<Mailing>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Status).HasConversion<string>();
+
+            e.HasOne(x => x.Template)
+                .WithMany()
+                .HasForeignKey(x => x.TemplateId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
+            e.HasOne(x => x.Layout)
+                .WithMany()
+                .HasForeignKey(x => x.LayoutId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+        });
+
+        builder.Entity<MailingTargetCluster>(e =>
+        {
+            e.HasKey(x => new { x.MailingId, x.MemberClusterId });
+
+            e.HasQueryFilter(x => x.DeletedAt == null && x.Mailing.DeletedAt == null && x.MemberCluster.DeletedAt == null);
+
+            e.HasOne(x => x.Mailing)
+                .WithMany(x => x.TargetClusters)
+                .HasForeignKey(x => x.MailingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.MemberCluster)
+                .WithMany()
+                .HasForeignKey(x => x.MemberClusterId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<MailingTargetGroupInstance>(e =>
+        {
+            e.HasKey(x => new { x.MailingId, x.UserGroupInstanceId });
+
+            e.HasQueryFilter(x => x.DeletedAt == null && x.Mailing.DeletedAt == null && x.UserGroupInstance.DeletedAt == null);
+
+            e.HasOne(x => x.Mailing)
+                .WithMany(x => x.TargetGroupInstances)
+                .HasForeignKey(x => x.MailingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.UserGroupInstance)
+                .WithMany()
+                .HasForeignKey(x => x.UserGroupInstanceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<MailingRecipient>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => new { x.MailingId, x.Email }).IsUnique();
+            e.HasIndex(x => x.TrackingToken).IsUnique();
+
+            e.HasOne(x => x.Mailing)
+                .WithMany(x => x.Recipients)
+                .HasForeignKey(x => x.MailingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<MailingRecipientLink>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasIndex(x => x.Token).IsUnique();
+
+            e.HasQueryFilter(x => x.DeletedAt == null && x.MailingRecipient.DeletedAt == null);
+
+            e.HasOne(x => x.MailingRecipient)
+                .WithMany(x => x.Links)
+                .HasForeignKey(x => x.MailingRecipientId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

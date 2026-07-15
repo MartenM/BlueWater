@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
+using Bluewater.Api.Authorization;
 using Bluewater.Api.Extensions;
 using Bluewater.Api.Filters;
 using Bluewater.Api.OpenApi;
+using Hangfire;
 using RealmRuler.WebApi.OpenApi;
 using Scalar.AspNetCore;
 
@@ -46,6 +48,14 @@ app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new HangfireAdminAuthorizationFilter()]
+    });
+}
 
 app.MapControllers();
 
