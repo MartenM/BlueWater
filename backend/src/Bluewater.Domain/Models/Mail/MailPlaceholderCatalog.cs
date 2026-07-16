@@ -8,9 +8,9 @@ public static class MailPlaceholderCatalog
 {
     public static readonly IReadOnlyList<MailPlaceholderInfo> Base =
     [
-        new("FirstName", "Voornaam van de ontvanger.", "Jane"),
-        new("FullName", "Volledige naam van de ontvanger.", "Jane Doe"),
-        new("Email", "E-mailadres van de ontvanger.", "jane.doe@example.com"),
-        new("AddressBlock", "Bekend adres van de ontvanger.", "Samplestraat 1, 1234 AB, Sample City"),
+        new("FirstName", "Voornaam van de ontvanger.", "Henk"),
+        new("FullName", "Volledige naam van de ontvanger.", "Henk Tulpenaar"),
+        new("Email", "E-mailadres van de ontvanger.", "henk.tulpenaar@example.com"),
+        new("AddressBlock", "Bekend adres van de ontvanger.", "Ligusterlaan 4, Klein Zanikem, Surrey"),
     ];
 }
